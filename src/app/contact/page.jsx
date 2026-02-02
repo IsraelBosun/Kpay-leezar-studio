@@ -1,4 +1,6 @@
-import ContactForm from '@/components/ContactForm.jsx';
+"use client";
+import { useState } from 'react';
+import ContactForm from '@/components/ContactForm';
 import { siteData } from '@/lib/data';
 
 export default function ContactPage() {
@@ -11,7 +13,7 @@ export default function ContactPage() {
             Inquiries
           </h2>
           <h1 className="text-5xl md:text-7xl font-serif text-black leading-tight max-w-3xl">
-            Let’s discuss your vision and create something <span className="italic">remarkable</span>.
+            Let's discuss your vision and create something <span className="italic">remarkable</span>.
           </h1>
           <p className="mt-8 text-lg text-neutral-gray max-w-xl font-light leading-relaxed border-l-2 border-gray-100 pl-8">
             Whether you are planning a high-profile corporate event, a private portrait session, or a global brand campaign, we are ready to bring our lens to your story.
@@ -20,8 +22,7 @@ export default function ContactPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           {/* Form Section */}
-          <div className="lg:col-span-7 bg-gray-50 p-8 md:p-12">
-            <h3 className="text-2xl font-serif mb-8 text-black">Booking Request</h3>
+          <div className="lg:col-span-7">
             <ContactForm />
           </div>
 
@@ -30,11 +31,21 @@ export default function ContactPage() {
             <div>
               <h4 className="text-xs uppercase tracking-[0.3em] font-bold text-primary mb-6">Direct Contact</h4>
               <div className="space-y-4">
-                <a href={`mailto:${siteData.contact.email}`} className="block text-2xl font-serif text-black hover:text-primary transition-colors">
-                  {siteData.contact.email}
+                <a 
+                  href={`mailto:${siteData.contact.email}`} 
+                  className="block text-2xl font-serif text-black hover:text-primary transition-colors group"
+                >
+                  <span className="inline-block group-hover:translate-x-1 transition-transform">
+                    {siteData.contact.email}
+                  </span>
                 </a>
-                <a href={`tel:${siteData.contact.phone}`} className="block text-2xl font-serif text-black hover:text-primary transition-colors">
-                  {siteData.contact.phone}
+                <a 
+                  href={`tel:${siteData.contact.phone}`} 
+                  className="block text-2xl font-serif text-black hover:text-primary transition-colors group"
+                >
+                  <span className="inline-block group-hover:translate-x-1 transition-transform">
+                    {siteData.contact.phone}
+                  </span>
                 </a>
               </div>
             </div>
@@ -43,7 +54,9 @@ export default function ContactPage() {
               <h4 className="text-xs uppercase tracking-[0.3em] font-bold text-primary mb-6">Location</h4>
               <p className="text-xl font-serif text-black leading-relaxed">
                 {siteData.contact.address}<br />
-                <span className="text-sm font-sans uppercase tracking-widest text-neutral-gray italic">Available for Global Travel</span>
+                <span className="text-sm font-sans uppercase tracking-widest text-neutral-gray italic mt-2 inline-block">
+                  Available for Global Travel
+                </span>
               </p>
             </div>
 
@@ -53,13 +66,22 @@ export default function ContactPage() {
                 {siteData.contact.socials.map((social) => (
                   <a 
                     key={social.name} 
-                    href={social.url} 
-                    className="text-sm uppercase tracking-widest font-bold text-black border-b border-transparent hover:border-primary hover:text-primary transition-all pb-1"
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm uppercase tracking-widest font-bold text-black border-b-2 border-transparent hover:border-primary hover:text-primary transition-all pb-1"
                   >
                     {social.name}
                   </a>
                 ))}
               </div>
+            </div>
+
+            {/* Trust Signals */}
+            <div className="pt-8 border-t border-gray-100">
+              <p className="text-xs text-neutral-gray italic leading-relaxed">
+                We typically respond to all inquiries within 24 hours. For urgent requests, please call directly.
+              </p>
             </div>
           </div>
         </div>
