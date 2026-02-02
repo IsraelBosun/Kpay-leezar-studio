@@ -1,4 +1,4 @@
-import ContactForm from '@/components/ContactForm';
+import ContactForm from '@/components/ContactForm.jsx';
 import { siteData } from '@/lib/data';
 
 export default function ContactPage() {

@@ -5,14 +5,19 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-gray-100 pt-24 pb-12 px-6">
+    <footer className="bg-white border-t border-gray-100 pt-24 pb-12 px-6 bg-[radial-gradient(circle,_rgba(211,14,21,0.03)_0%,_transparent_70%)]">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
           
           {/* Brand Column */}
           <div className="md:col-span-1">
             <Link href="/" className="text-2xl font-serif tracking-tighter block mb-6">
-              LEEZAR <span className="block text-[10px] uppercase tracking-[0.3em] text-neutral-gray">Studios</span>
+                        <img
+              src="/logooo.png"
+              alt="Leezar Studios Logo"
+              className="w-20 h-auto mb-1 group-hover:opacity-80 transition-opacity duration-300"
+            />
+              {/* LEEZAR <span className="block text-[10px] uppercase tracking-[0.3em] text-neutral-gray">Studios</span> */}
             </Link>
             <p className="text-sm text-neutral-gray leading-relaxed max-w-xs">
               Capturing authentic moments and transforming them into timeless visual stories.

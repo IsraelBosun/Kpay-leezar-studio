@@ -1,7 +1,15 @@
+"use client";
+import { useState } from 'react';
 import { siteData } from '@/lib/data';
 import Link from 'next/link';
 
 export default function ServicesSection() {
+  const [activeService, setActiveService] = useState(null);
+
+  const handleServiceTap = (index) => {
+    setActiveService(activeService === index ? null : index);
+  };
+
   return (
     <section className="py-32 px-6 bg-gray-50">
       <div className="max-w-7xl mx-auto">
@@ -28,14 +36,21 @@ export default function ServicesSection() {
           {siteData.services.map((service, index) => (
             <div 
               key={index} 
-              className="group relative p-10 bg-white hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] transition-all duration-500 border border-transparent hover:border-gray-100 flex flex-col h-full"
+              className={`group relative p-10 bg-white transition-all duration-500 border flex flex-col h-full cursor-pointer ${
+                activeService === index 
+                  ? 'shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-gray-100' 
+                  : 'border-transparent hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:border-gray-100'
+              }`}
+              onClick={() => handleServiceTap(index)}
             >
               {/* Service Numbering */}
               <span className="block text-xs font-bold text-primary mb-10 tracking-[0.2em]">
                 0{index + 1} &mdash;
               </span>
               
-              <h4 className="text-2xl font-serif mb-6 text-black group-hover:text-primary transition-colors duration-300">
+              <h4 className={`text-2xl font-serif mb-6 transition-colors duration-300 ${
+                activeService === index ? 'text-primary' : 'text-black group-hover:text-primary'
+              }`}>
                 {service.title}
               </h4>
               
@@ -45,11 +60,16 @@ export default function ServicesSection() {
               
               <Link 
                 href="/contact"
-                className="inline-flex items-center text-xs uppercase tracking-widest font-bold text-black group-hover:text-primary transition-all"
+                className={`inline-flex items-center text-xs uppercase tracking-widest font-bold transition-all ${
+                  activeService === index ? 'text-primary' : 'text-black group-hover:text-primary'
+                }`}
+                onClick={(e) => e.stopPropagation()}
               >
                 Inquire for Details
                 <svg 
-                  className="ml-3 w-5 h-5 transform group-hover:translate-x-2 transition-transform duration-300" 
+                  className={`ml-3 w-5 h-5 transition-transform duration-300 ${
+                    activeService === index ? 'translate-x-2' : 'group-hover:translate-x-2'
+                  }`}
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"

@@ -42,7 +42,7 @@ export default function Navbar() {
             <img
               src="/logooo.png"
               alt="Leezar Studios Logo"
-              className="w-38 h-auto mb-1 group-hover:opacity-80 transition-opacity duration-300"
+              className="w-28 h-auto mb-1 group-hover:opacity-80 transition-opacity duration-300"
             />
             {/* <span className="text-2xl font-serif tracking-tighter text-black group-hover:text-primary transition-colors">
               LEEZAR
