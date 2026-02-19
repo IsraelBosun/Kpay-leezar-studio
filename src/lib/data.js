@@ -11,7 +11,7 @@ export const siteData = {
   },
   hero: {
     title: "Leezar Studios",
-    subtitle: "Premium Photography & Visual Storytelling",
+    subtitle: "Premium Photography & Visual Storytellling",
     tagline: "Capturing moments. Creating timeless stories.",
   },
   about: {
