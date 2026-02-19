@@ -7,14 +7,24 @@ const titleLetters = siteData.hero.title.split('');
 
 export default function HeroSection() {
   return (
-    <section className="relative h-screen flex items-center justify-center pt-20 overflow-hidden bg-gray-50">
-      {/* Decorative Background Element */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle,_rgba(211,14,21,0.03)_0%,_transparent_70%)] pointer-events-none" />
+    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-900">
+      {/* Background Photo — replace src with your actual hero image */}
+      <img
+        src="https://placehold.co/1920x1080/111111/222222?text=."
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+      />
 
-      <div className="text-center z-10 px-6">
+      {/* Dark cinematic overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Subtle red radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(211,14,21,0.07)_0%,_transparent_65%)] pointer-events-none" />
+
+      <div className="text-center z-10 px-6 max-w-5xl mx-auto">
         {/* Subtitle */}
         <motion.h2
-          className="text-sm uppercase tracking-[0.5em] mb-6 text-neutral-gray font-bold"
+          className="text-xs md:text-sm uppercase tracking-[0.5em] mb-6 text-white/60 font-bold"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -23,7 +33,7 @@ export default function HeroSection() {
         </motion.h2>
 
         {/* Title — letter by letter */}
-        <h1 className="text-6xl md:text-9xl font-serif mb-8 text-black tracking-tighter overflow-hidden">
+        <h1 className="text-5xl sm:text-7xl md:text-9xl font-serif mb-8 text-white tracking-tighter overflow-hidden">
           {titleLetters.map((char, i) => (
             <motion.span
               key={i}
@@ -44,7 +54,7 @@ export default function HeroSection() {
 
         {/* Tagline */}
         <motion.p
-          className="text-lg md:text-2xl font-light italic mb-12 text-neutral-gray max-w-2xl mx-auto leading-relaxed"
+          className="text-base md:text-xl font-light italic mb-10 text-white/55 max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.9 }}
@@ -54,27 +64,22 @@ export default function HeroSection() {
 
         {/* Buttons */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 1.1 }}
         >
           <Link
             href="/contact"
-            className="w-full sm:w-auto bg-primary text-white px-12 py-5 uppercase tracking-[0.2em] text-[11px] font-bold
-                       transition-all duration-300
-                       hover:bg-black hover:shadow-2xl hover:shadow-primary/20
-                       active:scale-95 active:bg-black"
+            className="w-full sm:w-auto bg-primary text-white px-10 py-4 uppercase tracking-[0.2em] text-[11px] font-bold
+                       transition-all duration-300 hover:bg-white hover:text-black active:scale-95"
           >
             Book a Session
           </Link>
-
           <Link
             href="/gallery"
-            className="w-full sm:w-auto border border-neutral-gray text-neutral-gray px-12 py-5 uppercase tracking-[0.2em] text-[11px] font-bold
-                       transition-all duration-300
-                       hover:bg-neutral-gray hover:text-white
-                       active:scale-95 active:bg-neutral-gray active:text-white"
+            className="w-full sm:w-auto border border-white/40 text-white px-10 py-4 uppercase tracking-[0.2em] text-[11px] font-bold
+                       transition-all duration-300 hover:bg-white hover:text-black active:scale-95"
           >
             View Gallery
           </Link>
@@ -83,13 +88,13 @@ export default function HeroSection() {
 
       {/* Scroll Indicator */}
       <motion.div
-        className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6, duration: 0.8 }}
       >
         <motion.div
-          className="w-[1px] h-12 bg-gradient-to-b from-primary to-transparent"
+          className="w-[1px] h-12 bg-gradient-to-b from-white/40 to-transparent"
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         />
