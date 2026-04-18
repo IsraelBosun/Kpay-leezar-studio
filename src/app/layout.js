@@ -1,6 +1,6 @@
 import './globals.css';
 import { Inter, Playfair_Display } from 'next/font/google';
-import Navbar from '@/components/Navbar';
+import ConditionalNavbar from '@/components/ConditionalNavbar';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'Leezar Studios | Premium Photography & Visual Storytelling',
+  title: 'Lumis Studio | Premium Photography & Visual Storytelling',
   description: 'A boutique photography studio specializing in portraits, events, and brand storytelling.',
 };
 
@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} scroll-smooth`}>
       <body className="font-sans antialiased text-neutral-gray overflow-x-hidden">
-        <Navbar />
+        <ConditionalNavbar />
         {children}
         <Footer />
         <WhatsAppButton />

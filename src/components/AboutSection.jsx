@@ -1,11 +1,28 @@
 "use client";
+import { useState } from 'react';
 import { siteData } from '@/lib/data';
 import { motion } from 'framer-motion';
 
+function BlurImage({ src, alt, className }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onLoad={() => setLoaded(true)}
+      className={`${className} transition-all duration-700 ${loaded ? 'blur-0 scale-100' : 'blur-md scale-105'}`}
+    />
+  );
+}
+
 export default function AboutSection() {
   return (
-    <section className="py-24 md:py-32 px-6 bg-white">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-24 md:py-32 px-6 bg-[#f9f8f6] relative overflow-hidden">
+      {/* Large watermark letter */}
+      <span className="absolute -top-8 right-0 text-[20rem] font-serif text-black/[0.03] leading-none select-none pointer-events-none">
+        L
+      </span>
+      <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Photo Column */}
@@ -18,9 +35,9 @@ export default function AboutSection() {
           >
             <div className="relative overflow-hidden">
               {/* Replace src with an actual photo of the photographer/studio */}
-              <img
-                src="https://placehold.co/700x900/1a1a1a/333333?text=."
-                alt="Leezar Studios — The Photographer"
+              <BlurImage
+                src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=700&h=900&fit=crop&q=80"
+                alt="Lumis Studio — The Photographer"
                 className="w-full h-[420px] lg:h-[580px] object-cover"
               />
               {/* Red corner accent */}

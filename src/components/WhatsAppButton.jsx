@@ -8,7 +8,7 @@ export default function WhatsAppButton() {
 
   // Format phone number for WhatsApp (strip spaces and +)
   const whatsappNumber = siteData.contact.phone.replace(/[\s+\-()]/g, '');
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hi%20Leezar%20Studios%2C%20I%27d%20like%20to%20book%20a%20session.`;
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hi%20Lumis%20Studio%2C%20I%27d%20like%20to%20book%20a%20session.`;
 
   return (
     <motion.div

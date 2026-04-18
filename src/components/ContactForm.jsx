@@ -88,15 +88,8 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="bg-gray-50 p-8 md:p-12 relative overflow-hidden">
-      {/* Decorative element */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      
-      <div className="relative">
-        <h3 className="text-2xl font-serif mb-2 text-black">Booking Request</h3>
-        <p className="text-sm text-neutral-gray mb-8 italic">Fill in your details and we'll be in touch shortly</p>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
+    <div>
+      <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Full Name */}
             <div className="flex flex-col space-y-2 group">
@@ -300,8 +293,7 @@ export default function ContactForm() {
           <p className="text-xs text-neutral-gray italic text-center pt-4">
             * Required fields. By submitting this form, you agree to be contacted about your inquiry.
           </p>
-        </form>
-      </div>
+      </form>
     </div>
   );
 }

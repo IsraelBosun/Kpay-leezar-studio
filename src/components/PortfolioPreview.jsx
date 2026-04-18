@@ -5,6 +5,18 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
+function BlurImage({ src, alt, className }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onLoad={() => setLoaded(true)}
+      className={`${className} transition-all duration-700 ${loaded ? 'blur-0' : 'blur-sm'}`}
+    />
+  );
+}
+
 const containerVariants = {
   hidden: {},
   visible: {
@@ -43,15 +55,35 @@ export default function PortfolioPreview() {
         </p>
       </motion.div>
 
-      {/* Masonry Grid */}
+      {/* Mobile: horizontal scroll carousel */}
+      <div className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 scrollbar-hide">
+        {siteData.fullGallery.slice(0, 6).map((item) => (
+          <div
+            key={item.id}
+            className="relative flex-shrink-0 w-72 h-96 snap-start overflow-hidden bg-gray-200 cursor-pointer"
+            onClick={() => setActiveId(activeId === item.id ? null : item.id)}
+          >
+            <BlurImage
+              src={item.src}
+              alt={item.category}
+              className="w-full h-full object-cover md:grayscale transition-all duration-700"
+            />
+            <div className="absolute inset-0 bg-black/30 flex items-end p-5">
+              <span className="text-white text-[10px] uppercase tracking-widest font-bold">{item.category}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: masonry grid */}
       <motion.div
-        className="columns-2 lg:columns-3 gap-3 space-y-3 md:gap-6 md:space-y-6"
+        className="hidden md:columns-2 lg:columns-3 md:block gap-6 space-y-6"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-40px' }}
       >
-        {siteData.galleryPreview.map((item) => (
+        {siteData.fullGallery.slice(0, 6).map((item) => (
           <motion.div
             key={item.id}
             className="relative group overflow-hidden bg-gray-200 cursor-pointer break-inside-avoid"
@@ -59,13 +91,13 @@ export default function PortfolioPreview() {
             whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
             onClick={() => setActiveId(activeId === item.id ? null : item.id)}
           >
-            <img
+            <BlurImage
               src={item.src}
               alt={item.category}
               className={`w-full transition-all duration-700 ease-in-out
                 ${activeId === item.id
                   ? 'grayscale-0 scale-105'
-                  : 'grayscale group-hover:grayscale-0 group-hover:scale-105'}
+                  : 'md:grayscale group-hover:grayscale-0 group-hover:scale-105'}
               `}
             />
             <div className={`absolute inset-0 bg-black/30 transition-opacity flex items-end p-5

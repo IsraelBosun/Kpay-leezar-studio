@@ -6,9 +6,17 @@ const headlineWords = ["Let's", "Create", "Something", "Timeless"];
 
 export default function CTASection() {
   return (
-    <section className="relative py-32 px-6 overflow-hidden">
-      {/* Background Decorative Element */}
-      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+    <section className="relative py-32 px-6 overflow-hidden bg-zinc-950">
+      {/* Background Image */}
+      <img
+        src="https://images.unsplash.com/photo-1520390138845-fd2d229dd553?w=1920&h=900&fit=crop&q=80"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-20"
+      />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-zinc-950/60 pointer-events-none" />
+      {/* Red radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(211,14,21,0.08)_0%,_transparent_65%)] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
 
@@ -24,7 +32,7 @@ export default function CTASection() {
         </motion.h2>
 
         {/* Word-by-word headline */}
-        <h3 className="text-4xl md:text-6xl font-serif text-black mb-8 leading-tight">
+        <h3 className="text-4xl md:text-6xl font-serif text-white mb-8 leading-tight">
           {headlineWords.map((word, i) => (
             <motion.span
               key={i}
@@ -45,13 +53,13 @@ export default function CTASection() {
 
         {/* Body */}
         <motion.p
-          className="text-lg md:text-xl text-neutral-gray font-light mb-12 max-w-2xl mx-auto leading-relaxed"
+          className="text-lg md:text-xl text-white/60 font-light mb-12 max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.35 }}
         >
-          Whether it's a personal session or a large-scale event, Leezar Studios is ready to bring your vision to life with precision and artistry.
+          Whether it's a personal session or a large-scale event, Lumis Studio is ready to bring your vision to life with precision and artistry.
         </motion.p>
 
         {/* Buttons */}
@@ -82,7 +90,7 @@ export default function CTASection() {
           >
             <Link
               href="/gallery"
-              className="text-sm uppercase tracking-widest font-bold text-neutral-gray hover:text-primary transition-colors flex items-center gap-3"
+              className="text-sm uppercase tracking-widest font-bold text-white/50 hover:text-primary transition-colors flex items-center gap-3"
             >
               Explore the Gallery
               <span className="w-8 h-[1px] bg-neutral-gray group-hover:bg-primary" />

@@ -9,10 +9,13 @@ export default function HeroSection() {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-900">
       {/* Background Photo — replace src with your actual hero image */}
-      <img
-        src="https://placehold.co/1920x1080/111111/222222?text=."
+      <motion.img
+        src="https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1920&h=1080&fit=crop&q=80"
         alt=""
         className="absolute inset-0 w-full h-full object-cover"
+        initial={{ scale: 1 }}
+        animate={{ scale: 1.08 }}
+        transition={{ duration: 12, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
       />
 
       {/* Dark cinematic overlay */}

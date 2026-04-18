@@ -3,15 +3,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { siteData } from '@/lib/data';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const fullGallery = [
-  ...siteData.galleryPreview,
-  { id: 7,  src: "https://placehold.co/600x900/EEE/545454?text=Wedding+2",    category: "Weddings" },
-  { id: 8,  src: "https://placehold.co/800x600/EEE/545454?text=Commercial+2", category: "Commercial" },
-  { id: 9,  src: "https://placehold.co/600x800/EEE/545454?text=Portrait+3",   category: "Portraits" },
-  { id: 10, src: "https://placehold.co/700x500/EEE/545454?text=Event+3",      category: "Events" },
-  { id: 11, src: "https://placehold.co/600x900/EEE/545454?text=Commercial+3", category: "Commercial" },
-  { id: 12, src: "https://placehold.co/600x600/EEE/545454?text=Wedding+3",    category: "Weddings" },
-];
+function BlurImage({ src, alt, className, onClick }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onClick={onClick}
+      onLoad={() => setLoaded(true)}
+      className={`${className} transition-all duration-700 ${loaded ? 'blur-0' : 'blur-sm'}`}
+    />
+  );
+}
+
+const fullGallery = siteData.fullGallery;
 
 const categories = ["All", "Portraits", "Events", "Weddings", "Commercial"];
 
@@ -105,8 +110,30 @@ export default function GalleryPage() {
           ))}
         </motion.div>
 
-        {/* Masonry Grid */}
-        <motion.div className="columns-2 lg:columns-3 gap-3 space-y-3 md:gap-8 md:space-y-8">
+        {/* Mobile: horizontal scroll carousel */}
+        <div className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 scrollbar-hide">
+          <AnimatePresence>
+            {filteredImages.map((image) => (
+              <div
+                key={image.id}
+                className="relative flex-shrink-0 w-72 h-96 snap-start overflow-hidden bg-gray-100 cursor-pointer"
+                onClick={() => setLightboxId(image.id)}
+              >
+                <BlurImage
+                  src={image.src}
+                  alt={image.category}
+                  className="w-full h-full object-cover transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-end p-5">
+                  <span className="text-white text-[10px] uppercase tracking-widest font-bold">{image.category}</span>
+                </div>
+              </div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Desktop: masonry grid */}
+        <motion.div className="hidden md:block columns-2 lg:columns-3 gap-8 space-y-8">
           <AnimatePresence mode="popLayout">
             {filteredImages.map((image) => (
               <motion.div
@@ -131,10 +158,10 @@ export default function GalleryPage() {
                     View Full
                   </span>
                 </div>
-                <img
+                <BlurImage
                   src={image.src}
                   alt={image.category}
-                  className="w-full h-auto object-cover grayscale group-hover:grayscale-0 scale-100 group-hover:scale-105 transition-all duration-700"
+                  className="w-full h-auto object-cover md:grayscale group-hover:grayscale-0 scale-100 group-hover:scale-105 transition-all duration-700"
                 />
               </motion.div>
             ))}

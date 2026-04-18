@@ -59,12 +59,13 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
 
           {/* Logo */}
-          <Link href="/" className="group flex flex-col z-[110]" onClick={() => setIsOpen(false)}>
-            <img
-              src="/logooo.png"
-              alt="Leezar Studios Logo"
-              className="w-28 h-auto mb-1 group-hover:opacity-80 transition-opacity duration-300"
-            />
+          <Link href="/" className="group flex flex-col items-start z-[110]" onClick={() => setIsOpen(false)}>
+            <span className={`font-serif text-2xl tracking-tight leading-none transition-opacity duration-300 group-hover:opacity-70 ${scrolled ? 'text-black' : 'text-white'}`}>
+              LUMIS
+            </span>
+            <span className={`text-[8px] uppercase tracking-[0.3em] font-bold transition-opacity duration-300 group-hover:opacity-70 ${scrolled ? 'text-primary' : 'text-primary'}`}>
+              Studio
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -74,7 +75,7 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href}
                 className={`text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-300 hover:text-primary ${
-                  pathname === link.href ? 'text-primary' : 'text-neutral-gray'
+                  pathname === link.href ? 'text-primary' : scrolled ? 'text-neutral-gray' : 'text-white/80'
                 }`}
               >
                 {link.name}
@@ -95,17 +96,17 @@ export default function Navbar() {
             aria-label="Toggle Menu"
           >
             <motion.span
-              className="h-[1.5px] bg-black block"
+              className={`h-[1.5px] block ${scrolled || isOpen ? 'bg-black' : 'bg-white'}`}
               animate={isOpen ? { width: 32, rotate: 45, y: 4.5 } : { width: 32, rotate: 0, y: 0 }}
               transition={{ duration: 0.3 }}
             />
             <motion.span
-              className="h-[1.5px] bg-black block"
+              className={`h-[1.5px] block ${scrolled || isOpen ? 'bg-black' : 'bg-white'}`}
               animate={isOpen ? { opacity: 0, width: 20 } : { opacity: 1, width: 20 }}
               transition={{ duration: 0.3 }}
             />
             <motion.span
-              className="h-[1.5px] bg-black block"
+              className={`h-[1.5px] block ${scrolled || isOpen ? 'bg-black' : 'bg-white'}`}
               animate={isOpen ? { width: 32, rotate: -45, y: -4.5 } : { width: 28, rotate: 0, y: 0 }}
               transition={{ duration: 0.3 }}
             />
@@ -168,7 +169,7 @@ export default function Navbar() {
               transition={{ delay: 0.4, duration: 0.4 }}
             >
               <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-2 font-bold">General Inquiries</p>
-              <p className="text-lg font-serif text-black">hello@leezarstudios.com</p>
+              <p className="text-lg font-serif text-black">hello@lumisstudio.com</p>
             </motion.div>
           </motion.div>
         )}

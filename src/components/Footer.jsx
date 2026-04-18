@@ -11,13 +11,13 @@ export default function Footer() {
           
           {/* Brand Column */}
           <div className="md:col-span-1">
-            <Link href="/" className="text-2xl font-serif tracking-tighter block mb-6">
-                        <img
-              src="/logooo.png"
-              alt="Leezar Studios Logo"
-              className="w-20 h-auto mb-1 group-hover:opacity-80 transition-opacity duration-300"
-            />
-              {/* LEEZAR <span className="block text-[10px] uppercase tracking-[0.3em] text-neutral-gray">Studios</span> */}
+            <Link href="/" className="group inline-flex flex-col items-start mb-6">
+              <span className="font-serif text-2xl tracking-tight leading-none text-black group-hover:opacity-70 transition-opacity duration-300">
+                LUMIS
+              </span>
+              <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary group-hover:opacity-70 transition-opacity duration-300">
+                Studio
+              </span>
             </Link>
             <p className="text-sm text-neutral-gray leading-relaxed max-w-xs">
               Capturing authentic moments and transforming them into timeless visual stories.
@@ -65,10 +65,10 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center border-t border-gray-50 pt-8 gap-4">
           <p className="text-[10px] uppercase tracking-widest text-gray-400">
-            &copy; {currentYear} Leezar Studios. All Rights Reserved.
+            &copy; {currentYear} Lumis Studio. All Rights Reserved.
           </p>
           <p className="text-[10px] uppercase tracking-widest text-gray-400">
-            Design by Leezar Creative
+            Design by Lumis Creative
           </p>
         </div>
       </div>
