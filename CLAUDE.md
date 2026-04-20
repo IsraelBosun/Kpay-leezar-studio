@@ -1,5 +1,13 @@
 # Lumis Studio Platform — Project Bible
 
+## Rules for Claude
+
+- **Always check the latest documentation** before writing code for any library or framework. Do not rely solely on training data — use WebFetch or WebSearch to verify current API patterns, especially for Next.js, Supabase, Paystack, and Cloudflare R2. My knowledge cutoff is August 2025; this project uses libraries that may have changed since then.
+- **Next.js 16 specifics**: middleware is now `proxy.js` exporting `proxy()`, not `middleware()`. All request APIs (`cookies()`, `params`, `searchParams`) are fully async — always await them.
+- **Supabase SSR**: use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (not ANON_KEY). Always use `supabase.auth.getUser()` on the server — never `getSession()`. Wrap `setAll` in try-catch in server components.
+
+---
+
 ## What We Are Building
 
 A SaaS platform that gives Nigerian photography studios their **entire digital presence and business infrastructure in one subscription** — professional website, client gallery portal, online booking, and Paystack payments.
