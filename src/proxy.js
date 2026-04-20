@@ -6,8 +6,6 @@ const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'photostudio.ng';
 export async function proxy(req) {
   const url = req.nextUrl;
   const hostname = req.headers.get('host') || '';
-
-  // Strip port in development
   const currentHost = hostname.replace(`:${process.env.PORT || 3000}`, '');
 
   let response = NextResponse.next({ request: { headers: req.headers } });
@@ -27,20 +25,35 @@ export async function proxy(req) {
       },
     }
   );
-  await supabase.auth.getUser();
 
-  // ── Auth routes and API routes — always pass through ──
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // ── API and static — always pass through ──
   if (
     url.pathname.startsWith('/api') ||
-    url.pathname.startsWith('/auth') ||
     url.pathname.startsWith('/_next') ||
     url.pathname.startsWith('/static')
   ) {
     return response;
   }
 
-  // ── Root domain — show the SaaS landing page ──
+  // ── Route protection on root domain ──
   if (currentHost === ROOT_DOMAIN || currentHost === `www.${ROOT_DOMAIN}` || currentHost === 'localhost') {
+
+    const isStudioRoute = url.pathname.startsWith('/studio');
+    const isAuthRoute = url.pathname.startsWith('/auth');
+    const isOnboarding = url.pathname.startsWith('/auth/onboarding');
+
+    // Unauthenticated trying to access studio dashboard → login
+    if (isStudioRoute && !user) {
+      return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
+
+    // Authenticated trying to access login/signup → dashboard
+    if (isAuthRoute && !isOnboarding && user) {
+      return NextResponse.redirect(new URL('/studio/dashboard', req.url));
+    }
+
     return response;
   }
 

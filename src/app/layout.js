@@ -1,7 +1,7 @@
 import './globals.css';
 import { Inter, Playfair_Display } from 'next/font/google';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
-import Footer from '@/components/Footer';
+import ConditionalFooter from '@/components/ConditionalFooter';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
 const inter = Inter({
@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
       <body className="font-sans antialiased text-neutral-gray overflow-x-hidden">
         <ConditionalNavbar />
         {children}
-        <Footer />
+        <ConditionalFooter />
         <WhatsAppButton />
       </body>
     </html>

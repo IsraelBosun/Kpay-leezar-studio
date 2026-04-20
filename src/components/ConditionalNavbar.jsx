@@ -2,8 +2,10 @@
 import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 
+const HIDDEN_ON = ['/contact', '/auth/login', '/auth/signup', '/auth/onboarding'];
+
 export default function ConditionalNavbar() {
   const pathname = usePathname();
-  if (pathname === '/contact') return null;
+  if (HIDDEN_ON.some(p => pathname.startsWith(p)) || pathname.startsWith('/studio')) return null;
   return <Navbar />;
 }
