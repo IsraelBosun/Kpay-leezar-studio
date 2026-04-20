@@ -59,23 +59,34 @@ export async function saveStudioBasics(formData) {
   const location = formData.get('location');
   const phone = formData.get('phone');
 
-  // Check slug is available
-  const { data: existing } = await supabase
+  // Check if this user already has a studio
+  const { data: myStudio } = await supabase
+    .from('studios')
+    .select('id, slug')
+    .eq('owner_id', user.id)
+    .single();
+
+  // Check slug availability (ignore own studio's current slug)
+  const { data: slugTaken } = await supabase
     .from('studios')
     .select('id')
     .eq('slug', slug)
-    .single();
+    .neq('owner_id', user.id)
+    .maybeSingle();
 
-  if (existing) return { error: 'That studio name is already taken. Try a variation.' };
+  if (slugTaken) return { error: 'That studio name is already taken. Try a variation.' };
 
-  const { error } = await supabase.from('studios').upsert({
-    owner_id: user.id,
-    name,
-    slug,
-    location,
-    phone,
-    email: user.email,
-  }, { onConflict: 'owner_id' });
+  let error;
+  if (myStudio) {
+    ({ error } = await supabase
+      .from('studios')
+      .update({ name, slug, location, phone, email: user.email })
+      .eq('id', myStudio.id));
+  } else {
+    ({ error } = await supabase
+      .from('studios')
+      .insert({ owner_id: user.id, name, slug, location, phone, email: user.email }));
+  }
 
   if (error) return { error: error.message };
   return { success: true, slug };

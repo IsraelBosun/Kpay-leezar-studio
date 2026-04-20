@@ -435,3 +435,22 @@ Name the SaaS product something like **Framr** or **Shootr** — studios live at
 - **Two image versions** always — compressed thumbnail served to clients, original only on download
 - **Free plan** includes a real working website — this is the hook that drives signups
 - **Desktop uploader** deferred to Phase 3 — validate with web uploader first
+
+---
+
+## Deferred Features (implement later)
+
+### Paystack Gallery Auto-Unlock
+When a client pays the balance for their booking, the gallery should automatically unlock (set `is_locked = false`).
+
+**Implementation plan:**
+1. Paystack webhook at `/api/paystack/webhook` receives `charge.success` event
+2. Match `paystack_reference` to a payment row in the `payments` table
+3. Mark payment as `paid`, set `paid_at = now()`
+4. If `payment.type = 'balance'`, find the linked gallery (`galleries` where `booking_id = payment.booking_id`) and set `is_locked = false`
+5. Send gallery-ready email to client via Resend (`sendGalleryReady`)
+6. Also update `bookings.balance_paid = true`
+
+**Files to touch:** `src/app/api/paystack/webhook/route.js`, `src/lib/email.js`
+
+**Note:** Paystack sends webhook events — must verify the `x-paystack-signature` header using HMAC SHA-512 with `PAYSTACK_SECRET_KEY` before processing.

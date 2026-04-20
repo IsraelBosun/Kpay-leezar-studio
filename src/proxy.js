@@ -37,6 +37,14 @@ export async function proxy(req) {
     return response;
   }
 
+  // ── Local dev: *.localhost subdomain → studio site ──
+  if (currentHost.endsWith('.localhost')) {
+    const subdomain = currentHost.replace('.localhost', '');
+    return NextResponse.rewrite(
+      new URL(`/studio-site/${subdomain}${url.pathname}`, req.url)
+    );
+  }
+
   // ── Route protection on root domain ──
   if (currentHost === ROOT_DOMAIN || currentHost === `www.${ROOT_DOMAIN}` || currentHost === 'localhost') {
 

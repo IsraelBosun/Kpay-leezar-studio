@@ -6,6 +6,6 @@ const HIDDEN_ON = ['/contact', '/auth/login', '/auth/signup', '/auth/onboarding'
 
 export default function ConditionalNavbar() {
   const pathname = usePathname();
-  if (HIDDEN_ON.some(p => pathname.startsWith(p)) || pathname.startsWith('/studio')) return null;
+  if (HIDDEN_ON.some(p => pathname.startsWith(p)) || pathname.startsWith('/studio') || pathname.startsWith('/studio-site') || pathname.startsWith('/gallery')) return null;
   return <Navbar />;
 }

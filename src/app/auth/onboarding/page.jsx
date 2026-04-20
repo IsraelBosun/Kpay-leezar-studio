@@ -4,12 +4,22 @@ import { useState } from 'react';
 import { saveStudioBasics, saveStudioBio, saveStudioServices } from '../actions';
 
 const ACCENT_COLORS = [
-  { label: 'Red',    value: '#D30E15' },
-  { label: 'Black',  value: '#111111' },
-  { label: 'Gold',   value: '#B8860B' },
-  { label: 'Navy',   value: '#1B2A4A' },
-  { label: 'Forest', value: '#2D5016' },
-  { label: 'Plum',   value: '#6B2D5E' },
+  { label: 'Crimson',    value: '#D30E15' },
+  { label: 'Coral',      value: '#E8441A' },
+  { label: 'Amber',      value: '#D97706' },
+  { label: 'Gold',       value: '#B8860B' },
+  { label: 'Sage',       value: '#4A7C59' },
+  { label: 'Forest',     value: '#2D5016' },
+  { label: 'Teal',       value: '#0D7377' },
+  { label: 'Ocean',      value: '#1E6B9E' },
+  { label: 'Navy',       value: '#1B2A4A' },
+  { label: 'Violet',     value: '#5B21B6' },
+  { label: 'Plum',       value: '#6B2D5E' },
+  { label: 'Rose',       value: '#BE185D' },
+  { label: 'Blush',      value: '#C4748A' },
+  { label: 'Slate',      value: '#475569' },
+  { label: 'Charcoal',   value: '#374151' },
+  { label: 'Obsidian',   value: '#111111' },
 ];
 
 const DEFAULT_SERVICES = [
@@ -159,18 +169,29 @@ export default function OnboardingPage() {
             <div className="space-y-6">
               <div className="flex flex-col space-y-3">
                 <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Accent Colour</label>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {ACCENT_COLORS.map((c) => (
                     <button
                       key={c.value}
                       type="button"
                       onClick={() => setAccentColor(c.value)}
-                      className={`w-8 h-8 transition-all duration-200 ${accentColor === c.value ? 'ring-2 ring-offset-2 ring-black scale-110' : ''}`}
+                      className={`w-9 h-9 transition-all duration-200 relative group ${accentColor === c.value ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'}`}
                       style={{ backgroundColor: c.value }}
                       title={c.label}
-                    />
+                    >
+                      {accentColor === c.value && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
                   ))}
                 </div>
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Selected: <span className="font-bold text-black">{ACCENT_COLORS.find(c => c.value === accentColor)?.label}</span>
+                </p>
               </div>
 
               <div className="flex flex-col space-y-2">
