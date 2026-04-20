@@ -41,8 +41,8 @@ export default function SignupPage() {
 
         <div className="relative z-10">
           <Link href="/" className="inline-flex flex-col items-start">
-            <span className="font-serif text-2xl tracking-tight text-white leading-none">LUMIS</span>
-            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">Studio</span>
+            <span className="font-serif text-2xl tracking-tight text-white leading-none">photostudio</span>
+            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
           </Link>
         </div>
 
@@ -68,7 +68,7 @@ export default function SignupPage() {
         </div>
 
         <p className="relative z-10 text-[10px] uppercase tracking-widest text-white/20">
-          &copy; {new Date().getFullYear()} Lumis Platform
+          &copy; {new Date().getFullYear()} photostudio.ng
         </p>
       </div>
 
@@ -77,8 +77,8 @@ export default function SignupPage() {
         <div className="w-full max-w-sm">
 
           <Link href="/" className="inline-flex flex-col items-start mb-10 lg:hidden">
-            <span className="font-serif text-2xl tracking-tight text-black leading-none">LUMIS</span>
-            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">Studio</span>
+            <span className="font-serif text-2xl tracking-tight text-black leading-none">photostudio</span>
+            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
           </Link>
 
           <h2 className="text-3xl font-serif text-black mb-1">Create your studio</h2>
@@ -87,13 +87,13 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col space-y-2">
               <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-                Studio Name
+                .ng Name
               </label>
               <input
                 type="text"
                 name="studioName"
                 required
-                placeholder="e.g. Lumis Studio"
+                placeholder="e.g. Lagos Lens Studio"
                 className="bg-transparent border-b-2 border-gray-200 py-3 focus:outline-none focus:border-primary transition-all text-black placeholder:text-gray-300 font-light"
               />
             </div>
@@ -149,7 +149,7 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-4 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
-              {loading ? 'Creating studio...' : 'Create Studio — Free'}
+              {loading ? 'Creating studio...' : 'Create .ng — Free'}
             </button>
           </form>
 

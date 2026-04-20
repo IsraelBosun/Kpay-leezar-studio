@@ -1,176 +1,117 @@
-"use client";
+'use client';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const menuVariants = {
-  closed: {
-    y: '-100%',
-    opacity: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  },
-  open: {
-    y: 0,
-    opacity: 1,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const linkVariants = {
-  closed: { x: -20, opacity: 0 },
-  open: (i) => ({
-    x: 0,
-    opacity: 1,
-    transition: { duration: 0.4, ease: 'easeOut', delay: i * 0.08 },
-  }),
-};
+const NAV_LINKS = [
+  { name: 'Features', href: '/#features' },
+  { name: 'Pricing', href: '/#pricing' },
+  { name: 'Demo', href: '/studio-site/demo' },
+];
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
-
-  const navLinks = [
-    { name: "About", href: "/#about" },
-    { name: "Services", href: "/#services" },
-    { name: "Gallery", href: "/gallery" },
-    { name: "Contact", href: "/contact" },
-  ];
 
   return (
     <>
-      <header
-        className={`fixed top-0 w-full z-[100] transition-all duration-500 ${
-          scrolled ? 'bg-white/90 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-8'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      <header className={`fixed top-0 w-full z-[100] transition-all duration-500 ${
+        scrolled
+          ? 'bg-zinc-950/95 backdrop-blur-md py-4 border-b border-white/8'
+          : 'bg-transparent py-7'
+      }`}>
+        <div className="max-w-5xl mx-auto px-6 flex justify-between items-center">
 
           {/* Logo */}
-          <Link href="/" className="group flex flex-col items-start z-[110]" onClick={() => setIsOpen(false)}>
-            <span className={`font-serif text-2xl tracking-tight leading-none transition-opacity duration-300 group-hover:opacity-70 ${scrolled ? 'text-black' : 'text-white'}`}>
-              LUMIS
+          <Link href="/" className="group inline-flex flex-col items-start z-[110]" onClick={() => setIsOpen(false)}>
+            <span className="font-serif text-xl tracking-tight text-white leading-none group-hover:opacity-70 transition-opacity duration-300">
+              photostudio
             </span>
-            <span className={`text-[8px] uppercase tracking-[0.3em] font-bold transition-opacity duration-300 group-hover:opacity-70 ${scrolled ? 'text-primary' : 'text-primary'}`}>
-              Studio
+            <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary group-hover:opacity-70 transition-opacity duration-300">
+              .ng
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-10">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-300 hover:text-primary ${
-                  pathname === link.href ? 'text-primary' : scrolled ? 'text-neutral-gray' : 'text-white/80'
-                }`}
-              >
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map((link) => (
+              <Link key={link.name} href={link.href}
+                className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/45 hover:text-white transition-colors duration-300">
                 {link.name}
               </Link>
             ))}
-            <Link
-              href="/contact"
-              className="bg-primary text-white px-7 py-3 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-black transition-all duration-300"
-            >
-              Book Now
+            <Link href="/auth/login"
+              className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/45 hover:text-white transition-colors duration-300">
+              Log in
+            </Link>
+            <Link href="/auth/signup"
+              className="px-6 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold text-white hover:opacity-85 transition-opacity duration-300"
+              style={{ backgroundColor: '#D30E15' }}>
+              Get started
             </Link>
           </nav>
 
           {/* Hamburger */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden relative z-[110] w-10 h-10 flex flex-col justify-center items-end gap-2 focus:outline-none group"
-            aria-label="Toggle Menu"
-          >
-            <motion.span
-              className={`h-[1.5px] block ${scrolled || isOpen ? 'bg-black' : 'bg-white'}`}
-              animate={isOpen ? { width: 32, rotate: 45, y: 4.5 } : { width: 32, rotate: 0, y: 0 }}
-              transition={{ duration: 0.3 }}
-            />
-            <motion.span
-              className={`h-[1.5px] block ${scrolled || isOpen ? 'bg-black' : 'bg-white'}`}
-              animate={isOpen ? { opacity: 0, width: 20 } : { opacity: 1, width: 20 }}
-              transition={{ duration: 0.3 }}
-            />
-            <motion.span
-              className={`h-[1.5px] block ${scrolled || isOpen ? 'bg-black' : 'bg-white'}`}
-              animate={isOpen ? { width: 32, rotate: -45, y: -4.5 } : { width: 28, rotate: 0, y: 0 }}
-              transition={{ duration: 0.3 }}
-            />
+          <button onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden relative z-[110] w-9 h-9 flex flex-col justify-center items-end gap-[7px] focus:outline-none">
+            <motion.span className="h-px bg-white block"
+              animate={isOpen ? { width: 28, rotate: 45, y: 7 } : { width: 28, rotate: 0, y: 0 }}
+              transition={{ duration: 0.3 }} />
+            <motion.span className="h-px bg-white block"
+              animate={isOpen ? { opacity: 0 } : { opacity: 1, width: 20 }}
+              transition={{ duration: 0.3 }} />
+            <motion.span className="h-px bg-white block"
+              animate={isOpen ? { width: 28, rotate: -45, y: -7 } : { width: 24, rotate: 0, y: 0 }}
+              transition={{ duration: 0.3 }} />
           </button>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 bg-white z-[105] flex flex-col"
-            variants={menuVariants}
-            initial="closed"
-            animate="open"
-            exit="closed"
+            className="fixed inset-0 bg-zinc-950 z-[105] flex flex-col"
+            initial={{ y: '-100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '-100%', opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex-grow flex flex-col justify-center px-12 space-y-8">
-              {navLinks.map((link, i) => (
-                <motion.div
-                  key={link.name}
-                  custom={i}
-                  variants={linkVariants}
-                  initial="closed"
-                  animate="open"
-                  exit="closed"
-                >
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className="block text-5xl font-serif text-black hover:text-primary transition-colors duration-300"
-                  >
+            <div className="flex-grow flex flex-col justify-center px-10 space-y-8 pt-20">
+              {NAV_LINKS.map((link, i) => (
+                <motion.div key={link.name}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: i * 0.08, duration: 0.4 }}>
+                  <Link href={link.href} onClick={() => setIsOpen(false)}
+                    className="block font-serif text-5xl text-white hover:text-primary transition-colors duration-300">
                     {link.name}
                   </Link>
                 </motion.div>
               ))}
-
-              <motion.div
-                custom={navLinks.length}
-                variants={linkVariants}
-                initial="closed"
-                animate="open"
-                exit="closed"
-              >
-                <Link
-                  href="/contact"
-                  onClick={() => setIsOpen(false)}
-                  className="block text-2xl font-serif italic text-primary"
-                >
-                  Book Your Session →
+              <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.28 }}>
+                <Link href="/auth/signup" onClick={() => setIsOpen(false)}
+                  className="block font-serif text-3xl italic text-primary">
+                  Get started →
                 </Link>
               </motion.div>
             </div>
-
-            {/* Mobile Footer Info */}
-            <motion.div
-              className="p-12 border-t border-gray-100"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 mb-2 font-bold">General Inquiries</p>
-              <p className="text-lg font-serif text-black">hello@lumisstudio.com</p>
-            </motion.div>
+            <div className="p-10 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              <p className="text-[10px] uppercase tracking-widest text-white/20 font-bold mb-1">Contact</p>
+              <p className="text-sm text-white/40">hello@photostudio.ng</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

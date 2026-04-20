@@ -16,8 +16,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'Lumis Studio | Premium Photography & Visual Storytelling',
-  description: 'A boutique photography studio specializing in portraits, events, and brand storytelling.',
+  title: 'photostudio.ng — Your photography studio, live in 10 minutes',
+  description: 'Professional website, client galleries, online bookings, and Paystack payments for Nigerian photography studios. Free to start.',
 };
 
 export default function RootLayout({ children }) {

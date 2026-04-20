@@ -63,12 +63,12 @@ export default function Sidebar({ studio }) {
       {/* Logo */}
       <div className="px-6 py-8 border-b border-white/10">
         <Link href="/studio/dashboard" className="inline-flex flex-col items-start">
-          <span className="font-serif text-xl tracking-tight text-white leading-none">LUMIS</span>
-          <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">Studio</span>
+          <span className="font-serif text-xl tracking-tight text-white leading-none">photostudio</span>
+          <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
         </Link>
       </div>
 
-      {/* Studio name + plan badge */}
+      {/* .ng name + plan badge */}
       <div className="px-6 py-5 border-b border-white/10">
         <p className="text-white font-medium text-sm truncate">{studio.name}</p>
         <div className="flex items-center gap-2 mt-1">
@@ -151,8 +151,8 @@ export default function Sidebar({ studio }) {
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-950 flex items-center justify-between px-6 py-4">
         <Link href="/studio/dashboard" className="inline-flex flex-col items-start">
-          <span className="font-serif text-lg tracking-tight text-white leading-none">LUMIS</span>
-          <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">Studio</span>
+          <span className="font-serif text-lg tracking-tight text-white leading-none">photostudio</span>
+          <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
         </Link>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="text-white p-1">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

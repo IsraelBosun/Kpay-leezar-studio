@@ -35,8 +35,8 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="relative z-10">
           <Link href="/" className="inline-flex flex-col items-start">
-            <span className="font-serif text-2xl tracking-tight text-white leading-none">LUMIS</span>
-            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">Studio</span>
+            <span className="font-serif text-2xl tracking-tight text-white leading-none">photostudio</span>
+            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
           </Link>
         </div>
 
@@ -54,7 +54,7 @@ export default function LoginPage() {
 
         {/* Bottom */}
         <p className="relative z-10 text-[10px] uppercase tracking-widest text-white/20">
-          &copy; {new Date().getFullYear()} Lumis Platform
+          &copy; {new Date().getFullYear()} photostudio.ng
         </p>
       </div>
 
@@ -64,8 +64,8 @@ export default function LoginPage() {
 
           {/* Mobile logo */}
           <Link href="/" className="inline-flex flex-col items-start mb-10 lg:hidden">
-            <span className="font-serif text-2xl tracking-tight text-black leading-none">LUMIS</span>
-            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">Studio</span>
+            <span className="font-serif text-2xl tracking-tight text-black leading-none">photostudio</span>
+            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
           </Link>
 
           <h2 className="text-3xl font-serif text-black mb-1">Welcome back</h2>

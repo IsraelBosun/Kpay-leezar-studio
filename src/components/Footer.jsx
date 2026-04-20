@@ -1,74 +1,51 @@
-import { siteData } from '@/lib/data';
 import Link from 'next/link';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-white border-t border-gray-100 pt-24 pb-12 px-6 bg-[radial-gradient(circle,_rgba(211,14,21,0.03)_0%,_transparent_70%)]">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
-          
-          {/* Brand Column */}
-          <div className="md:col-span-1">
-            <Link href="/" className="group inline-flex flex-col items-start mb-6">
-              <span className="font-serif text-2xl tracking-tight leading-none text-black group-hover:opacity-70 transition-opacity duration-300">
-                LUMIS
-              </span>
-              <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary group-hover:opacity-70 transition-opacity duration-300">
-                Studio
-              </span>
+    <footer className="bg-zinc-950 border-t py-16 px-6" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+      <div className="max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-12 mb-12">
+
+          <div className="md:col-span-2">
+            <Link href="/" className="inline-flex flex-col items-start mb-5">
+              <span className="font-serif text-xl text-white leading-none">photostudio</span>
+              <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
             </Link>
-            <p className="text-sm text-neutral-gray leading-relaxed max-w-xs">
-              Capturing authentic moments and transforming them into timeless visual stories.
+            <p className="text-sm text-white/30 leading-relaxed max-w-xs">
+              Professional photography studio infrastructure for Nigerian photographers. Website, galleries, bookings, and payments — in one subscription.
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold text-black mb-8">Navigation</h4>
-            <ul className="space-y-4 text-sm text-neutral-gray">
-              <li><Link href="/#about" className="hover:text-primary transition-colors">About the Studio</Link></li>
-              <li><Link href="/gallery" className="hover:text-primary transition-colors">Portfolio</Link></li>
-              <li><Link href="/contact" className="hover:text-primary transition-colors">Bookings</Link></li>
-              <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/20 mb-5">Product</p>
+            <ul className="space-y-3 text-sm text-white/40">
+              <li><a href="/#features" className="hover:text-white transition-colors">Features</a></li>
+              <li><a href="/#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+              <li><Link href="/studio-site/demo" className="hover:text-white transition-colors">Live demo</Link></li>
+              <li><Link href="/auth/signup" className="hover:text-white transition-colors">Get started free</Link></li>
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold text-black mb-8">Connect</h4>
-            <ul className="space-y-4 text-sm text-neutral-gray">
-              <li><a href={`mailto:${siteData.contact.email}`} className="hover:text-primary transition-colors">{siteData.contact.email}</a></li>
-              <li><a href={`tel:${siteData.contact.phone}`} className="hover:text-primary transition-colors">{siteData.contact.phone}</a></li>
-              <li>{siteData.contact.address}</li>
-            </ul>
-          </div>
-
-          {/* Socials */}
-          <div>
-            <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold text-black mb-8">Social</h4>
-            <div className="flex gap-6">
-              {siteData.contact.socials.map((social) => (
-                <a 
-                  key={social.name} 
-                  href={social.url} 
-                  className="text-neutral-gray hover:text-primary transition-colors text-sm"
-                >
-                  {social.name}
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/20 mb-5">Account</p>
+            <ul className="space-y-3 text-sm text-white/40">
+              <li><Link href="/auth/login" className="hover:text-white transition-colors">Log in</Link></li>
+              <li><Link href="/auth/signup" className="hover:text-white transition-colors">Sign up</Link></li>
+              <li>
+                <a href="mailto:hello@photostudio.ng" className="hover:text-white transition-colors">
+                  hello@photostudio.ng
                 </a>
-              ))}
-            </div>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center border-t border-gray-50 pt-8 gap-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-400">
-            &copy; {currentYear} Lumis Studio. All Rights Reserved.
+        <div className="flex flex-col md:flex-row justify-between items-center border-t pt-8 gap-4" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <p className="text-[10px] uppercase tracking-widest text-white/18">
+            &copy; {new Date().getFullYear()} photostudio.ng — Built for Nigerian photographers
           </p>
-          <p className="text-[10px] uppercase tracking-widest text-gray-400">
-            Design by Lumis Creative
+          <p className="text-[10px] uppercase tracking-widest text-white/12">
+            Lagos · Abuja · Port Harcourt
           </p>
         </div>
       </div>
