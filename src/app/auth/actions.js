@@ -58,6 +58,7 @@ export async function saveStudioBasics(formData) {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const location = formData.get('location');
   const phone = formData.get('phone');
+  const logo_url = formData.get('logo_url') || null;
 
   // Check if this user already has a studio
   const { data: myStudio } = await supabase
@@ -77,15 +78,12 @@ export async function saveStudioBasics(formData) {
   if (slugTaken) return { error: 'That studio name is already taken. Try a variation.' };
 
   let error;
+  const studioData = { name, slug, location, phone, email: user.email, ...(logo_url && { logo_url }) };
+
   if (myStudio) {
-    ({ error } = await supabase
-      .from('studios')
-      .update({ name, slug, location, phone, email: user.email })
-      .eq('id', myStudio.id));
+    ({ error } = await supabase.from('studios').update(studioData).eq('id', myStudio.id));
   } else {
-    ({ error } = await supabase
-      .from('studios')
-      .insert({ owner_id: user.id, name, slug, location, phone, email: user.email }));
+    ({ error } = await supabase.from('studios').insert({ owner_id: user.id, ...studioData }));
   }
 
   if (error) return { error: error.message };
@@ -141,4 +139,34 @@ export async function saveStudioServices(services) {
   if (error) return { error: error.message };
 
   redirect('/studio/dashboard');
+}
+
+// ── Save portfolio photos ─────────────────────────────────
+export async function savePortfolioPhotos(photos) {
+  const supabase = await createServerSupabase();
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return { error: 'Not authenticated.' };
+
+  const { data: studio } = await supabase
+    .from('studios')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single();
+
+  if (!studio) return { error: 'Studio not found.' };
+
+  await supabase.from('portfolio_photos').delete().eq('studio_id', studio.id);
+
+  const rows = photos.map((p, i) => ({
+    studio_id: studio.id,
+    src: p.src,
+    thumbnail_url: p.src,
+    category: p.category,
+    sort_order: i,
+  }));
+
+  const { error } = await supabase.from('portfolio_photos').insert(rows);
+  if (error) return { error: error.message };
+  return { success: true };
 }

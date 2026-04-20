@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { saveStudioBasics, saveStudioBio, saveStudioServices } from '../actions';
+import { saveStudioBasics, saveStudioBio, saveStudioServices, savePortfolioPhotos } from '../actions';
 
 const ACCENT_COLORS = [
   { label: 'Crimson',  value: '#D30E15' },
@@ -28,11 +28,21 @@ const DEMO = {
   phone: '+234 813 456 7890',
   bio: 'Lagos Lens is a premium photography studio based in Lagos, Nigeria. We specialise in capturing authentic moments that tell your story — from intimate portraits to grand celebrations. With an eye for detail and a passion for visual storytelling, every shoot is approached with intention and care. We have worked with hundreds of clients across Lagos, Abuja, and Port Harcourt, delivering images that our clients treasure for a lifetime.',
   accentColor: '#D30E15',
+  logoUrl: 'https://ui-avatars.com/api/?name=LL&background=FFFFFF&color=1E3A8A&size=200&bold=true&format=png',
   services: [
     { title: 'Portrait Session', description: 'Personal, lifestyle, and professional portraits crafted to reflect your individuality.', price: '150000' },
     { title: 'Wedding Photography', description: 'Full-day wedding coverage — from getting ready to the last dance.', price: '650000' },
     { title: 'Event Photography', description: 'Corporate events, birthdays, and special occasions documented with precision.', price: '350000' },
     { title: 'Commercial & Brand', description: 'High-quality visuals designed to elevate brands, products, and corporate identity.', price: '500000' },
+  ],
+  portfolioPhotos: [
+    { src: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=800&fit=crop', category: 'Weddings' },
+    { src: 'https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&h=800&fit=crop', category: 'Weddings' },
+    { src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=800&fit=crop', category: 'Portraits' },
+    { src: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=800&fit=crop', category: 'Portraits' },
+    { src: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=800&fit=crop', category: 'Events' },
+    { src: 'https://images.unsplash.com/photo-1566737236500-f3c63b065e38?w=800&h=800&fit=crop', category: 'Events' },
+    { src: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=800&fit=crop', category: 'Commercial' },
   ],
 };
 
@@ -41,11 +51,13 @@ export default function OnboardingPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [slug, setSlug] = useState('');
+  const [demoMode, setDemoMode] = useState(false);
 
   // Controlled field state
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [phone, setPhone] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [bio, setBio] = useState('');
   const [accentColor, setAccentColor] = useState('#D30E15');
   const [services, setServices] = useState([
@@ -53,10 +65,12 @@ export default function OnboardingPage() {
   ]);
 
   function fillDemo() {
+    setDemoMode(true);
     if (step === 1) {
       setName(DEMO.name);
       setLocation(DEMO.location);
       setPhone(DEMO.phone);
+      setLogoUrl(DEMO.logoUrl);
     }
     if (step === 2) {
       setBio(DEMO.bio);
@@ -75,6 +89,7 @@ export default function OnboardingPage() {
     fd.set('name', name);
     fd.set('location', location);
     fd.set('phone', phone);
+    if (logoUrl) fd.set('logo_url', logoUrl);
     const result = await saveStudioBasics(fd);
     setLoading(false);
     if (result?.error) return setError(result.error);
@@ -100,8 +115,12 @@ export default function OnboardingPage() {
     setError(null);
     setLoading(true);
     const result = await saveStudioServices(services);
-    setLoading(false);
-    if (result?.error) setError(result.error);
+    if (result?.error) {
+      setLoading(false);
+      return setError(result.error);
+    }
+    if (demoMode) await savePortfolioPhotos(DEMO.portfolioPhotos);
+    // saveStudioServices redirects on success — loading stays true
   }
 
   function updateService(index, field, value) {

@@ -11,30 +11,48 @@ export default async function StudioSitePage({ params }) {
     .eq('slug', slug)
     .single();
 
+  const { data: portfolioPhotos } = await supabase
+    .from('portfolio_photos')
+    .select('*')
+    .eq('studio_id', studio?.id)
+    .order('sort_order', { ascending: true });
+
   if (!studio) notFound();
 
   const accent = studio.accent_color || '#D30E15';
   const services = studio.services?.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)) ?? [];
+  const portfolio = portfolioPhotos ?? [];
+  const categories = ['All', ...Array.from(new Set(portfolio.map(p => p.category).filter(Boolean)))];
 
   return (
     <div style={{ '--accent': accent }} className="min-h-screen bg-zinc-950 text-white font-sans">
 
       {/* Nav */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-5 bg-zinc-950/80 backdrop-blur-sm border-b border-white/5">
-        <div className="flex flex-col items-start">
-          <span className="font-serif text-xl tracking-tight text-white leading-none">{studio.name}</span>
-          <span className="text-[7px] uppercase tracking-[0.3em] font-bold" style={{ color: accent }}>
-            Photography
-          </span>
+        <div className="flex items-center gap-3">
+          {studio.logo_url && (
+            <img src={studio.logo_url} alt={studio.name} className="w-9 h-9 object-contain" />
+          )}
+          <div className="flex flex-col items-start">
+            <span className="font-serif text-xl tracking-tight text-white leading-none">{studio.name}</span>
+            <span className="text-[7px] uppercase tracking-[0.3em] font-bold" style={{ color: accent }}>
+              Photography
+            </span>
+          </div>
         </div>
         <nav className="hidden md:flex items-center gap-8">
+          {portfolio.length > 0 && (
+            <a href="#portfolio" className="text-[10px] uppercase tracking-widest font-bold text-white/50 hover:text-white transition-colors">
+              Work
+            </a>
+          )}
           {['Services', 'Contact'].map((l) => (
             <a key={l} href={`#${l.toLowerCase()}`}
               className="text-[10px] uppercase tracking-widest font-bold text-white/50 hover:text-white transition-colors">
               {l}
             </a>
           ))}
-          <a href={`#contact`}
+          <a href="#contact"
             className="text-[10px] uppercase tracking-widest font-bold px-5 py-2.5 text-white transition-colors"
             style={{ backgroundColor: accent }}>
             Book Now
@@ -77,6 +95,34 @@ export default async function StudioSitePage({ params }) {
           <p className="text-[9px] uppercase tracking-widest">Scroll</p>
         </div>
       </section>
+
+      {/* Portfolio */}
+      {portfolio.length > 0 && (
+        <section id="portfolio" className="py-32 px-6 md:px-16 max-w-6xl mx-auto">
+          <div className="mb-12">
+            <p className="text-[10px] uppercase tracking-[0.4em] font-bold mb-3" style={{ color: accent }}>
+              Portfolio
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl">Our Work</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {portfolio.map((photo) => (
+              <div key={photo.id} className="relative aspect-square overflow-hidden group bg-zinc-900">
+                <img
+                  src={photo.thumbnail_url || photo.src}
+                  alt={photo.category || ''}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 brightness-90 group-hover:brightness-100"
+                />
+                {photo.category && (
+                  <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-[9px] uppercase tracking-widest font-bold text-white/70">{photo.category}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Services */}
       {services.length > 0 && (
@@ -179,7 +225,7 @@ export default async function StudioSitePage({ params }) {
 
           <p className="text-[10px] text-white/20 uppercase tracking-widest">
             Powered by{' '}
-            <span style={{ color: accent }}>Lumis</span>
+            <span style={{ color: accent }}>photostudio.ng</span>
           </p>
         </div>
       </footer>
