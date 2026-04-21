@@ -380,41 +380,102 @@ Is it the root domain? (photostudio.ng)
 
 ## Current State of Codebase
 
-The `Lumis Studio` demo site is fully built and serves as:
-1. A marketing demo to show photographers what their site would look like
-2. The actual template that powers every studio's public website on the platform
+Full platform is live and functional at `https://teststudios.vercel.app`. The product is essentially what Pixieset does, built specifically for the Nigerian market with Paystack instead of Stripe.
 
-**Already built:**
-- Hero section with Ken Burns background animation
-- Auto-scrolling photo marquee strip
-- Portfolio gallery with category filters + lightbox
-- Masonry grid (desktop) + horizontal carousel (mobile)
-- About section with photographer portrait
-- Services section with pricing block
-- Stats section with animated count-up on scroll
-- Testimonials section (dark cinematic)
-- CTA section with editorial background
-- Contact page — split layout (dark panel + form)
-- Paystack-ready contact form with validation
-- WhatsApp floating button
-- Typography logo (LUMIS / Studio)
+---
+
+### ✅ SaaS Landing Page (`/`)
+- Dark hero with subtle photography background image
+- Alternating light/dark sections: Problem (white) → Features (gray-50) → How it works (white) → Pricing (dark) → CTA (dark)
+- Framer Motion scroll animations throughout
+- 3 pricing tiers (Free / Pro ₦15k / Studio ₦35k)
 - Fully responsive, mobile-first
-- Blur-up image loading
-- Framer Motion animations throughout
-- All data centralised in `src/lib/data.js`
 
-**Stack already in place:**
-- Next.js 16 (App Router)
-- React 19
-- Tailwind CSS v4
-- Framer Motion
+### ✅ Auth Flow
+- Signup (`/auth/signup`) — studio name, email, password with show/hide toggle
+- Login (`/auth/login`) — password show/hide toggle
+- Onboarding (`/auth/onboarding`) — 3-step flow: basics → bio + accent colour → services
+- Demo mode — one click fills all fields with realistic Lagos Lens Studio data including dummy Unsplash portfolio photos and ui-avatars.com logo
+- Onboarding shows correct studio URL based on environment (path on Vercel, subdomain when domain is live)
 
-**To add next:**
-- Supabase (database + auth)
+### ✅ Middleware + Routing (`src/proxy.js`)
+- Subdomain routing: `slug.photostudio.ng` → `/studio-site/slug`
+- Local dev: `slug.localhost:3000` → `/studio-site/slug`
+- Custom domain: any other host → `/studio-site/custom/host`
+- All studio-site rewrites set `x-is-studio-site: 1` header
+- Direct path access `/studio-site/*` also sets header (Vercel testing workaround)
+- Root layout reads header and suppresses platform nav/footer/WhatsApp on studio sites
+- Route protection: unauthenticated → login, authenticated on auth pages → dashboard
+
+### ✅ Public Studio Website (`/studio-site/[slug]`)
+- **`StudioSiteClient.jsx`** — fully animated client component:
+  - Transparent nav that becomes opaque on scroll, mobile hamburger menu
+  - Ken Burns hero using first portfolio photo as background
+  - Accent-color animated marquee strip
+  - Portfolio preview (first 8 photos) with category filters, hover effects, "View All →" link
+  - Services grid with numbered cards
+  - About section with staggered photo collage
+  - Full booking form (name, email, phone, date, service dropdown, notes)
+  - WhatsApp button as secondary contact
+  - Footer with contact details
+  - Fullscreen photo lightbox (ESC, arrow keys)
+  - All colours themed by studio's chosen `accent_color`
+
+### ✅ Studio Gallery Page (`/studio-site/[slug]/gallery`)
+- Masonry layout (2→4 columns responsive)
+- Category filter buttons with photo counts
+- Fullscreen lightbox with prev/next, ESC, accent-color category labels
+- Back button to main studio site
+- "Powered by photostudio.ng" footer
+
+### ✅ Studio Admin Dashboard (`/studio/*`)
+- Sidebar with logo, studio name, plan badge, nav links, "View My Site" link, sign out
+- Mobile: fixed top bar + slide-in drawer (no double logo)
+- Content padded correctly below fixed mobile nav bar
+- **Dashboard** (`/studio/dashboard`) — stats cards, recent bookings, studio URL banner with correct Vercel/domain link
+- **Bookings** (`/studio/bookings`) — filter tabs (scrollable on mobile), card layout on mobile / table on desktop, status badges
+- **New Booking** (`/studio/bookings/new`) — full form, sends confirmation email to client on creation
+- **Galleries** (`/studio/galleries`) — list of all galleries
+- **New Gallery** (`/studio/galleries/new`) — create gallery with title, slug, password
+- **Gallery Manager** (`/studio/galleries/[id]`) — two tabs:
+  - Photos: drag-drop upload to R2, grid view, click to fullscreen lightbox, delete
+  - Selections: larger thumbnails (2–5 col grid), hover effects, click to fullscreen lightbox with ESC/arrows, grouped by person
+- **Payments** (`/studio/payments`)
+- **Settings** (`/studio/settings`)
+
+### ✅ Client Gallery Portal (`/(client)/gallery/[slug]`)
+- Password gate → name/role step → photo grid
+- Heart button on every thumbnail (always visible) — tap to select without opening lightbox
+- Click photo anywhere else → fullscreen lightbox
+- Heart also selectable inside lightbox (both work simultaneously)
+- Selected photos show filled accent-colored heart + accent outline border on thumbnail
+- Multi-person support (each person submits their own selections)
+- Submit selections → confirmation screen → WhatsApp share
+
+### ✅ Bookings API (`/api/bookings`)
+- POST: clients on studio public site submit booking → saved as `pending` → confirmation email fired
+
+### ✅ Gallery Upload API (`/api/galleries/upload`)
+- Uploads photos to Cloudflare R2
+- Returns `thumbnail_url` and `original_url`
+
+### ✅ Selections API (`/api/galleries/selections`)
+- POST: saves client photo selections to `selections` table
+
+### ✅ Email (`src/lib/email.js`)
+- Nodemailer + Gmail (`bluehydra001@gmail.com`) — replaced Resend
+- `sendBookingConfirmation` — fires on new booking (from studio dashboard or client booking form)
+- `sendGalleryReady` — ready to use when gallery is unlocked
+- `sendPaymentReminder` — ready to use for payment chasing
+- HTML email templates with studio name, accent colour, booking details
+
+### ✅ Stack
+- Next.js 16 (App Router), React 19, Tailwind CSS v4, Framer Motion
+- Supabase (auth + PostgreSQL + RLS)
 - Cloudflare R2 (image storage)
-- Paystack (payments)
-- Resend (email)
-- Middleware for subdomain routing
+- Nodemailer / Gmail (email)
+- Paystack (wired up, webhooks pending)
+- Vercel (hosting)
 
 ---
 
