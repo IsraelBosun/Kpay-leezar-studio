@@ -92,29 +92,57 @@ export default async function BookingsPage({ searchParams }) {
             <Link
               key={b.id}
               href={`/studio/bookings/${b.id}`}
-              className={`grid grid-cols-2 md:grid-cols-6 px-6 py-4 gap-2 hover:bg-gray-50 transition-colors group ${
-                i < bookings.length - 1 ? 'border-b border-gray-50' : ''
+              className={`block hover:bg-gray-50 transition-colors group ${
+                i < bookings.length - 1 ? 'border-b border-gray-100' : ''
               }`}
             >
-              <div>
-                <p className="text-sm font-medium text-black group-hover:text-primary transition-colors">{b.client_name}</p>
-                <p className="text-xs text-neutral-gray truncate">{b.client_email}</p>
+              {/* Mobile card */}
+              <div className="md:hidden px-5 py-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-black group-hover:text-primary transition-colors truncate">{b.client_name}</p>
+                    <p className="text-xs text-neutral-gray truncate">{b.client_email}</p>
+                  </div>
+                  <Badge variant={statusVariant[b.status] ?? 'default'}>{b.status}</Badge>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-gray">
+                  {b.services?.title && <span>{b.services.title}</span>}
+                  {b.session_date && (
+                    <span>{new Date(b.session_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  )}
+                </div>
+                <div className="flex gap-4 text-xs font-medium">
+                  <span className={b.deposit_paid ? 'text-green-600' : 'text-neutral-gray'}>
+                    Deposit: {b.deposit_paid ? '✓ ' : ''}₦{Number(b.deposit_amount).toLocaleString()}
+                  </span>
+                  <span className={b.balance_paid ? 'text-green-600' : 'text-neutral-gray'}>
+                    Balance: {b.balance_paid ? '✓ ' : ''}₦{Number(b.balance_amount).toLocaleString()}
+                  </span>
+                </div>
               </div>
-              <p className="text-sm text-neutral-gray truncate">{b.services?.title || '—'}</p>
-              <p className="text-sm text-neutral-gray">
-                {b.session_date
-                  ? new Date(b.session_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
-                  : '—'}
-              </p>
-              <div>
-                <Badge variant={statusVariant[b.status] ?? 'default'}>{b.status}</Badge>
+
+              {/* Desktop table row */}
+              <div className="hidden md:grid grid-cols-6 px-6 py-4 gap-2 items-center">
+                <div>
+                  <p className="text-sm font-medium text-black group-hover:text-primary transition-colors">{b.client_name}</p>
+                  <p className="text-xs text-neutral-gray truncate">{b.client_email}</p>
+                </div>
+                <p className="text-sm text-neutral-gray truncate">{b.services?.title || '—'}</p>
+                <p className="text-sm text-neutral-gray">
+                  {b.session_date
+                    ? new Date(b.session_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : '—'}
+                </p>
+                <div>
+                  <Badge variant={statusVariant[b.status] ?? 'default'}>{b.status}</Badge>
+                </div>
+                <p className={`text-sm font-medium ${b.deposit_paid ? 'text-green-600' : 'text-neutral-gray'}`}>
+                  {b.deposit_paid ? '✓ ' : ''}₦{Number(b.deposit_amount).toLocaleString()}
+                </p>
+                <p className={`text-sm font-medium ${b.balance_paid ? 'text-green-600' : 'text-neutral-gray'}`}>
+                  {b.balance_paid ? '✓ ' : ''}₦{Number(b.balance_amount).toLocaleString()}
+                </p>
               </div>
-              <p className={`text-sm font-medium ${b.deposit_paid ? 'text-green-600' : 'text-neutral-gray'}`}>
-                {b.deposit_paid ? '✓ ' : ''}₦{Number(b.deposit_amount).toLocaleString()}
-              </p>
-              <p className={`text-sm font-medium ${b.balance_paid ? 'text-green-600' : 'text-neutral-gray'}`}>
-                {b.balance_paid ? '✓ ' : ''}₦{Number(b.balance_amount).toLocaleString()}
-              </p>
             </Link>
           ))}
         </div>

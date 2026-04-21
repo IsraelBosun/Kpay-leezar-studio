@@ -58,15 +58,17 @@ export default function Sidebar({ studio }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ showLogo = true }) => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-8 border-b border-white/10">
-        <Link href="/studio/dashboard" className="inline-flex flex-col items-start">
-          <span className="font-serif text-xl tracking-tight text-white leading-none">photostudio</span>
-          <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
-        </Link>
-      </div>
+      {showLogo && (
+        <div className="px-6 py-8 border-b border-white/10">
+          <Link href="/studio/dashboard" className="inline-flex flex-col items-start">
+            <span className="font-serif text-xl tracking-tight text-white leading-none">photostudio</span>
+            <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
+          </Link>
+        </div>
+      )}
 
       {/* .ng name + plan badge */}
       <div className="px-6 py-5 border-b border-white/10">
@@ -171,15 +173,12 @@ export default function Sidebar({ studio }) {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="w-64 bg-zinc-950 h-full pt-16">
-            <SidebarContent />
+          <div className="w-64 bg-zinc-950 h-full pt-16 overflow-y-auto">
+            <SidebarContent showLogo={false} />
           </div>
           <div className="flex-1 bg-black/50" onClick={() => setMobileOpen(false)} />
         </div>
       )}
-
-      {/* Mobile top padding */}
-      <div className="lg:hidden h-16" />
     </>
   );
 }
