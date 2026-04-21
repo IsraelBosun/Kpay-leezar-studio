@@ -49,15 +49,15 @@ export default async function BookingsPage({ searchParams }) {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-gray-200 overflow-x-auto scrollbar-none">
         {STATUS_TABS.map((tab) => (
           <Link
             key={tab}
             href={`/studio/bookings?filter=${tab}`}
-            className={`px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors capitalize ${
+            className={`whitespace-nowrap px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors capitalize flex-shrink-0 ${
               filter === tab
                 ? 'border-b-2 border-primary text-primary -mb-px'
-                : 'text-neutral-gray hover:text-black'
+                : 'text-zinc-400 hover:text-black'
             }`}
           >
             {tab}
@@ -101,21 +101,21 @@ export default async function BookingsPage({ searchParams }) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-black group-hover:text-primary transition-colors truncate">{b.client_name}</p>
-                    <p className="text-xs text-neutral-gray truncate">{b.client_email}</p>
+                    <p className="text-xs text-zinc-400 truncate">{b.client_email}</p>
                   </div>
                   <Badge variant={statusVariant[b.status] ?? 'default'}>{b.status}</Badge>
                 </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-gray">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
                   {b.services?.title && <span>{b.services.title}</span>}
                   {b.session_date && (
                     <span>{new Date(b.session_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   )}
                 </div>
                 <div className="flex gap-4 text-xs font-medium">
-                  <span className={b.deposit_paid ? 'text-green-600' : 'text-neutral-gray'}>
+                  <span className={b.deposit_paid ? 'text-green-600' : 'text-zinc-400'}>
                     Deposit: {b.deposit_paid ? '✓ ' : ''}₦{Number(b.deposit_amount).toLocaleString()}
                   </span>
-                  <span className={b.balance_paid ? 'text-green-600' : 'text-neutral-gray'}>
+                  <span className={b.balance_paid ? 'text-green-600' : 'text-zinc-400'}>
                     Balance: {b.balance_paid ? '✓ ' : ''}₦{Number(b.balance_amount).toLocaleString()}
                   </span>
                 </div>
