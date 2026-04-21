@@ -418,10 +418,18 @@ The `Lumis Studio` demo site is fully built and serves as:
 
 ---
 
-## Domain Suggestion
+## Domain — Current Status
 
-Register `photostudio.ng` — available, Nigerian-specific, immediately communicates the product.
-Name the SaaS product something like **Framr** or **Shootr** — studios live at `lumis.photostudio.ng`.
+**photostudio.ng** is being registered (targeting 2026-04-21). Once live, add it to the Vercel project and set a wildcard DNS record `*.photostudio.ng → cname.vercel-dns.com`. Update `NEXT_PUBLIC_ROOT_DOMAIN=photostudio.ng` in Vercel env vars.
+
+**Vercel subdomain limitation:** Wildcard subdomains (`*.teststudios.vercel.app`) are NOT supported on `.vercel.app` domains — Vercel blocks them before the app sees them. Subdomain routing only works on custom domains you own.
+
+**Testing workaround (until photostudio.ng is live):** Studio sites are accessible directly at:
+```
+https://teststudios.vercel.app/studio-site/[slug]
+https://teststudios.vercel.app/studio-site/[slug]/gallery
+```
+The middleware detects `/studio-site/*` paths on the root domain and sets `x-is-studio-site: 1` so the platform nav/footer is still suppressed correctly.
 
 ---
 

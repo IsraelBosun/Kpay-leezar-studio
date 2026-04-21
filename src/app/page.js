@@ -82,7 +82,7 @@ const PLANS = [
 const STEPS = [
   { n: '01', title: 'Sign up in 60 seconds', body: 'Enter your studio name, location, and choose an accent colour.' },
   { n: '02', title: 'Upload your portfolio', body: 'Drag and drop 6–10 of your best photos. Write a short bio. Set your pricing.' },
-  { n: '03', title: 'You\'re live', body: 'Share your link on Instagram. Clients book directly. Galleries go up after each shoot.' },
+  { n: '03', title: "You're live", body: 'Share your link on Instagram. Clients book directly. Galleries go up after each shoot.' },
 ];
 
 const MARQUEE_ITEMS = [
@@ -93,15 +93,24 @@ const MARQUEE_ITEMS = [
 
 export default function HomePage() {
   return (
-    <main className="bg-zinc-950 text-white overflow-x-hidden">
+    <main className="overflow-x-hidden">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
-        className="relative min-h-screen flex flex-col justify-center px-6 pt-32 pb-24 overflow-hidden"
-        style={{ background: 'radial-gradient(ellipse 90% 60% at 50% -5%, rgba(211,14,21,0.2) 0%, transparent 55%), radial-gradient(ellipse 50% 70% at 100% 100%, rgba(211,14,21,0.06) 0%, transparent 50%), #09090b' }}
+        className="relative min-h-screen flex flex-col justify-center px-6 pt-32 pb-24 overflow-hidden bg-zinc-950"
       >
+        {/* Photography background */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&h=1000&fit=crop&q=80"
+            alt=""
+            className="w-full h-full object-cover opacity-[0.12]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/60 via-zinc-950/20 to-zinc-950" />
+        </div>
+
         <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '72px 72px' }} />
+          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '72px 72px' }} />
 
         <div className="relative max-w-5xl mx-auto w-full">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
@@ -126,7 +135,7 @@ export default function HomePage() {
           <motion.p
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease, delay: 0.25 }}
-            className="text-white/45 text-lg md:text-xl max-w-xl leading-relaxed mb-12"
+            className="text-white/50 text-lg md:text-xl max-w-xl leading-relaxed mb-12"
           >
             Professional website. Password-protected client galleries. Online bookings.
             Paystack payments. Everything Nigerian photography studios need — one subscription.
@@ -173,7 +182,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Marquee ───────────────────────────────────────────────────────── */}
-      <div className="border-y py-4 overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+      <div className="border-y py-4 overflow-hidden bg-zinc-950" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
         <div className="animate-marquee flex whitespace-nowrap">
           {[0, 1].map((i) => (
             <span key={i} className="flex items-center">
@@ -189,19 +198,19 @@ export default function HomePage() {
       </div>
 
       {/* ── Problem ───────────────────────────────────────────────────────── */}
-      <section className="py-32 px-6">
+      <section className="py-32 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <FadeUp className="mb-16">
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4">The problem</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-white leading-tight max-w-2xl">
+            <h2 className="font-serif text-4xl md:text-5xl text-zinc-900 leading-tight max-w-2xl">
               Most Nigerian photographers are running their business on WhatsApp and goodwill.
             </h2>
           </FadeUp>
 
           <Stagger className="grid md:grid-cols-2 gap-4">
             <Item>
-              <div className="bg-zinc-900 border h-full p-8" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-                <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/25 mb-7">Without photostudio.ng</p>
+              <div className="bg-zinc-50 border border-zinc-200 h-full p-8">
+                <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-zinc-400 mb-7">Without photostudio.ng</p>
                 <ul className="space-y-4">
                   {[
                     'Sending 400 photos in a WhatsApp group',
@@ -211,9 +220,9 @@ export default function HomePage() {
                     'Paying ₦200k+ for a basic website',
                     'Manual follow-ups for every single booking',
                   ].map((item) => (
-                    <li key={item} className="flex items-start gap-3 text-sm text-white/35">
-                      <span className="mt-0.5 w-4 h-4 rounded-full border border-red-900/60 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-2.5 h-2.5 text-red-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <li key={item} className="flex items-start gap-3 text-sm text-zinc-500">
+                      <span className="mt-0.5 w-4 h-4 rounded-full border border-red-200 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-2.5 h-2.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </span>
@@ -225,7 +234,7 @@ export default function HomePage() {
             </Item>
 
             <Item>
-              <div className="h-full p-8 border" style={{ backgroundColor: 'rgba(211,14,21,0.05)', borderColor: 'rgba(211,14,21,0.25)' }}>
+              <div className="h-full p-8 border" style={{ backgroundColor: 'rgba(211,14,21,0.04)', borderColor: 'rgba(211,14,21,0.2)' }}>
                 <p className="text-[10px] uppercase tracking-[0.25em] font-bold mb-7" style={{ color: '#D30E15' }}>With photostudio.ng</p>
                 <ul className="space-y-4">
                   {[
@@ -236,8 +245,8 @@ export default function HomePage() {
                     '₦0 to start — no developer, no Fiverr needed',
                     'Online booking form on your studio page',
                   ].map((item) => (
-                    <li key={item} className="flex items-start gap-3 text-sm text-white/65">
-                      <span className="mt-0.5 w-4 h-4 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(211,14,21,0.18)' }}>
+                    <li key={item} className="flex items-start gap-3 text-sm text-zinc-700">
+                      <span className="mt-0.5 w-4 h-4 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(211,14,21,0.12)' }}>
                         <svg className="w-2.5 h-2.5" style={{ color: '#D30E15' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                         </svg>
@@ -253,11 +262,11 @@ export default function HomePage() {
       </section>
 
       {/* ── Features ──────────────────────────────────────────────────────── */}
-      <section className="py-32 px-6" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }} id="features">
+      <section className="py-32 px-6 bg-gray-50" id="features">
         <div className="max-w-5xl mx-auto">
           <FadeUp className="mb-16">
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4">Features</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-white leading-tight max-w-lg">
+            <h2 className="font-serif text-4xl md:text-5xl text-zinc-900 leading-tight max-w-lg">
               Everything in one subscription.
             </h2>
           </FadeUp>
@@ -265,65 +274,65 @@ export default function HomePage() {
           <Stagger className="grid md:grid-cols-3 gap-4">
             {/* Large card */}
             <Item className="md:col-span-2">
-              <div className="bg-zinc-900 border p-8 h-full min-h-[300px] flex flex-col justify-between relative overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-                <div className="absolute top-6 right-6 w-44 opacity-15 pointer-events-none">
-                  <div className="bg-zinc-800 border border-white/10">
-                    <div className="flex items-center gap-1 px-2.5 py-2 border-b border-white/10">
+              <div className="bg-white border border-zinc-200 p-8 h-full min-h-[300px] flex flex-col justify-between relative overflow-hidden shadow-sm">
+                <div className="hidden md:block absolute top-6 right-6 w-44 opacity-20 pointer-events-none">
+                  <div className="bg-zinc-100 border border-zinc-200">
+                    <div className="flex items-center gap-1 px-2.5 py-2 border-b border-zinc-200">
                       <span className="w-2 h-2 rounded-full bg-red-400/80" />
                       <span className="w-2 h-2 rounded-full bg-yellow-400/80" />
                       <span className="w-2 h-2 rounded-full bg-green-400/80" />
                     </div>
                     <div className="p-2.5 space-y-1.5">
-                      <div className="h-6 bg-zinc-700 rounded-sm" />
+                      <div className="h-6 bg-zinc-200 rounded-sm" />
                       <div className="grid grid-cols-3 gap-1">
-                        {[...Array(6)].map((_, i) => <div key={i} className="aspect-square bg-zinc-700 rounded-sm" />)}
+                        {[...Array(6)].map((_, i) => <div key={i} className="aspect-square bg-zinc-200 rounded-sm" />)}
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="relative">
                   <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-primary mb-3">Studio Website</p>
-                  <h3 className="font-serif text-3xl text-white mb-3 leading-tight">Your studio website,<br />live in minutes.</h3>
-                  <p className="text-sm text-white/40 leading-relaxed max-w-sm">
+                  <h3 className="font-serif text-3xl text-zinc-900 mb-3 leading-tight">Your studio website,<br />live in minutes.</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed max-w-sm">
                     A fully branded, mobile-first photography website created automatically on signup. Portfolio gallery, services, about, contact form — all included. Free forever.
                   </p>
                 </div>
-                <span className="inline-block mt-6 px-3 py-1 text-[10px] uppercase tracking-[0.2em] font-bold bg-white/5 border text-white/40" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <span className="inline-block mt-6 px-3 py-1 text-[10px] uppercase tracking-[0.2em] font-bold bg-zinc-100 border border-zinc-200 text-zinc-500">
                   Free plan included
                 </span>
               </div>
             </Item>
 
             <Item>
-              <div className="bg-zinc-900 border p-8 h-full min-h-[300px] flex flex-col justify-between relative overflow-hidden" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-                <div className="absolute bottom-4 right-4 opacity-10 pointer-events-none">
+              <div className="bg-white border border-zinc-200 p-8 h-full min-h-[300px] flex flex-col justify-between relative overflow-hidden shadow-sm">
+                <div className="absolute bottom-4 right-4 opacity-15 pointer-events-none">
                   <div className="grid grid-cols-3 gap-1">
                     {[...Array(9)].map((_, i) => (
-                      <div key={i} className="w-9 h-9 bg-white relative">
-                        {(i === 1 || i === 4 || i === 7) && <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500" />}
+                      <div key={i} className="w-9 h-9 bg-zinc-200 relative">
+                        {(i === 1 || i === 4 || i === 7) && <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-400" />}
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="relative">
                   <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-primary mb-3">Client Galleries</p>
-                  <h3 className="font-serif text-2xl text-white mb-3 leading-tight">Private galleries for every shoot.</h3>
-                  <p className="text-sm text-white/40 leading-relaxed">Password-protected links. Compressed thumbnails for fast mobile loading.</p>
+                  <h3 className="font-serif text-2xl text-zinc-900 mb-3 leading-tight">Private galleries for every shoot.</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">Password-protected links. Compressed thumbnails for fast mobile loading.</p>
                 </div>
               </div>
             </Item>
 
             <Item>
-              <div className="bg-zinc-900 border p-8 h-full flex flex-col justify-between" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="bg-white border border-zinc-200 p-8 h-full flex flex-col justify-between shadow-sm">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-primary mb-3">Photo Selections</p>
-                  <h3 className="font-serif text-2xl text-white mb-3 leading-tight">Clients heart their favourites.</h3>
-                  <p className="text-sm text-white/40 leading-relaxed">Multiple people submit picks independently. You see everything consolidated.</p>
+                  <h3 className="font-serif text-2xl text-zinc-900 mb-3 leading-tight">Clients heart their favourites.</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">Multiple people submit picks independently. You see everything consolidated.</p>
                 </div>
                 <div className="flex gap-1.5 mt-5">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="w-8 h-8 bg-zinc-800 flex items-center justify-center">
-                      <svg className="w-4 h-4" style={{ color: i < 3 ? '#D30E15' : 'rgba(255,255,255,0.15)' }}
+                    <div key={i} className="w-8 h-8 bg-zinc-100 flex items-center justify-center">
+                      <svg className="w-4 h-4" style={{ color: i < 3 ? '#D30E15' : 'rgba(0,0,0,0.15)' }}
                         fill={i < 3 ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
@@ -334,35 +343,35 @@ export default function HomePage() {
             </Item>
 
             <Item>
-              <div className="bg-zinc-900 border p-8 h-full flex flex-col justify-between" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="bg-white border border-zinc-200 p-8 h-full flex flex-col justify-between shadow-sm">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-primary mb-3">Paystack Payments</p>
-                  <h3 className="font-serif text-2xl text-white mb-3 leading-tight">Get paid in Naira. Automatically.</h3>
-                  <p className="text-sm text-white/40 leading-relaxed">Deposit and balance via Paystack. Gallery unlocks when balance is paid.</p>
+                  <h3 className="font-serif text-2xl text-zinc-900 mb-3 leading-tight">Get paid in Naira. Automatically.</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">Deposit and balance via Paystack. Gallery unlocks when balance is paid.</p>
                 </div>
-                <div className="flex items-center gap-2 mt-5 p-3 bg-zinc-800 border" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                  <span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
-                  <span className="text-xs text-white/45 font-mono">₦350,000 — paid</span>
+                <div className="flex items-center gap-2 mt-5 p-3 bg-zinc-50 border border-zinc-200">
+                  <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                  <span className="text-xs text-zinc-500 font-mono">₦350,000 — paid</span>
                 </div>
               </div>
             </Item>
 
             <Item>
-              <div className="bg-zinc-900 border p-8 h-full flex flex-col justify-between" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="bg-white border border-zinc-200 p-8 h-full flex flex-col justify-between shadow-sm">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-primary mb-3">Online Bookings</p>
-                  <h3 className="font-serif text-2xl text-white mb-3 leading-tight">No more WhatsApp back-and-forth.</h3>
-                  <p className="text-sm text-white/40 leading-relaxed">Clients book directly from your studio page. Deposits collected upfront.</p>
+                  <h3 className="font-serif text-2xl text-zinc-900 mb-3 leading-tight">No more WhatsApp back-and-forth.</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">Clients book directly from your studio page. Deposits collected upfront.</p>
                 </div>
               </div>
             </Item>
 
             <Item className="md:col-span-3">
-              <div className="border p-12 text-center" style={{ background: 'linear-gradient(135deg, rgba(211,14,21,0.07) 0%, rgba(211,14,21,0.02) 100%)', borderColor: 'rgba(211,14,21,0.2)' }}>
+              <div className="bg-zinc-900 border border-zinc-800 p-12 text-center">
                 <p className="font-serif text-3xl md:text-4xl text-white mb-3">
                   No developer. No web designer.<br className="hidden md:block" /> No Fiverr. No separate software.
                 </p>
-                <p className="text-white/35 text-sm">Sign up, fill in your details, upload your photos — your studio is live.</p>
+                <p className="text-white/40 text-sm">Sign up, fill in your details, upload your photos — your studio is live.</p>
               </div>
             </Item>
           </Stagger>
@@ -370,30 +379,48 @@ export default function HomePage() {
       </section>
 
       {/* ── How it works ──────────────────────────────────────────────────── */}
-      <section className="py-32 px-6">
+      <section className="py-32 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <FadeUp className="mb-16">
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4">How it works</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-white leading-tight max-w-xl">
+            <h2 className="font-serif text-4xl md:text-5xl text-zinc-900 leading-tight max-w-xl">
               From signup to live in three steps.
             </h2>
           </FadeUp>
 
-          <Stagger className="grid md:grid-cols-3 gap-12 md:gap-8">
+          <Stagger className="grid md:grid-cols-3 gap-12 md:gap-8 mb-20">
             {STEPS.map(({ n, title, body }) => (
               <Item key={n}>
-                <p className="font-serif text-8xl leading-none mb-4" style={{ color: 'rgba(255,255,255,0.06)' }}>{n}</p>
+                <p className="font-serif text-8xl leading-none mb-4 text-zinc-100">{n}</p>
                 <div className="w-7 h-px bg-primary mb-5" />
-                <h3 className="font-medium text-white text-lg mb-3">{title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">{body}</p>
+                <h3 className="font-medium text-zinc-900 text-lg mb-3">{title}</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">{body}</p>
               </Item>
             ))}
           </Stagger>
+
+          {/* Photo strip */}
+          <FadeUp>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 overflow-hidden">
+              {[
+                'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&h=400&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=400&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop&q=80',
+              ].map((src, i) => (
+                <div key={i} className="aspect-video overflow-hidden bg-zinc-100">
+                  <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] uppercase tracking-widest text-zinc-400 text-center mt-4">
+              Real studios. Real photographers. Real work.
+            </p>
+          </FadeUp>
         </div>
       </section>
 
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
-      <section className="py-32 px-6" style={{ backgroundColor: 'rgba(255,255,255,0.015)' }} id="pricing">
+      <section className="py-32 px-6 bg-zinc-950" id="pricing">
         <div className="max-w-5xl mx-auto">
           <FadeUp className="mb-16">
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary mb-4">Pricing</p>
@@ -456,7 +483,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Final CTA ─────────────────────────────────────────────────────── */}
-      <section className="py-40 px-6 text-center relative overflow-hidden">
+      <section className="py-40 px-6 text-center relative overflow-hidden bg-zinc-950">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse 70% 70% at 50% 50%, rgba(211,14,21,0.13) 0%, transparent 65%)' }} />
         <FadeUp className="relative max-w-3xl mx-auto">

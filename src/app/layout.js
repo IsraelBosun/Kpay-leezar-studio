@@ -1,5 +1,6 @@
 import './globals.css';
 import { Inter, Playfair_Display } from 'next/font/google';
+import { headers } from 'next/headers';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -20,14 +21,17 @@ export const metadata = {
   description: 'Professional website, client galleries, online bookings, and Paystack payments for Nigerian photography studios. Free to start.',
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const h = await headers();
+  const isStudioSite = h.get('x-is-studio-site') === '1';
+
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} scroll-smooth`}>
       <body className="font-sans antialiased text-neutral-gray overflow-x-hidden">
-        <ConditionalNavbar />
+        {!isStudioSite && <ConditionalNavbar />}
         {children}
-        <ConditionalFooter />
-        <WhatsAppButton />
+        {!isStudioSite && <ConditionalFooter />}
+        {!isStudioSite && <WhatsAppButton />}
       </body>
     </html>
   );

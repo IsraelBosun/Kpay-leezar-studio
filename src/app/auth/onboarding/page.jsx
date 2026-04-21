@@ -325,7 +325,17 @@ export default function OnboardingPage() {
             {slug && (
               <div className="bg-black text-white px-6 py-4">
                 <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Your studio will be live at</p>
-                <p className="font-serif text-lg">{slug}.photostudio.ng</p>
+                {process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng' ? (
+                  <p className="font-serif text-lg">{slug}.photostudio.ng</p>
+                ) : (
+                  <a
+                    href={`${process.env.NEXT_PUBLIC_APP_URL}/studio-site/${slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-serif text-lg underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors break-all">
+                    {process.env.NEXT_PUBLIC_APP_URL}/studio-site/{slug}
+                  </a>
+                )}
               </div>
             )}
 

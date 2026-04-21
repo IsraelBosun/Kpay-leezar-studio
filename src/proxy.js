@@ -40,8 +40,11 @@ export async function proxy(req) {
   // ── Local dev: *.localhost subdomain → studio site ──
   if (currentHost.endsWith('.localhost')) {
     const subdomain = currentHost.replace('.localhost', '');
+    const studioHeaders = new Headers(req.headers);
+    studioHeaders.set('x-is-studio-site', '1');
     return NextResponse.rewrite(
-      new URL(`/studio-site/${subdomain}${url.pathname}`, req.url)
+      new URL(`/studio-site/${subdomain}${url.pathname}`, req.url),
+      { request: { headers: studioHeaders } }
     );
   }
 
@@ -62,20 +65,34 @@ export async function proxy(req) {
       return NextResponse.redirect(new URL('/studio/dashboard', req.url));
     }
 
+    // Direct /studio-site/* path access (testing workaround — no subdomain needed)
+    // Used on teststudios.vercel.app until photostudio.ng domain is configured
+    if (url.pathname.startsWith('/studio-site/')) {
+      const studioHeaders = new Headers(req.headers);
+      studioHeaders.set('x-is-studio-site', '1');
+      return NextResponse.next({ request: { headers: studioHeaders } });
+    }
+
     return response;
   }
 
   // ── Subdomain — e.g. lumis.photostudio.ng ──
   const subdomain = currentHost.replace(`.${ROOT_DOMAIN}`, '');
   if (subdomain && subdomain !== currentHost) {
+    const studioHeaders = new Headers(req.headers);
+    studioHeaders.set('x-is-studio-site', '1');
     return NextResponse.rewrite(
-      new URL(`/studio-site/${subdomain}${url.pathname}`, req.url)
+      new URL(`/studio-site/${subdomain}${url.pathname}`, req.url),
+      { request: { headers: studioHeaders } }
     );
   }
 
   // ── Custom domain — e.g. lumisstudio.com ──
+  const customHeaders = new Headers(req.headers);
+  customHeaders.set('x-is-studio-site', '1');
   return NextResponse.rewrite(
-    new URL(`/studio-site/custom/${encodeURIComponent(currentHost)}${url.pathname}`, req.url)
+    new URL(`/studio-site/custom/${encodeURIComponent(currentHost)}${url.pathname}`, req.url),
+    { request: { headers: customHeaders } }
   );
 }
 
