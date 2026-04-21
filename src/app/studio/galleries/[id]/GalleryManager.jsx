@@ -13,6 +13,7 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
   const [locked, setLocked] = useState(gallery.is_locked);
   const [activeTab, setActiveTab] = useState('photos');
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [selectionLightbox, setSelectionLightbox] = useState(null); // { picks, index }
   const router = useRouter();
 
   const isOpen = lightboxIndex !== null;
@@ -34,9 +35,21 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
   }, [isOpen, closeLightbox, goNext, goPrev]);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    document.body.style.overflow = (isOpen || selectionLightbox) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  }, [isOpen, selectionLightbox]);
+
+  useEffect(() => {
+    if (!selectionLightbox) return;
+    function onKey(e) {
+      const { picks, index } = selectionLightbox;
+      if (e.key === 'Escape') setSelectionLightbox(null);
+      if (e.key === 'ArrowRight') setSelectionLightbox({ picks, index: (index + 1) % picks.length });
+      if (e.key === 'ArrowLeft') setSelectionLightbox({ picks, index: (index - 1 + picks.length) % picks.length });
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectionLightbox]);
 
   // Group selections by selector_name
   const selectionsByPerson = selections.reduce((acc, s) => {
@@ -230,30 +243,35 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
                     Share via WhatsApp
                   </a>
                 </div>
-                <div className="p-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                  {picks.map((s) => (
-                    <div key={s.id} className="relative aspect-square bg-gray-100 overflow-hidden">
+                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {picks.map((s, i) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectionLightbox({ picks, index: i })}
+                      className="relative aspect-square bg-gray-100 overflow-hidden group focus:outline-none"
+                    >
                       {s.photos?.thumbnail_url && (
                         <Image
                           src={s.photos.thumbnail_url}
                           alt="Selected photo"
                           fill
-                          className="object-cover"
-                          sizes="80px"
+                          className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                           unoptimized
                         />
                       )}
-                      <div className="absolute top-1 right-1 w-5 h-5 bg-red-500 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200" />
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-primary flex items-center justify-center shadow">
+                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
                       </div>
                       {s.note && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
-                          <p className="text-[8px] text-white truncate">{s.note}</p>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+                          <p className="text-[9px] text-white truncate">{s.note}</p>
                         </div>
                       )}
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -262,7 +280,58 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
         </div>
       )}
 
-      {/* Lightbox */}
+      {/* Selection lightbox */}
+      {selectionLightbox && (() => {
+        const { picks, index } = selectionLightbox;
+        const current = picks[index];
+        const imgSrc = current?.photos?.thumbnail_url;
+        return (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
+              <div>
+                <p className="text-white/60 text-xs">{current?.selector_name}</p>
+                <p className="text-white/30 text-[10px] tabular-nums">{index + 1} / {picks.length}</p>
+              </div>
+              <button onClick={() => setSelectionLightbox(null)}
+                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white bg-white/10 hover:bg-white/20 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 relative flex items-center justify-center min-h-0">
+              {picks.length > 1 && (
+                <button
+                  onClick={() => setSelectionLightbox({ picks, index: (index - 1 + picks.length) % picks.length })}
+                  className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+              <div className="relative w-full h-full">
+                {imgSrc && <Image key={current.id} src={imgSrc} alt="" fill className="object-contain" sizes="100vw" unoptimized />}
+              </div>
+              {picks.length > 1 && (
+                <button
+                  onClick={() => setSelectionLightbox({ picks, index: (index + 1) % picks.length })}
+                  className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {current?.note && (
+              <div className="flex-shrink-0 px-4 py-3 text-center">
+                <p className="text-white/40 text-xs">{current.note}</p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Photos lightbox */}
       {isOpen && currentPhoto && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col">
           {/* Top bar */}
