@@ -91,11 +91,19 @@ export default async function DashboardPage() {
       <div className="bg-zinc-950 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Your Studio Website</p>
-          <p className="font-serif text-white text-lg">{studio.slug}.photostudio.ng</p>
+          {process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng' ? (
+            <p className="font-serif text-white text-lg">{studio.slug}.photostudio.ng</p>
+          ) : (
+            <p className="font-serif text-white text-lg">{process.env.NEXT_PUBLIC_APP_URL}/studio-site/{studio.slug}</p>
+          )}
         </div>
         <div className="flex gap-3">
           <a
-            href={`http://${studio.slug}.localhost:3000`}
+            href={
+              process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng'
+                ? `https://${studio.slug}.photostudio.ng`
+                : `${process.env.NEXT_PUBLIC_APP_URL}/studio-site/${studio.slug}`
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs uppercase tracking-widest font-bold text-white border border-white/20 px-4 py-2 hover:bg-white hover:text-black transition-colors"

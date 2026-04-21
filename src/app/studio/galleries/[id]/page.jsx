@@ -35,7 +35,7 @@ export default async function GalleryDetailPage({ params }) {
     .eq('gallery_id', id)
     .order('created_at', { ascending: true });
 
-  const clientUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/gallery/${gallery.slug}`;
+  const clientUrl = `${process.env.NEXT_PUBLIC_APP_URL}/gallery/${gallery.slug}`;
 
   return (
     <div className="space-y-8">

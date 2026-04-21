@@ -112,7 +112,11 @@ export default function Sidebar({ studio }) {
       {/* View live site */}
       <div className="px-3 pb-4">
         <a
-          href={`http://${studio.slug}.localhost:3000`}
+          href={
+            process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng'
+              ? `https://${studio.slug}.photostudio.ng`
+              : `${process.env.NEXT_PUBLIC_APP_URL}/studio-site/${studio.slug}`
+          }
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest font-bold text-white/30 hover:text-white transition-colors"
