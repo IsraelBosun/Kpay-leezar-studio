@@ -177,7 +177,7 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
         <>
           <div className="px-6 py-4 bg-zinc-900 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm text-white/60">
-              Tap to view · heart to select
+              Heart to select · tap photo to view full screen
               <span className="ml-2 text-white/30">{selectedIds.size} selected</span>
             </p>
             {selectedIds.size > 0 && (
@@ -198,24 +198,45 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
               {photos.map((photo, index) => {
                 const isSelected = selectedIds.has(photo.id);
                 return (
-                  <button key={photo.id} onClick={() => setLightboxIndex(index)}
-                    className={`relative aspect-square overflow-hidden transition-all duration-200 ${
-                      isSelected ? 'ring-2 ring-offset-1 ring-offset-zinc-950' : ''
-                    }`}
-                    style={isSelected ? { ringColor: accentColor } : {}}>
-                    <Image src={photo.thumbnail_url} alt={photo.file_name || ''} fill
-                      className="object-cover transition-all duration-300 brightness-75 hover:brightness-100"
-                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                      unoptimized />
-                    {isSelected && (
-                      <div className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-lg"
-                        style={{ backgroundColor: accentColor }}>
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
-                      </div>
-                    )}
-                  </button>
+                  <div
+                    key={photo.id}
+                    className="relative aspect-square overflow-hidden group"
+                    style={isSelected ? { outline: `2px solid ${accentColor}`, outlineOffset: '2px' } : {}}
+                  >
+                    {/* Photo — click opens lightbox */}
+                    <button
+                      onClick={() => setLightboxIndex(index)}
+                      className="absolute inset-0 w-full h-full focus:outline-none"
+                      aria-label="View full screen"
+                    >
+                      <Image
+                        src={photo.thumbnail_url}
+                        alt={photo.file_name || ''}
+                        fill
+                        className="object-cover transition-all duration-300 brightness-75 group-hover:brightness-100"
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                        unoptimized
+                      />
+                    </button>
+
+                    {/* Heart — always visible, click toggles selection */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleSelect(photo.id); }}
+                      className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full shadow-lg transition-all duration-200 focus:outline-none"
+                      style={{ backgroundColor: isSelected ? accentColor : 'rgba(0,0,0,0.45)' }}
+                      aria-label={isSelected ? 'Remove from selection' : 'Add to selection'}
+                    >
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill={isSelected ? 'currentColor' : 'none'}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                    </button>
+                  </div>
                 );
               })}
             </div>
