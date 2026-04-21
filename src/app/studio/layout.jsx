@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createServerSupabase } from '@/lib/supabase';
 import Sidebar from '@/components/studio/Sidebar';
+import StudioPageFade from '@/components/studio/StudioPageFade';
 
 export default async function StudioLayout({ children }) {
   const supabase = await createServerSupabase();
@@ -23,7 +24,7 @@ export default async function StudioLayout({ children }) {
       <Sidebar studio={studio} />
       <main className="flex-1 min-w-0 lg:ml-64 pt-16 lg:pt-0">
         <div className="p-6 md:p-10 max-w-6xl mx-auto">
-          {children}
+          <StudioPageFade>{children}</StudioPageFade>
         </div>
       </main>
     </div>

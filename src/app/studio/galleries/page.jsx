@@ -50,7 +50,7 @@ export default async function GalleriesPage() {
         ) : (
           <Link
             href="/studio/galleries/new"
-            className="bg-primary text-white px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors self-start sm:self-auto"
+            className="bg-primary text-white px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-all duration-200 active:scale-[0.97] self-start sm:self-auto"
           >
             + New Gallery
           </Link>

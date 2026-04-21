@@ -42,7 +42,7 @@ export default async function BookingsPage({ searchParams }) {
         </div>
         <Link
           href="/studio/bookings/new"
-          className="bg-primary text-white px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors self-start sm:self-auto"
+          className="bg-primary text-white px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-all duration-200 active:scale-[0.97] self-start sm:self-auto"
         >
           + New Booking
         </Link>

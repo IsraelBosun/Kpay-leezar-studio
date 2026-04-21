@@ -57,13 +57,13 @@ export default async function DashboardPage() {
         <div className="flex gap-3">
           <Link
             href="/studio/bookings/new"
-            className="bg-primary text-white px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors"
+            className="bg-primary text-white px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-all duration-200 active:scale-[0.97]"
           >
             + New Booking
           </Link>
           <Link
             href="/studio/galleries/new"
-            className="border border-gray-200 text-black px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-colors"
+            className="border border-gray-200 text-black px-5 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-all duration-200 active:scale-[0.97]"
           >
             + New Gallery
           </Link>

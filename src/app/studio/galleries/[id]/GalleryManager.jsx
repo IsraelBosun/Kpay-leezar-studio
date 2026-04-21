@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { toggleGalleryLock, deletePhoto } from '../actions';
@@ -12,8 +12,12 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
   const [copied, setCopied] = useState(false);
   const [locked, setLocked] = useState(gallery.is_locked);
   const [activeTab, setActiveTab] = useState('photos');
+  const [tabVisible, setTabVisible] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [selectionLightbox, setSelectionLightbox] = useState(null); // { picks, index }
+  const [selectionLightbox, setSelectionLightbox] = useState(null);
+  const lastSelectionLightbox = useRef(null);
+  if (selectionLightbox) lastSelectionLightbox.current = selectionLightbox;
+  const displayedSelection = selectionLightbox || lastSelectionLightbox.current;
   const router = useRouter();
 
   const isOpen = lightboxIndex !== null;
@@ -106,6 +110,12 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
     setLocked(newLocked);
   }
 
+  function switchTab(tab) {
+    if (tab === activeTab) return;
+    setTabVisible(false);
+    setTimeout(() => { setActiveTab(tab); setTabVisible(true); }, 130);
+  }
+
   function copyLink() {
     navigator.clipboard.writeText(clientUrl);
     setCopied(true);
@@ -145,14 +155,17 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200">
         {['photos', 'selections'].map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-colors capitalize ${
+          <button key={tab} onClick={() => switchTab(tab)}
+            className={`px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold transition-all duration-200 capitalize active:opacity-70 ${
               activeTab === tab ? 'border-b-2 border-primary text-primary -mb-px' : 'text-neutral-gray hover:text-black'
             }`}>
             {tab} {tab === 'photos' ? `(${photos.length})` : `(${selections.length})`}
           </button>
         ))}
       </div>
+
+      {/* Tab content */}
+      <div style={{ opacity: tabVisible ? 1 : 0, transition: 'opacity 130ms ease' }}>
 
       {/* Photos tab */}
       {activeTab === 'photos' && (
@@ -280,20 +293,23 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
         </div>
       )}
 
+      </div>{/* end tab content */}
+
       {/* Selection lightbox */}
-      {selectionLightbox && (() => {
-        const { picks, index } = selectionLightbox;
+      {(() => {
+        if (!displayedSelection) return null;
+        const { picks, index } = displayedSelection;
         const current = picks[index];
         const imgSrc = current?.photos?.thumbnail_url;
         return (
-          <div className="fixed inset-0 z-50 bg-black flex flex-col">
+          <div className={`fixed inset-0 z-50 bg-black flex flex-col transition-opacity duration-200 ${selectionLightbox ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
             <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
               <div>
                 <p className="text-white/60 text-xs">{current?.selector_name}</p>
                 <p className="text-white/30 text-[10px] tabular-nums">{index + 1} / {picks.length}</p>
               </div>
               <button onClick={() => setSelectionLightbox(null)}
-                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white bg-white/10 hover:bg-white/20 transition-colors">
+                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white bg-white/10 hover:bg-white/20 transition-colors active:scale-90">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -332,23 +348,25 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
       })()}
 
       {/* Photos lightbox */}
-      {isOpen && currentPhoto && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col">
+      {(() => {
+        const photo = currentPhoto || photos[0];
+        return (
+        <div className={`fixed inset-0 z-50 bg-black flex flex-col transition-opacity duration-200 ${isOpen && currentPhoto ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
           {/* Top bar */}
           <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
             <div>
-              <p className="text-white/60 text-xs truncate max-w-xs">{currentPhoto.file_name}</p>
-              <p className="text-white/30 text-[10px] tabular-nums">{lightboxIndex + 1} / {photos.length}</p>
+              <p className="text-white/60 text-xs truncate max-w-xs">{photo?.file_name}</p>
+              <p className="text-white/30 text-[10px] tabular-nums">{lightboxIndex != null ? lightboxIndex + 1 : 0} / {photos.length}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(currentPhoto.id); closeLightbox(); }}
+                onClick={(e) => { e.stopPropagation(); if (photo) handleDelete(photo.id); closeLightbox(); }}
                 className="px-4 py-2 text-xs uppercase tracking-widest font-bold bg-red-500 hover:bg-red-600 text-white transition-colors"
               >
                 Delete
               </button>
               <button onClick={closeLightbox}
-                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white bg-white/10 hover:bg-white/20 transition-colors">
+                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white bg-white/10 hover:bg-white/20 transition-colors active:scale-90">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -367,15 +385,17 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
               </button>
             )}
             <div className="relative w-full h-full">
-              <Image
-                key={currentPhoto.id}
-                src={currentPhoto.thumbnail_url}
-                alt={currentPhoto.file_name || ''}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                unoptimized
-              />
+              {photo && (
+                <Image
+                  key={photo.id}
+                  src={photo.thumbnail_url}
+                  alt={photo.file_name || ''}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  unoptimized
+                />
+              )}
             </div>
             {photos.length > 1 && (
               <button onClick={goNext}
@@ -387,7 +407,8 @@ export default function GalleryManager({ gallery, photos: initialPhotos, selecti
             )}
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

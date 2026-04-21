@@ -98,7 +98,7 @@ export default function Sidebar({ studio }) {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest font-bold transition-all duration-200 ${
+              className={`flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest font-bold transition-all duration-200 active:scale-[0.97] active:opacity-80 ${
                 active
                   ? 'bg-primary text-white'
                   : 'text-white/50 hover:text-white hover:bg-white/5'
@@ -121,7 +121,7 @@ export default function Sidebar({ studio }) {
           }
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest font-bold text-white/30 hover:text-white transition-colors"
+          className="flex items-center gap-3 px-3 py-3 text-xs uppercase tracking-widest font-bold text-white/30 hover:text-white transition-all duration-200 active:opacity-60"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -135,7 +135,7 @@ export default function Sidebar({ studio }) {
         <form action={signOut}>
           <button
             type="submit"
-            className="flex items-center gap-3 px-3 py-3 w-full text-xs uppercase tracking-widest font-bold text-white/30 hover:text-white transition-colors"
+            className="flex items-center gap-3 px-3 py-3 w-full text-xs uppercase tracking-widest font-bold text-white/30 hover:text-white transition-all duration-200 active:opacity-60"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -160,25 +160,25 @@ export default function Sidebar({ studio }) {
           <span className="font-serif text-lg tracking-tight text-white leading-none">photostudio</span>
           <span className="text-[7px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
         </Link>
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-white p-1">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {mobileOpen
-              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
-              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />
-            }
-          </svg>
+        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-white p-1 active:opacity-60 transition-opacity duration-150">
+          <div className="relative w-6 h-6">
+            <svg className={`absolute inset-0 w-6 h-6 transition-all duration-200 ${mobileOpen ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <svg className={`absolute inset-0 w-6 h-6 transition-all duration-200 ${mobileOpen ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </div>
         </button>
       </div>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="w-64 bg-zinc-950 h-full pt-16 overflow-y-auto">
-            <SidebarContent showLogo={false} />
-          </div>
-          <div className="flex-1 bg-black/50" onClick={() => setMobileOpen(false)} />
+      <div className={`lg:hidden fixed inset-0 z-40 flex transition-opacity duration-300 ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`w-64 bg-zinc-950 h-full pt-16 overflow-y-auto transition-transform duration-300 ease-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <SidebarContent showLogo={false} />
         </div>
-      )}
+        <div className="flex-1 bg-black/50" onClick={() => setMobileOpen(false)} />
+      </div>
     </>
   );
 }
