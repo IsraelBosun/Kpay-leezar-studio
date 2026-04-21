@@ -1,7 +1,14 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = 'Lumis Platform <noreply@photostudio.ng>';
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
+const FROM = `photostudio.ng <${process.env.GMAIL_USER}>`;
 
 function baseTemplate({ accentColor = '#D30E15', studioName, preheader, body }) {
   return `<!DOCTYPE html>
@@ -38,7 +45,7 @@ function baseTemplate({ accentColor = '#D30E15', studioName, preheader, body }) 
           <tr>
             <td style="padding-top:28px;text-align:center;">
               <p style="font-size:11px;color:#aaa;letter-spacing:1px;text-transform:uppercase;margin:0;">
-                Powered by <span style="color:${accentColor};font-weight:700;">Lumis</span> · photostudio.ng
+                Powered by <span style="color:${accentColor};font-weight:700;">photostudio.ng</span>
               </p>
             </td>
           </tr>
@@ -152,7 +159,7 @@ export async function sendBookingConfirmation({
     </tr>
   `;
 
-  return resend.emails.send({
+  return transporter.sendMail({
     from: FROM,
     to,
     subject: `Your session is booked — ${studioName}`,
@@ -183,7 +190,7 @@ export async function sendGalleryReady({ to, clientName, studioName, galleryUrl,
     </tr>
   `;
 
-  return resend.emails.send({
+  return transporter.sendMail({
     from: FROM,
     to,
     subject: `Your gallery is ready — ${studioName}`,
@@ -215,7 +222,7 @@ export async function sendPaymentReminder({ to, clientName, studioName, amountDu
     </tr>
   `;
 
-  return resend.emails.send({
+  return transporter.sendMail({
     from: FROM,
     to,
     subject: `Balance due to unlock your gallery — ${studioName}`,
