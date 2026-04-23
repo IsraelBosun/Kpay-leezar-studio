@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export default function StudioSiteClient({ studio, portfolio, services }) {
-  const accent = studio.accent_color || '#D30E15';
+  const accent = studio.accent_color || '#F0940A';
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('All');

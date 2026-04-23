@@ -57,7 +57,7 @@ export async function POST(req) {
       depositAmount: 0,
       balanceAmount: 0,
       notes,
-      accentColor: studio.accent_color || '#D30E15',
+      accentColor: studio.accent_color || '#F0940A',
     }).catch(() => {});
 
     return Response.json({ success: true });

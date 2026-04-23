@@ -6,7 +6,7 @@ import { saveStudioBasics, saveStudioBio, saveStudioServices, savePortfolioPhoto
 const ACCENT_COLORS = [
   { label: 'Crimson',  value: '#D30E15' },
   { label: 'Coral',    value: '#E8441A' },
-  { label: 'Amber',    value: '#D97706' },
+  { label: 'Amber',    value: '#F0940A' },
   { label: 'Gold',     value: '#B8860B' },
   { label: 'Sage',     value: '#4A7C59' },
   { label: 'Forest',   value: '#2D5016' },
@@ -27,7 +27,7 @@ const DEMO = {
   location: 'Lagos, Nigeria',
   phone: '+234 813 456 7890',
   bio: 'Lagos Lens is a premium photography studio based in Lagos, Nigeria. We specialise in capturing authentic moments that tell your story — from intimate portraits to grand celebrations. With an eye for detail and a passion for visual storytelling, every shoot is approached with intention and care. We have worked with hundreds of clients across Lagos, Abuja, and Port Harcourt, delivering images that our clients treasure for a lifetime.',
-  accentColor: '#D30E15',
+  accentColor: '#F0940A',
   logoUrl: 'https://ui-avatars.com/api/?name=LL&background=FFFFFF&color=1E3A8A&size=200&bold=true&format=png',
   services: [
     { title: 'Portrait Session', description: 'Personal, lifestyle, and professional portraits crafted to reflect your individuality.', price: '150000' },
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
   const [phone, setPhone] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [bio, setBio] = useState('');
-  const [accentColor, setAccentColor] = useState('#D30E15');
+  const [accentColor, setAccentColor] = useState('#F0940A');
   const [services, setServices] = useState([
     { title: '', description: '', price: '' },
   ]);

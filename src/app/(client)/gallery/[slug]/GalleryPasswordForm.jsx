@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function GalleryPasswordForm({ slug, studioName, accentColor = '#D30E15' }) {
+export default function GalleryPasswordForm({ slug, studioName, accentColor = '#F0940A' }) {
   const [password, setPassword] = useState('');
   const router = useRouter();
 

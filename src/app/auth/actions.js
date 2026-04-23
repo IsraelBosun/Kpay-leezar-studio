@@ -98,7 +98,7 @@ export async function saveStudioBio(formData) {
   if (userError || !user) return { error: 'Not authenticated.' };
 
   const bio = formData.get('bio');
-  const accentColor = formData.get('accentColor') || '#D30E15';
+  const accentColor = formData.get('accentColor') || '#F0940A';
 
   const { error } = await supabase
     .from('studios')

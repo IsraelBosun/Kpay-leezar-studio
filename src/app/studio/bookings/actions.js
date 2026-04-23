@@ -58,7 +58,7 @@ export async function createBooking(formData) {
     depositAmount,
     balanceAmount,
     notes,
-    accentColor: studio.accent_color || '#D30E15',
+    accentColor: studio.accent_color || '#F0940A',
   }).catch(() => {});
 
   redirect('/studio/bookings');

@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 const FROM = `photostudio.ng <${process.env.GMAIL_USER}>`;
 
-function baseTemplate({ accentColor = '#D30E15', studioName, preheader, body }) {
+function baseTemplate({ accentColor = '#F0940A', studioName, preheader, body }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

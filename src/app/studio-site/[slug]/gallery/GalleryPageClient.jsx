@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function GalleryPageClient({ studio, photos }) {
-  const accent = studio.accent_color || '#D30E15';
+  const accent = studio.accent_color || '#F0940A';
   const [activeFilter, setActiveFilter] = useState('All');
   const [lightboxIndex, setLightboxIndex] = useState(null);
 

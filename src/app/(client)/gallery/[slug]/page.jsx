@@ -39,7 +39,7 @@ export default async function ClientGalleryPage({ params, searchParams }) {
       gallery={gallery}
       photos={photos ?? []}
       studioName={gallery.studios?.name}
-      accentColor={gallery.studios?.accent_color || '#D30E15'}
+      accentColor={gallery.studios?.accent_color || '#F0940A'}
       isLocked={gallery.is_locked}
     />
   );
