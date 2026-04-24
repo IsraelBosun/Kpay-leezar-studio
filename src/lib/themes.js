@@ -110,7 +110,7 @@ export const THEMES = {
 };
 
 export const DEFAULT_CONFIG = {
-  theme: 'classic',
+  theme: 'light',
   hero_style: 'fullscreen',
   portfolio_layout: 'masonry',
   show_services: true,

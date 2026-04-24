@@ -380,23 +380,24 @@ Is it the root domain? (photostudio.ng)
 
 ## Current State of Codebase
 
-Full platform is live and functional at `https://teststudios.vercel.app`. The product is essentially what Pixieset does, built specifically for the Nigerian market with Paystack instead of Stripe.
+Full platform is live and functional at `https://photostudio.ng`. The product is essentially what Pixieset does, built specifically for the Nigerian market with Paystack instead of Stripe.
 
 ---
 
 ### ✅ SaaS Landing Page (`/`)
-- Dark hero with subtle photography background image
-- Alternating light/dark sections: Problem (white) → Features (gray-50) → How it works (white) → Pricing (dark) → CTA (dark)
+- Light theme: white bg, amber accents (`#F0940A`), clean editorial feel
+- Sections: Hero (dashboard mockup) → Photo strip (3 scrollable photography images) → Problem (dark) → Features 2×2 → How It Works (bordered cards) → Pricing → Early Access → CTA
 - Framer Motion scroll animations throughout
-- 3 pricing tiers (Free / Pro ₦15k / Studio ₦35k)
+- 3 pricing tiers (Starter ₦15k / Studio ₦35k most popular / Pro ₦65k)
 - Fully responsive, mobile-first
+- Navbar: Blog removed, separate **Sign In** (text) + **Create Account** (amber button) — mobile overlay fixed so hamburger is always tappable (header z-[110] above overlay z-[100])
 
 ### ✅ Auth Flow
 - Signup (`/auth/signup`) — studio name, email, password with show/hide toggle
 - Login (`/auth/login`) — password show/hide toggle
 - Onboarding (`/auth/onboarding`) — 3-step flow: basics → bio + accent colour → services
-- Demo mode — one click fills all fields with realistic Lagos Lens Studio data including dummy Unsplash portfolio photos and ui-avatars.com logo
-- Onboarding shows correct studio URL based on environment (path on Vercel, subdomain when domain is live)
+- Demo mode — one click fills all fields with realistic Lagos Lens Studio data
+- Onboarding shows correct studio URL based on environment
 
 ### ✅ Middleware + Routing (`src/proxy.js`)
 - Subdomain routing: `slug.photostudio.ng` → `/studio-site/slug`
@@ -408,89 +409,159 @@ Full platform is live and functional at `https://teststudios.vercel.app`. The pr
 - Route protection: unauthenticated → login, authenticated on auth pages → dashboard
 
 ### ✅ Public Studio Website (`/studio-site/[slug]`)
-- **`StudioSiteClient.jsx`** — fully animated client component:
-  - Transparent nav that becomes opaque on scroll, mobile hamburger menu
-  - Ken Burns hero using first portfolio photo as background
-  - Accent-color animated marquee strip
-  - Portfolio preview (first 8 photos) with category filters, hover effects, "View All →" link
-  - Services grid with numbered cards
-  - About section with staggered photo collage
-  - Full booking form (name, email, phone, date, service dropdown, notes)
-  - WhatsApp button as secondary contact
-  - Footer with contact details
-  - Fullscreen photo lightbox (ESC, arrow keys)
-  - All colours themed by studio's chosen `accent_color`
+- **`StudioSiteClient.jsx`** — fully theme-aware, reads `website_config` from DB:
+  - **6 themes**: Classic (dark), Light (white — default), Ivory (cream), Midnight (blue-black), Sand (warm earth), Noir (pure black)
+  - All colours (bg, text, borders, inputs, nav) driven by theme variables via inline styles
+  - **Hero styles**: Fullscreen (Ken Burns photo + dark overlay, always white text) or Minimal (bold typography on theme background)
+  - **Portfolio layouts**: Masonry (tight 4-col) or Clean Grid (spacious 3-col with rounded corners)
+  - **Section toggles**: show/hide Services, About, Booking independently
+  - Mobile: full-screen overlay nav with large serif links, staggered reveal animation, Book CTA at bottom, contact info shown
+  - Marquee strip with accent-colored dividers
+  - Footer: email, phone, Instagram icon link
+  - Fullscreen lightbox (ESC, arrow keys)
 
 ### ✅ Studio Gallery Page (`/studio-site/[slug]/gallery`)
-- Masonry layout (2→4 columns responsive)
-- Category filter buttons with photo counts
-- Fullscreen lightbox with prev/next, ESC, accent-color category labels
-- Back button to main studio site
+- True masonry layout (2→4 columns responsive)
+- Category filter tabs: horizontally scrollable strip on mobile (no wrapping), active tab auto-scrolls into view
+- Photo tap effects: `active:scale-[0.96]`, `touch-action: manipulation` (no 300ms delay), white flash on tap, accent gradient overlay
+- Lightbox: swipe left/right to navigate on mobile, circular icon buttons for prev/next/close, "swipe to navigate" hint shown on mobile
+- Back button: circular icon with hover/active states
 - "Powered by photostudio.ng" footer
 
+### ✅ Website Builder (`/studio/website`) — THREE tabs
+**Photos tab:**
+- Drag-and-drop upload zone → `POST /api/portfolio/upload` → R2 storage
+- **"Use sample photos" button** — inserts 8 Picsum photos (4 categories, mixed portrait/landscape/square ratios) directly into DB for testing
+- Grid of uploaded photos with delete (× button on hover) and category dropdowns
+- Save Categories button → `savePhotoCategories` server action
+
+**Design tab:**
+- 6 theme swatches with colour previews and accent colour dot
+- Hero style picker: Fullscreen vs Minimal (with visual mini-previews)
+- Portfolio layout picker: Masonry vs Clean Grid (with visual mini-previews, overflow-hidden fixed)
+- Section toggles: Services, About, Booking (toggle switches)
+- Save Design → `saveWebsiteConfig` → updates `studios.website_config` JSONB
+
+**Content tab:**
+- Bio textarea: **300 character limit** enforced via `maxLength`, live counter shows remaining chars, turns amber at 280, red at 300
+- Email + Phone/WhatsApp in grid
+- Instagram URL with icon
+- Accent colour swatches (16 colours, same set as Settings)
+- Save Content → `saveStudioContent` → updates bio, email, phone, instagram_url, accent_color on studios table
+
+### ✅ Portfolio Photo APIs
+- `POST /api/portfolio/upload` — validates file type, uploads to R2 at `studios/{id}/portfolio/{uuid}.{ext}`, auto-assigns sort_order, inserts into `portfolio_photos`
+- `DELETE /api/portfolio/delete` — extracts R2 key from public URL, deletes from R2 + DB (continues even if R2 delete fails)
+
+### ✅ Theme System (`src/lib/themes.js`)
+- 6 themes exported as `THEMES` object, each with: bg, surface, surfaceAlt, text, textMuted, border, cardBg, navScrolled, inputBorder, inputText, inputPlaceholder, selectBg, dark (bool), swatch, name, description
+- `DEFAULT_CONFIG`: theme `light`, hero_style `fullscreen`, portfolio_layout `masonry`, all sections shown
+- `resolveConfig(raw)` merges saved config with defaults — safe for null/missing values
+
+### ✅ Paystack Payments (`src/lib/paystack.js`)
+- **Subaccount model**: photographer provides Nigerian bank account → platform creates Paystack subaccount → Paystack settles directly to photographer's bank within 24h. Platform takes 0% cut.
+- `createSubaccount`, `updateSubaccount`, `initializePayment` (with subaccount + bearer: "subaccount"), `resolveBankAccount`, `verifyWebhookSignature`
+- `GET /api/paystack/resolve-account` — verifies account number + bank code, returns account name
+- `POST /api/paystack/initialize` — creates payment link for a booking's deposit or balance
+- `POST /api/paystack/webhook` — verifies HMAC SHA-512 signature, handles `charge.success`: marks payment paid, sets deposit_paid/balance_paid on booking, unlocks gallery if balance payment, sends gallery-ready email
+- Settings → Payouts section: 22 Nigerian banks dropdown, account number input, Verify button, existing details shown if set up
+
+### ✅ Booking Detail Page (`/studio/bookings/[id]`)
+- Warning banner if no Paystack subaccount set up (links to Settings → Payouts)
+- Deposit row + Balance row with paid status, paid date
+- "Get payment link" → calls `/api/paystack/initialize` → shows authorization_url
+- Copy link button + WhatsApp share with pre-filled message
+- Balance row disabled until deposit is paid
+
 ### ✅ Studio Admin Dashboard (`/studio/*`)
-- Sidebar with logo, studio name, plan badge, nav links, "View My Site" link, sign out
-- Mobile: fixed top bar + slide-in drawer (no double logo)
-- Content padded correctly below fixed mobile nav bar
-- **Dashboard** (`/studio/dashboard`) — stats cards, recent bookings, studio URL banner with correct Vercel/domain link
-- **Bookings** (`/studio/bookings`) — filter tabs (scrollable on mobile), card layout on mobile / table on desktop, status badges
-- **New Booking** (`/studio/bookings/new`) — full form, sends confirmation email to client on creation
+- Sidebar: Dashboard, Bookings, Galleries, Payments, **Website** (globe icon), Settings — Website link added between Payments and Settings
+- Mobile: fixed top bar + slide-in drawer
+- **Dashboard** (`/studio/dashboard`) — stats cards, recent bookings, studio URL banner
+- **Bookings** (`/studio/bookings`) — filter tabs (scrollable on mobile), card/table layout, status badges
+- **New Booking** (`/studio/bookings/new`) — full form, sends confirmation email
 - **Galleries** (`/studio/galleries`) — list of all galleries
 - **New Gallery** (`/studio/galleries/new`) — create gallery with title, slug, password
-- **Gallery Manager** (`/studio/galleries/[id]`) — two tabs:
-  - Photos: drag-drop upload to R2, grid view, click to fullscreen lightbox, delete
-  - Selections: larger thumbnails (2–5 col grid), hover effects, click to fullscreen lightbox with ESC/arrows, grouped by person
-- **Payments** (`/studio/payments`)
-- **Settings** (`/studio/settings`)
+- **Gallery Manager** (`/studio/galleries/[id]`) — Photos tab + Selections tab
+- **Payments** (`/studio/payments`) — exists, needs full implementation
+- **Website** (`/studio/website`) — Photos / Design / Content tabs (see above)
+- **Settings** (`/studio/settings`) — studio info, contact, branding, plan, Payouts (Paystack bank details)
 
 ### ✅ Client Gallery Portal (`/(client)/gallery/[slug]`)
 - Password gate → name/role step → photo grid
-- Heart button on every thumbnail (always visible) — tap to select without opening lightbox
-- Click photo anywhere else → fullscreen lightbox
-- Heart also selectable inside lightbox (both work simultaneously)
-- Selected photos show filled accent-colored heart + accent outline border on thumbnail
-- Multi-person support (each person submits their own selections)
-- Submit selections → confirmation screen → WhatsApp share
+- Heart button on every thumbnail — tap to select without opening lightbox
+- Click photo → fullscreen lightbox; heart selectable inside lightbox too
+- Selected photos: filled accent-colored heart + accent outline border
+- Multi-person support (each person submits independently)
+- Submit → confirmation screen → WhatsApp share
 
-### ✅ Bookings API (`/api/bookings`)
-- POST: clients on studio public site submit booking → saved as `pending` → confirmation email fired
-
-### ✅ Gallery Upload API (`/api/galleries/upload`)
-- Uploads photos to Cloudflare R2
-- Returns `thumbnail_url` and `original_url`
-
-### ✅ Selections API (`/api/galleries/selections`)
-- POST: saves client photo selections to `selections` table
+### ✅ APIs
+- `POST /api/bookings` — client booking form → saved as `pending` → confirmation email
+- `POST /api/galleries/upload` — uploads to R2, returns thumbnail_url + original_url
+- `POST /api/galleries/selections` — saves client photo selections
+- `POST /api/portfolio/upload` — portfolio photos for public website
+- `DELETE /api/portfolio/delete` — removes portfolio photo
+- `GET /api/paystack/resolve-account` — verifies Nigerian bank account
+- `POST /api/paystack/initialize` — creates Paystack payment link
+- `POST /api/paystack/webhook` — handles payment confirmation + gallery unlock
+- `GET /api/pay/success` — post-payment confirmation page
 
 ### ✅ Email (`src/lib/email.js`)
-- Nodemailer + Gmail (`bluehydra001@gmail.com`) — replaced Resend
-- `sendBookingConfirmation` — fires on new booking (from studio dashboard or client booking form)
-- `sendGalleryReady` — ready to use when gallery is unlocked
-- `sendPaymentReminder` — ready to use for payment chasing
-- HTML email templates with studio name, accent colour, booking details
+- Nodemailer + Gmail (`bluehydra001@gmail.com`)
+- `sendBookingConfirmation`, `sendGalleryReady`, `sendPaymentReminder`
+- HTML templates with studio name, accent colour, booking details
 
 ### ✅ Stack
 - Next.js 16 (App Router), React 19, Tailwind CSS v4, Framer Motion
 - Supabase (auth + PostgreSQL + RLS)
 - Cloudflare R2 (image storage)
 - Nodemailer / Gmail (email)
-- Paystack (wired up, webhooks pending)
+- Paystack (subaccounts + webhooks — fully implemented)
 - Vercel (hosting)
+
+---
+
+## Required DB Migrations (run in Supabase SQL editor)
+
+```sql
+-- Paystack payout columns
+ALTER TABLE studios
+  ADD COLUMN IF NOT EXISTS paystack_subaccount_code text,
+  ADD COLUMN IF NOT EXISTS paystack_bank_name text,
+  ADD COLUMN IF NOT EXISTS paystack_bank_code text,
+  ADD COLUMN IF NOT EXISTS paystack_account_number text,
+  ADD COLUMN IF NOT EXISTS paystack_account_name text;
+
+-- Website builder
+ALTER TABLE studios ADD COLUMN IF NOT EXISTS website_config JSONB DEFAULT '{}';
+
+-- Instagram / social
+ALTER TABLE studios ADD COLUMN IF NOT EXISTS instagram_url text;
+
+-- Portfolio photos for public website (separate from gallery photos)
+CREATE TABLE IF NOT EXISTS portfolio_photos (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  studio_id uuid REFERENCES studios(id) ON DELETE CASCADE,
+  src text NOT NULL,
+  thumbnail_url text,
+  category text,
+  sort_order integer DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+```
 
 ---
 
 ## Domain — Current Status
 
-**photostudio.ng** is being registered (targeting 2026-04-21). Once live, add it to the Vercel project and set a wildcard DNS record `*.photostudio.ng → cname.vercel-dns.com`. Update `NEXT_PUBLIC_ROOT_DOMAIN=photostudio.ng` in Vercel env vars.
+**photostudio.ng is LIVE.** Wildcard DNS `*.photostudio.ng → cname.vercel-dns.com` is set. `NEXT_PUBLIC_ROOT_DOMAIN=photostudio.ng` is set in Vercel env vars.
 
-**Vercel subdomain limitation:** Wildcard subdomains (`*.teststudios.vercel.app`) are NOT supported on `.vercel.app` domains — Vercel blocks them before the app sees them. Subdomain routing only works on custom domains you own.
+Studio sites are accessible at:
+```
+https://[slug].photostudio.ng          ← subdomain routing (live)
+https://photostudio.ng/studio-site/[slug]  ← direct path fallback
+```
 
-**Testing workaround (until photostudio.ng is live):** Studio sites are accessible directly at:
-```
-https://teststudios.vercel.app/studio-site/[slug]
-https://teststudios.vercel.app/studio-site/[slug]/gallery
-```
-The middleware detects `/studio-site/*` paths on the root domain and sets `x-is-studio-site: 1` so the platform nav/footer is still suppressed correctly.
+**Vercel subdomain limitation:** Wildcard subdomains (`*.teststudios.vercel.app`) are NOT supported on `.vercel.app` domains. Subdomain routing only works on photostudio.ng.
 
 ---
 

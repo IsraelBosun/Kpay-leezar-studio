@@ -195,6 +195,40 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Photo strip ──────────────────────────────────────────────────── */}
+      <section className="bg-gray-50 pb-16">
+        <FadeUp className="max-w-4xl mx-auto">
+          {/* Mobile: horizontal scroll — Desktop: 3-col grid */}
+          <div
+            className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-6 md:px-0 [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: 'none' }}>
+            {[
+              { seed: 'studio-bride',    offset: '' },
+              { seed: 'studio-event',    offset: 'md:mt-6' },
+              { seed: 'studio-portrait', offset: '' },
+            ].map(({ seed, offset }) => (
+              <motion.div
+                key={seed}
+                whileHover={{ y: -6 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.35, ease }}
+                className={`flex-shrink-0 w-[72vw] md:w-auto snap-start ${offset}`}>
+                <div className="aspect-[4/5] overflow-hidden rounded-sm group cursor-pointer relative">
+                  <img
+                    src={`https://picsum.photos/seed/${seed}/600/750`}
+                    alt=""
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                  />
+                  {/* Subtle dark veil on hover */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 group-active:bg-black/25 transition-colors duration-500 rounded-sm" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <p className="text-xs text-zinc-400 text-center mt-5 px-6 md:px-0">Your client galleries, delivered beautifully.</p>
+        </FadeUp>
+      </section>
+
       {/* ── Problem ───────────────────────────────────────────────────────── */}
       <section className="py-20 px-6 bg-zinc-900">
         <FadeUp className="max-w-2xl mx-auto text-center">
@@ -242,15 +276,17 @@ export default function HomePage() {
             <h2 className="font-bold text-3xl md:text-4xl text-zinc-900">Up and running in minutes</h2>
           </FadeUp>
 
-          <Stagger className="grid md:grid-cols-3 gap-10">
+          <Stagger className="grid md:grid-cols-3 gap-4">
             {STEPS.map(({ n, title, body }) => (
-              <Item key={n} className="flex flex-col items-center text-center">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm mb-4 flex-shrink-0"
-                  style={{ backgroundColor: AMBER }}>
-                  {n}
+              <Item key={n}>
+                <div className="bg-white border border-zinc-200 rounded-sm p-7 h-full flex flex-col">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm mb-5 flex-shrink-0"
+                    style={{ backgroundColor: AMBER }}>
+                    {n}
+                  </div>
+                  <h3 className="font-semibold text-zinc-900 mb-2">{title}</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{body}</p>
                 </div>
-                <h3 className="font-semibold text-zinc-900 mb-2">{title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{body}</p>
               </Item>
             ))}
           </Stagger>

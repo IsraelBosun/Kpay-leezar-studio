@@ -2,9 +2,28 @@
 
 import { useState, useCallback } from 'react';
 import { THEMES, resolveConfig } from '@/lib/themes';
-import { saveWebsiteConfig, savePhotoCategories } from './actions';
+import { saveWebsiteConfig, savePhotoCategories, loadSamplePhotos, saveStudioContent } from './actions';
 
 const CATEGORIES = ['Weddings', 'Portraits', 'Events', 'Commercial', 'Other'];
+
+const ACCENT_COLORS = [
+  { label: 'Crimson',  value: '#D30E15' },
+  { label: 'Coral',    value: '#E8441A' },
+  { label: 'Amber',    value: '#F0940A' },
+  { label: 'Gold',     value: '#B8860B' },
+  { label: 'Sage',     value: '#4A7C59' },
+  { label: 'Forest',   value: '#2D5016' },
+  { label: 'Teal',     value: '#0D7377' },
+  { label: 'Ocean',    value: '#1E6B9E' },
+  { label: 'Navy',     value: '#1B2A4A' },
+  { label: 'Violet',   value: '#5B21B6' },
+  { label: 'Plum',     value: '#6B2D5E' },
+  { label: 'Rose',     value: '#BE185D' },
+  { label: 'Blush',    value: '#C4748A' },
+  { label: 'Slate',    value: '#475569' },
+  { label: 'Charcoal', value: '#374151' },
+  { label: 'Obsidian', value: '#111111' },
+];
 
 export default function WebsiteEditor({ studio, portfolioPhotos: initial, websiteConfig }) {
   const [activeTab, setActiveTab] = useState('photos');
@@ -16,10 +35,20 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
   );
   const [savingCats, setSavingCats] = useState(false);
   const [catsSaved, setCatsSaved] = useState(false);
+  const [loadingSamples, setLoadingSamples] = useState(false);
 
   const [config, setConfig] = useState(resolveConfig(websiteConfig));
   const [savingDesign, setSavingDesign] = useState(false);
   const [designSaved, setDesignSaved] = useState(false);
+
+  // ── Content state ──────────────────────────────────────────────────
+  const [bio, setBio] = useState(studio.bio || '');
+  const [email, setEmail] = useState(studio.email || '');
+  const [phone, setPhone] = useState(studio.phone || '');
+  const [instagramUrl, setInstagramUrl] = useState(studio.instagram_url || '');
+  const [accentColor, setAccentColor] = useState(studio.accent_color || '#F0940A');
+  const [savingContent, setSavingContent] = useState(false);
+  const [contentSaved, setContentSaved] = useState(false);
 
   // ── Photo upload ────────────────────────────────────────────────────
   const uploadFiles = useCallback(async (files) => {
@@ -73,6 +102,29 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     if (!result?.error) setCatsSaved(true);
   }
 
+  // ── Sample photos ────────────────────────────────────────────────────
+  async function handleLoadSamples() {
+    setLoadingSamples(true);
+    const result = await loadSamplePhotos();
+    setLoadingSamples(false);
+    if (result?.photos) {
+      setPhotos(prev => [...prev, ...result.photos]);
+      setCategories(prev => ({
+        ...prev,
+        ...Object.fromEntries(result.photos.map(p => [p.id, p.category || ''])),
+      }));
+    }
+  }
+
+  // ── Content save ─────────────────────────────────────────────────────
+  async function handleSaveContent() {
+    setSavingContent(true);
+    setContentSaved(false);
+    await saveStudioContent({ bio, email, phone, instagram_url: instagramUrl, accent_color: accentColor });
+    setSavingContent(false);
+    setContentSaved(true);
+  }
+
   // ── Design save ─────────────────────────────────────────────────────
   async function handleSaveDesign() {
     setSavingDesign(true);
@@ -85,6 +137,7 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
   const tabs = [
     { id: 'photos', label: 'Photos' },
     { id: 'design', label: 'Design' },
+    { id: 'content', label: 'Content' },
   ];
 
   return (
@@ -142,10 +195,36 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
             </label>
           </div>
 
+          {/* Sample photos shortcut */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleLoadSamples}
+              disabled={loadingSamples}
+              className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 text-[10px] uppercase tracking-widest font-bold text-zinc-400 hover:border-primary hover:text-primary transition-colors disabled:opacity-40">
+              {loadingSamples ? (
+                <>
+                  <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Loading samples...
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Use sample photos
+                </>
+              )}
+            </button>
+            <p className="text-[10px] text-neutral-gray">8 photos · 4 categories · mixed sizes</p>
+          </div>
+
           {/* Photos grid */}
           {photos.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-sm text-neutral-gray italic">No photos yet. Upload some to get your website looking great.</p>
+            <div className="py-8 text-center">
+              <p className="text-sm text-neutral-gray italic">No photos yet. Upload some or use the sample photos above.</p>
             </div>
           ) : (
             <>
@@ -305,9 +384,9 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
                   label: 'Clean Grid',
                   desc: 'Uniform rows with more breathing room',
                   preview: (
-                    <div className="h-16 bg-gray-50 border border-gray-200 rounded-sm mb-3 p-2 grid grid-cols-3 gap-1.5">
+                    <div className="h-16 bg-gray-50 border border-gray-200 rounded-sm mb-3 p-2 grid grid-cols-3 gap-1.5 overflow-hidden">
                       {[...Array(6)].map((_, i) => (
-                        <div key={i} className="bg-zinc-300 rounded-sm aspect-square" />
+                        <div key={i} className="bg-zinc-300 rounded-sm" />
                       ))}
                     </div>
                   ),
@@ -363,6 +442,126 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
               {savingDesign ? 'Saving...' : 'Save Design'}
             </button>
             {designSaved && (
+              <span className="text-xs text-green-600 font-bold uppercase tracking-widest">✓ Live on your site</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Content tab ── */}
+      {activeTab === 'content' && (
+        <div className="p-6 md:p-8 space-y-10">
+
+          {/* Bio */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">About</p>
+            <p className="text-xs text-neutral-gray mb-5">This appears in the About section of your website. Keep it short and punchy — 2 to 3 sentences.</p>
+            <textarea
+              rows={4}
+              maxLength={300}
+              value={bio}
+              onChange={e => setBio(e.target.value)}
+              placeholder="Tell clients about your style, your background, and what makes your studio unique..."
+              className={`w-full text-sm bg-gray-50 border py-3 px-4 focus:outline-none text-black placeholder:text-zinc-400 resize-none transition-colors ${
+                bio.length >= 280 ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-primary'
+              }`}
+            />
+            <div className="flex items-center justify-between mt-1.5">
+              <p className={`text-[11px] font-medium ${
+                bio.length >= 300 ? 'text-red-500' :
+                bio.length >= 280 ? 'text-amber-500' :
+                'text-zinc-400'
+              }`}>
+                {300 - bio.length} characters remaining
+              </p>
+              <p className="text-[11px] text-zinc-300">{bio.length} / 300</p>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Contact</p>
+            <p className="text-xs text-neutral-gray mb-5">Shown in your website footer and booking form.</p>
+            <div className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="studio@email.com"
+                    className="text-sm bg-gray-50 border border-gray-200 py-3 px-4 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Phone / WhatsApp</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="+234 800 000 0000"
+                    className="text-sm bg-gray-50 border border-gray-200 py-3 px-4 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Instagram URL</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2">
+                    <svg className="w-4 h-4 text-zinc-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                  </span>
+                  <input
+                    type="url"
+                    value={instagramUrl}
+                    onChange={e => setInstagramUrl(e.target.value)}
+                    placeholder="https://instagram.com/yourstudio"
+                    className="w-full text-sm bg-gray-50 border border-gray-200 py-3 pl-11 pr-4 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Accent colour */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Accent Colour</p>
+            <p className="text-xs text-neutral-gray mb-5">The brand colour used for buttons, highlights, and links across your site.</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {ACCENT_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setAccentColor(c.value)}
+                  title={c.label}
+                  className={`w-9 h-9 transition-all duration-150 relative flex-shrink-0 ${accentColor === c.value ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'}`}
+                  style={{ backgroundColor: c.value }}>
+                  {accentColor === c.value && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-400">
+              Selected: <span className="font-bold text-black">{ACCENT_COLORS.find(c => c.value === accentColor)?.label ?? accentColor}</span>
+            </p>
+          </div>
+
+          {/* Save */}
+          <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
+            <button
+              onClick={handleSaveContent}
+              disabled={savingContent}
+              className="bg-primary text-white px-6 py-3.5 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors disabled:opacity-50">
+              {savingContent ? 'Saving...' : 'Save Content'}
+            </button>
+            {contentSaved && (
               <span className="text-xs text-green-600 font-bold uppercase tracking-widest">✓ Live on your site</span>
             )}
           </div>

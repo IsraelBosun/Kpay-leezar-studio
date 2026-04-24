@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export default function GalleryPageClient({ studio, photos }) {
   const accent = studio.accent_color || '#F0940A';
   const [activeFilter, setActiveFilter] = useState('All');
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const touchStartX = useRef(null);
+  const filterRef = useRef(null);
 
   const categories = ['All', ...Array.from(new Set(photos.map(p => p.category).filter(Boolean)))];
   const filtered = activeFilter === 'All' ? photos : photos.filter(p => p.category === activeFilter);
@@ -27,34 +29,58 @@ export default function GalleryPageClient({ studio, photos }) {
     return () => { document.body.style.overflow = ''; };
   }, [lightboxIndex]);
 
+  // Scroll active filter tab into view
+  useEffect(() => {
+    if (!filterRef.current) return;
+    const active = filterRef.current.querySelector('[data-active="true"]');
+    if (active) active.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+  }, [activeFilter]);
+
+  // Lightbox swipe handlers
+  function onTouchStart(e) { touchStartX.current = e.touches[0].clientX; }
+  function onTouchEnd(e) {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0) setLightboxIndex(i => (i + 1) % filtered.length);
+    else setLightboxIndex(i => (i - 1 + filtered.length) % filtered.length);
+  }
+
   return (
-    <div style={{ '--accent': accent }} className="min-h-screen bg-zinc-950 text-white font-sans">
+    <div className="min-h-screen bg-zinc-950 text-white font-sans">
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-white/8">
-        <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-3 group">
-            <svg className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 19l-7-7 7-7" />
-            </svg>
-            <span className="text-[10px] uppercase tracking-widest font-bold text-white/40 group-hover:text-white transition-colors">Back</span>
+        <div className="max-w-7xl mx-auto px-4 md:px-10 flex items-center justify-between h-14 md:h-16 gap-4">
+
+          {/* Back */}
+          <Link href="/"
+            className="flex items-center gap-2 group flex-shrink-0 py-3 pr-3 -ml-1">
+            <span className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 group-hover:bg-white/10 group-active:scale-90 transition-all duration-200">
+              <svg className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest font-bold text-white/40 group-hover:text-white transition-colors">Back</span>
           </Link>
 
-          <div className="flex flex-col items-center">
+          {/* Studio name — centre */}
+          <div className="flex flex-col items-center flex-1 min-w-0">
             {studio.logo_url ? (
-              <img src={studio.logo_url} alt={studio.name} className="h-8 w-auto object-contain" />
+              <img src={studio.logo_url} alt={studio.name} className="h-7 md:h-8 w-auto object-contain" />
             ) : (
               <>
-                <span className="font-serif text-lg tracking-tight text-white leading-none">{studio.name}</span>
-                <span className="text-[7px] uppercase tracking-[0.3em] font-bold" style={{ color: accent }}>Photography</span>
+                <span className="font-serif text-base md:text-lg tracking-tight text-white leading-none truncate max-w-[160px]">{studio.name}</span>
+                <span className="text-[7px] uppercase tracking-[0.3em] font-bold hidden sm:block" style={{ color: accent }}>Photography</span>
               </>
             )}
           </div>
 
+          {/* Book CTA */}
           <Link
-            href="#"
-            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0 }); }}
-            className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 text-white transition-all hover:opacity-80"
+            href="/#contact"
+            className="flex-shrink-0 text-[10px] uppercase tracking-widest font-bold px-4 py-2.5 text-white transition-all active:scale-95 rounded-sm"
             style={{ backgroundColor: accent }}>
             Book
           </Link>
@@ -62,43 +88,43 @@ export default function GalleryPageClient({ studio, photos }) {
       </header>
 
       {/* ── Hero text ── */}
-      <div className="pt-20 pb-12 px-6 md:px-10 max-w-7xl mx-auto">
+      <div className="pt-10 md:pt-20 pb-8 md:pb-12 px-5 md:px-10 max-w-7xl mx-auto">
         <p className="text-[10px] uppercase tracking-[0.4em] font-bold mb-3" style={{ color: accent }}>Portfolio</p>
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <h1 className="font-serif text-5xl md:text-6xl">Our Work</h1>
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+          <h1 className="font-serif text-4xl md:text-6xl">Our Work</h1>
           <p className="text-white/40 text-sm max-w-xs leading-relaxed">
-            {photos.length} {photos.length === 1 ? 'photograph' : 'photographs'} across {categories.length - 1 || 1} {(categories.length - 1) === 1 ? 'category' : 'categories'}.
+            {photos.length} {photos.length === 1 ? 'photograph' : 'photographs'}
+            {categories.length > 2 && ` · ${categories.length - 1} categories`}
           </p>
         </div>
       </div>
 
-      {/* ── Category filters ── */}
+      {/* ── Category filters — horizontally scrollable on mobile ── */}
       {categories.length > 1 && (
-        <div className="px-6 md:px-10 max-w-7xl mx-auto mb-10 flex flex-wrap gap-2">
+        <div
+          ref={filterRef}
+          className="flex gap-2 overflow-x-auto px-5 md:px-10 pb-2 mb-8 max-w-7xl mx-auto [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}>
           {categories.map(cat => (
             <button
               key={cat}
+              data-active={activeFilter === cat}
               onClick={() => setActiveFilter(cat)}
-              className={`text-[9px] uppercase tracking-widest font-bold px-5 py-2.5 border transition-all ${
-                activeFilter === cat
-                  ? 'text-white border-transparent'
-                  : 'text-white/40 border-white/15 hover:text-white/70 hover:border-white/30'
-              }`}
-              style={activeFilter === cat ? { backgroundColor: accent, borderColor: accent } : {}}
-            >
+              className="flex-shrink-0 text-[9px] uppercase tracking-widest font-bold px-5 py-2.5 border transition-all duration-200 active:scale-95 rounded-sm"
+              style={activeFilter === cat
+                ? { backgroundColor: accent, borderColor: accent, color: '#fff' }
+                : { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.15)' }}>
               {cat}
               {cat !== 'All' && (
-                <span className="ml-2 opacity-50">
-                  {photos.filter(p => p.category === cat).length}
-                </span>
+                <span className="ml-1.5 opacity-50">{photos.filter(p => p.category === cat).length}</span>
               )}
             </button>
           ))}
         </div>
       )}
 
-      {/* ── Grid ── */}
-      <div className="px-6 md:px-10 max-w-7xl mx-auto pb-24">
+      {/* ── Photo grid ── */}
+      <div className="px-5 md:px-10 max-w-7xl mx-auto pb-24">
         {filtered.length === 0 ? (
           <div className="py-32 text-center text-white/30 text-sm">No photos in this category yet.</div>
         ) : (
@@ -107,22 +133,24 @@ export default function GalleryPageClient({ studio, photos }) {
               <button
                 key={photo.id}
                 onClick={() => setLightboxIndex(i)}
-                className="relative w-full overflow-hidden group bg-zinc-900 focus:outline-none block break-inside-avoid"
-              >
+                className="relative w-full overflow-hidden group bg-zinc-900 focus:outline-none block break-inside-avoid transition-transform duration-200 active:scale-[0.96]"
+                style={{ touchAction: 'manipulation' }}>
                 <img
                   src={photo.thumbnail_url || photo.src}
                   alt={photo.category || ''}
-                  className="w-full object-cover transition-all duration-700 group-hover:scale-105 brightness-75 group-hover:brightness-100"
+                  className="w-full object-cover transition-all duration-700 brightness-75 group-hover:brightness-100 group-active:brightness-90"
                   loading="lazy"
                 />
+                {/* Hover/tap overlay */}
                 <div
-                  className="absolute inset-0 flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ background: `linear-gradient(to top, ${accent}70, transparent 50%)` }}
-                >
+                  className="absolute inset-0 flex items-end opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300"
+                  style={{ background: `linear-gradient(to top, ${accent}80, transparent 55%)` }}>
                   {photo.category && (
                     <p className="text-[9px] uppercase tracking-widest font-bold text-white px-3 pb-3">{photo.category}</p>
                   )}
                 </div>
+                {/* Tap flash — instant white ripple on press */}
+                <div className="absolute inset-0 bg-white/0 active:bg-white/10 transition-colors duration-100 pointer-events-none" />
               </button>
             ))}
           </div>
@@ -141,11 +169,14 @@ export default function GalleryPageClient({ studio, photos }) {
         <div
           className="fixed inset-0 z-[100] bg-black/97 flex items-center justify-center"
           onClick={() => setLightboxIndex(null)}
-        >
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}>
+
+          {/* Prev */}
           <button
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + filtered.length) % filtered.length); }}
-            className="absolute left-4 md:left-8 p-3 text-white/50 hover:text-white transition-colors z-10">
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            className="absolute left-3 md:left-8 z-10 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center rounded-full bg-white/10 md:bg-transparent md:p-3 text-white/60 hover:text-white active:scale-90 transition-all">
+            <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -153,33 +184,38 @@ export default function GalleryPageClient({ studio, photos }) {
           <img
             src={filtered[lightboxIndex]?.src || filtered[lightboxIndex]?.thumbnail_url}
             alt=""
-            className="max-h-[88vh] max-w-[88vw] object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
+            className="max-h-[85vh] max-w-[88vw] object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()} />
 
+          {/* Next */}
           <button
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % filtered.length); }}
-            className="absolute right-4 md:right-8 p-3 text-white/50 hover:text-white transition-colors z-10">
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            className="absolute right-3 md:right-8 z-10 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center rounded-full bg-white/10 md:bg-transparent md:p-3 text-white/60 hover:text-white active:scale-90 transition-all">
+            <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
+          {/* Close */}
           <button
             onClick={() => setLightboxIndex(null)}
-            className="absolute top-5 right-5 p-2 text-white/50 hover:text-white transition-colors z-10">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-90 transition-all text-white/70 hover:text-white">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-1">
-            <p className="text-[10px] uppercase tracking-widest text-white/30">
+          {/* Counter + category */}
+          <div className="absolute bottom-5 left-0 right-0 flex flex-col items-center gap-1 pointer-events-none">
+            {filtered[lightboxIndex]?.category && (
+              <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: accent }}>
+                {filtered[lightboxIndex].category}
+              </p>
+            )}
+            <p className="text-[10px] uppercase tracking-widest text-white/25">
               {lightboxIndex + 1} / {filtered.length}
-              {filtered[lightboxIndex]?.category && (
-                <span style={{ color: accent }}> · {filtered[lightboxIndex].category}</span>
-              )}
             </p>
+            <p className="text-[10px] text-white/20 mt-1 md:hidden">swipe to navigate</p>
           </div>
         </div>
       )}

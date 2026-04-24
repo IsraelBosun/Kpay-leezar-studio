@@ -7,7 +7,7 @@ export default async function WebsitePage() {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, name, slug, accent_color, website_config')
+    .select('id, name, slug, accent_color, website_config, bio, email, phone, instagram_url')
     .eq('owner_id', user.id)
     .single();
 
