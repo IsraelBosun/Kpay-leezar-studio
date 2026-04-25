@@ -17,7 +17,7 @@ export async function initializePayment({ email, amountNaira, reference, metadat
 
   if (subaccountCode) {
     body.subaccount = subaccountCode;
-    body.bearer = 'subaccount'; // photographer absorbs Paystack fees
+    body.bearer = 'account'; // platform account bears Paystack fees (subaccount keeps 100%)
   }
 
   const res = await fetch(`${BASE}/transaction/initialize`, {
@@ -55,7 +55,7 @@ export async function createSubaccount({ businessName, bankCode, accountNumber }
       business_name: businessName,
       settlement_bank: bankCode,
       account_number: accountNumber,
-      percentage_charge: 100,
+      percentage_charge: 0,
     }),
   });
   const data = await res.json();
@@ -70,6 +70,7 @@ export async function updateSubaccount(subaccountCode, { bankCode, accountNumber
     body: JSON.stringify({
       settlement_bank: bankCode,
       account_number: accountNumber,
+      percentage_charge: 0,
     }),
   });
   const data = await res.json();
