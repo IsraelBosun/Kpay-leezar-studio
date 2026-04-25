@@ -71,8 +71,39 @@ export async function updateBookingStatus(bookingId, status) {
 
   const { error } = await supabase
     .from('bookings')
-    .update({ status })
+    .update({ status, status_updated_at: new Date().toISOString() })
     .eq('id', bookingId);
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
+export async function updateBookingDetails(bookingId, data) {
+  const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated.' };
+
+  const { data: studio } = await supabase
+    .from('studios')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single();
+  if (!studio) return { error: 'Studio not found.' };
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({
+      client_name: data.client_name,
+      client_email: data.client_email,
+      client_phone: data.client_phone || null,
+      service_id: data.service_id || null,
+      session_date: data.session_date || null,
+      deposit_amount: parseFloat(data.deposit_amount) || 0,
+      balance_amount: parseFloat(data.balance_amount) || 0,
+      notes: data.notes || null,
+    })
+    .eq('id', bookingId)
+    .eq('studio_id', studio.id);
 
   if (error) return { error: error.message };
   return { success: true };

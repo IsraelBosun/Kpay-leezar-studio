@@ -3,24 +3,6 @@
 import { useState } from 'react';
 import { saveSettings, saveBankDetails } from './actions';
 
-const ACCENT_COLORS = [
-  { label: 'Crimson',  value: '#D30E15' },
-  { label: 'Coral',    value: '#E8441A' },
-  { label: 'Amber',    value: '#F0940A' },
-  { label: 'Gold',     value: '#B8860B' },
-  { label: 'Sage',     value: '#4A7C59' },
-  { label: 'Forest',   value: '#2D5016' },
-  { label: 'Teal',     value: '#0D7377' },
-  { label: 'Ocean',    value: '#1E6B9E' },
-  { label: 'Navy',     value: '#1B2A4A' },
-  { label: 'Violet',   value: '#5B21B6' },
-  { label: 'Plum',     value: '#6B2D5E' },
-  { label: 'Rose',     value: '#BE185D' },
-  { label: 'Blush',    value: '#C4748A' },
-  { label: 'Slate',    value: '#475569' },
-  { label: 'Charcoal', value: '#374151' },
-  { label: 'Obsidian', value: '#111111' },
-];
 
 const NIGERIAN_BANKS = [
   { name: 'Access Bank',                  code: '044' },
@@ -48,7 +30,6 @@ const NIGERIAN_BANKS = [
 ];
 
 export default function SettingsForm({ studio }) {
-  const [accentColor, setAccentColor] = useState(studio.accent_color || '#F0940A');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -64,12 +45,34 @@ export default function SettingsForm({ studio }) {
   const [bankStatus, setBankStatus] = useState(null);
   const [bankError, setBankError] = useState(null);
 
+  // Upgrade state
+  const [billing, setBilling] = useState('monthly');
+  const [upgrading, setUpgrading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState(null);
+
+  async function handleUpgrade() {
+    setUpgrading(true);
+    setUpgradeError(null);
+    try {
+      const res = await fetch('/api/paystack/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ billing }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      window.location.href = data.authorization_url;
+    } catch (err) {
+      setUpgradeError(err.message || 'Failed to start upgrade. Please try again.');
+      setUpgrading(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setStatus(null);
     const fd = new FormData(e.target);
-    fd.set('accent_color', accentColor);
     const result = await saveSettings(fd);
     setLoading(false);
     if (result?.error) { setStatus('error'); setErrorMsg(result.error); }
@@ -129,11 +132,6 @@ export default function SettingsForm({ studio }) {
                 placeholder="e.g. Lagos, Nigeria" className={inputClass} />
             </Field>
           </div>
-          <Field label="Bio">
-            <textarea name="bio" rows={4} defaultValue={studio.bio || ''}
-              placeholder="Tell clients about your style and what makes your studio unique."
-              className={`${inputClass} resize-none`} />
-          </Field>
         </div>
 
         {/* Contact */}
@@ -155,53 +153,83 @@ export default function SettingsForm({ studio }) {
           </Field>
         </div>
 
-        {/* Branding */}
-        <div className="px-8 py-6 space-y-5">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-primary">Branding</p>
-          <div>
-            <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-3">
-              Accent Colour
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {ACCENT_COLORS.map((c) => (
-                <button key={c.value} type="button" onClick={() => setAccentColor(c.value)}
-                  className={`w-9 h-9 transition-all duration-200 relative ${accentColor === c.value ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'}`}
-                  style={{ backgroundColor: c.value }} title={c.label}>
-                  {accentColor === c.value && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <p className="text-[10px] text-gray-400 mt-2">
-              Selected: <span className="font-bold text-black">{ACCENT_COLORS.find(c => c.value === accentColor)?.label}</span>
-            </p>
-          </div>
-        </div>
 
         {/* Plan */}
-        <div className="px-8 py-6 space-y-3">
+        <div className="px-8 py-6 space-y-4">
           <p className="text-[10px] uppercase tracking-widest font-bold text-primary">Plan</p>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-bold text-black capitalize">{studio.plan} Plan</p>
-              <p className="text-xs text-neutral-gray mt-0.5">
-                {studio.plan === 'free' && 'Upgrade to Pro for online booking and Paystack payments.'}
-                {studio.plan === 'pro' && 'Online booking and payments enabled.'}
-                {studio.plan === 'studio' && 'All features unlocked.'}
+
+          {studio.plan === 'pro' ? (
+            <div className="flex items-center gap-3 px-4 py-3.5 bg-green-50 border border-green-200">
+              <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-black">Pro Plan — Active</p>
+                <p className="text-xs text-neutral-gray mt-0.5">Online booking, Paystack payments, and unlimited galleries enabled.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-bold text-black">Free Plan</p>
+                <p className="text-xs text-neutral-gray mt-0.5">Upgrade to unlock online booking and client payments.</p>
+              </div>
+
+              {/* Billing toggle */}
+              <div className="flex border border-gray-200 w-fit">
+                <button type="button" onClick={() => setBilling('monthly')}
+                  className={`px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors ${billing === 'monthly' ? 'bg-black text-white' : 'text-neutral-gray hover:text-black'}`}>
+                  Monthly
+                </button>
+                <button type="button" onClick={() => setBilling('yearly')}
+                  className={`px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 ${billing === 'yearly' ? 'bg-black text-white' : 'text-neutral-gray hover:text-black'}`}>
+                  Yearly
+                  <span className={`text-[9px] font-bold ${billing === 'yearly' ? 'text-amber-400' : 'text-amber-500'}`}>2 MONTHS FREE</span>
+                </button>
+              </div>
+
+              {/* Price card */}
+              <div className="border border-amber-200 bg-amber-50/50 px-5 py-4 space-y-3">
+                <div>
+                  <p className="text-2xl font-serif text-black leading-none">
+                    ₦{billing === 'monthly' ? '10,000' : '100,000'}
+                    <span className="text-sm font-sans font-normal text-neutral-gray ml-1">
+                      /{billing === 'monthly' ? 'month' : 'year'}
+                    </span>
+                  </p>
+                  {billing === 'yearly' && (
+                    <p className="text-xs text-amber-700 mt-1">₦8,333/mo — save ₦20,000 per year</p>
+                  )}
+                </div>
+                <ul className="space-y-1.5 text-xs text-neutral-gray">
+                  {[
+                    'Unlimited bookings',
+                    'Paystack deposit & balance collection',
+                    'Unlimited client galleries (20 photos each)',
+                    'Studio website at slug.photostudio.ng',
+                    'Email notifications',
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-px">—</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <button type="button" onClick={handleUpgrade} disabled={upgrading}
+                className="w-full py-3.5 text-xs uppercase tracking-widest font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: '#F0940A' }}>
+                {upgrading ? 'Redirecting to Paystack...' : `Upgrade to Pro — ₦${billing === 'monthly' ? '10,000/mo' : '100,000/yr'} →`}
+              </button>
+
+              {upgradeError && (
+                <p className="text-xs text-red-500 bg-red-50 border border-red-100 px-3 py-2">{upgradeError}</p>
+              )}
+
+              <p className="text-[10px] text-gray-400 text-center">
+                Secure payment via Paystack · Cancel anytime
               </p>
             </div>
-            {studio.plan === 'free' && (
-              <button type="button"
-                className="bg-primary text-white px-4 py-2 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors whitespace-nowrap">
-                Upgrade →
-              </button>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Submit */}

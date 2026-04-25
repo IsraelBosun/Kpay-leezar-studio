@@ -2,13 +2,106 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { updateBookingStatus } from '../actions';
+
+const STATUS_FLOW = [
+  { key: 'pending',   label: 'Pending',   color: 'bg-amber-400' },
+  { key: 'confirmed', label: 'Confirmed', color: 'bg-green-500' },
+  { key: 'completed', label: 'Completed', color: 'bg-blue-500' },
+];
 
 export default function BookingDetail({ booking, payments, hasSubaccount }) {
   const depositPayment = payments.find(p => p.type === 'deposit' && p.status === 'paid');
   const balancePayment = payments.find(p => p.type === 'balance' && p.status === 'paid');
 
+  const [status, setStatus] = useState(booking.status);
+  const [statusLoading, setStatusLoading] = useState(false);
+
+  async function handleStatusChange(newStatus) {
+    setStatusLoading(true);
+    const result = await updateBookingStatus(booking.id, newStatus);
+    if (!result?.error) setStatus(newStatus);
+    setStatusLoading(false);
+  }
+
+  const isCancelled = status === 'cancelled';
+
   return (
     <div className="space-y-4">
+
+      {/* How it works */}
+      <div className="bg-gray-50 border border-gray-100 px-5 py-4 space-y-3">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">How Booking Status Works</p>
+        <div className="flex items-center gap-0 flex-wrap">
+          {STATUS_FLOW.map((s, i) => (
+            <div key={s.key} className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${s.color}`} />
+                <span className={`text-xs font-bold ${status === s.key ? 'text-black' : 'text-neutral-gray'}`}>{s.label}</span>
+              </div>
+              {i < STATUS_FLOW.length - 1 && (
+                <span className="text-gray-300 mx-2">→</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-neutral-gray leading-relaxed">
+          <span className="font-medium text-black">Pending</span> — new booking, awaiting deposit.{' '}
+          <span className="font-medium text-black">Confirmed</span> — deposit received, session is locked in.{' '}
+          <span className="font-medium text-black">Completed</span> — shoot is done and balance is settled.
+          <br />
+          Paystack payments update status automatically. Use the buttons below if your client paid by bank transfer or cash.
+        </p>
+      </div>
+
+      {/* Manual status controls */}
+      {!isCancelled && (
+        <div className="bg-white border border-gray-100 px-6 py-4">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-3">Update Status Manually</p>
+          <div className="flex flex-wrap gap-2">
+            {status === 'pending' && (
+              <StatusButton
+                label="Mark Confirmed"
+                onClick={() => handleStatusChange('confirmed')}
+                loading={statusLoading}
+                variant="success"
+              />
+            )}
+            {(status === 'pending' || status === 'confirmed') && (
+              <StatusButton
+                label="Mark Completed"
+                onClick={() => handleStatusChange('completed')}
+                loading={statusLoading}
+                variant="primary"
+              />
+            )}
+            {status !== 'completed' && (
+              <StatusButton
+                label="Cancel Booking"
+                onClick={() => handleStatusChange('cancelled')}
+                loading={statusLoading}
+                variant="danger"
+              />
+            )}
+          </div>
+          {status === 'completed' && (
+            <p className="text-xs text-neutral-gray mt-2 italic">This booking is complete.</p>
+          )}
+        </div>
+      )}
+
+      {isCancelled && (
+        <div className="bg-white border border-gray-100 px-6 py-4 flex items-center justify-between gap-4">
+          <p className="text-xs text-neutral-gray italic">This booking was cancelled.</p>
+          <StatusButton
+            label="Reopen"
+            onClick={() => handleStatusChange('pending')}
+            loading={statusLoading}
+            variant="outline"
+          />
+        </div>
+      )}
+
       {!hasSubaccount && (
         <div className="bg-amber-50 border border-amber-200 px-5 py-4 flex items-start gap-3">
           <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,6 +140,25 @@ export default function BookingDetail({ booking, payments, hasSubaccount }) {
         disabled={!booking.deposit_paid && !depositPayment}
       />
     </div>
+  );
+}
+
+function StatusButton({ label, onClick, loading, variant }) {
+  const styles = {
+    success: 'bg-green-600 text-white hover:bg-green-700',
+    primary: 'bg-black text-white hover:bg-primary',
+    danger:  'border border-red-200 text-red-600 hover:bg-red-50',
+    outline: 'border border-gray-300 text-black hover:bg-gray-50',
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${styles[variant]}`}
+    >
+      {loading ? '...' : label}
+    </button>
   );
 }
 

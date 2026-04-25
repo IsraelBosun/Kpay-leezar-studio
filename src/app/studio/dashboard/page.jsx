@@ -2,7 +2,9 @@ import { createServerSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }) {
+  const params = await searchParams;
+  const upgraded = params?.upgraded === '1';
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -53,8 +55,18 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
 
+      {/* Upgrade success banner */}
+      {upgraded && (
+        <div className="flex items-center gap-3 bg-green-50 border border-green-200 px-5 py-4">
+          <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+          <p className="text-sm text-green-800">
+            <span className="font-bold">Welcome to Pro!</span> Your plan upgrade is being processed — all features will be active within a minute.
+          </p>
+        </div>
+      )}
+
       {/* Trial banner */}
-      {inTrial && (
+      {!upgraded && inTrial && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50 border border-amber-200 px-5 py-4">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
@@ -71,7 +83,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {trialExpired && (
+      {!upgraded && trialExpired && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 px-5 py-4">
           <div>
             <p className="text-sm font-bold text-white mb-0.5">Your free trial has ended.</p>

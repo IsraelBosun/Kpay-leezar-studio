@@ -22,8 +22,6 @@ export async function saveSettings(formData) {
       location: formData.get('location'),
       phone: formData.get('phone'),
       email: formData.get('email'),
-      bio: formData.get('bio'),
-      accent_color: formData.get('accent_color'),
       instagram_url: formData.get('instagram_url') || null,
     })
     .eq('id', studio.id);

@@ -2,6 +2,7 @@ import { createServerSupabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
+import BookingInfo from './BookingInfo';
 import BookingDetail from './BookingDetail';
 
 const statusVariant = {
@@ -22,23 +23,29 @@ export default async function BookingDetailPage({ params }) {
     .eq('owner_id', user.id)
     .single();
 
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('*, services(title)')
-    .eq('id', id)
-    .eq('studio_id', studio.id)
-    .single();
+  const [{ data: booking }, { data: payments }, { data: services }] = await Promise.all([
+    supabase
+      .from('bookings')
+      .select('*, services(title)')
+      .eq('id', id)
+      .eq('studio_id', studio.id)
+      .single(),
+    supabase
+      .from('payments')
+      .select('*')
+      .eq('booking_id', id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('services')
+      .select('id, title')
+      .eq('studio_id', studio.id)
+      .order('title'),
+  ]);
 
   if (!booking) notFound();
 
-  const { data: payments } = await supabase
-    .from('payments')
-    .select('*')
-    .eq('booking_id', id)
-    .order('created_at', { ascending: false });
-
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="space-y-6 max-w-2xl">
       {/* Header */}
       <div>
         <Link href="/studio/bookings"
@@ -52,46 +59,25 @@ export default async function BookingDetailPage({ params }) {
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Booking</p>
             <h1 className="text-3xl md:text-4xl font-serif text-black">{booking.client_name}</h1>
+            {booking.status_updated_at && (
+              <p className="text-[10px] text-neutral-gray mt-1">
+                Status updated {new Date(booking.status_updated_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            )}
           </div>
           <Badge variant={statusVariant[booking.status] ?? 'default'}>{booking.status}</Badge>
         </div>
       </div>
 
-      {/* Booking info */}
-      <div className="bg-white border border-gray-100 divide-y divide-gray-50">
-        <div className="px-6 py-5 grid sm:grid-cols-2 gap-5">
-          <InfoRow label="Email" value={booking.client_email} />
-          <InfoRow label="Phone" value={booking.client_phone || '—'} />
-          <InfoRow label="Service" value={booking.services?.title || '—'} />
-          <InfoRow label="Session Date" value={
-            booking.session_date
-              ? new Date(booking.session_date).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-              : '—'
-          } />
-        </div>
-        {booking.notes && (
-          <div className="px-6 py-5">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-2">Notes</p>
-            <p className="text-sm text-neutral-gray leading-relaxed">{booking.notes}</p>
-          </div>
-        )}
-      </div>
+      {/* Booking info — editable */}
+      <BookingInfo booking={booking} services={services ?? []} />
 
-      {/* Payments panel — client component */}
+      {/* Payments + status controls */}
       <BookingDetail
         booking={booking}
         payments={payments ?? []}
         hasSubaccount={!!studio.paystack_subaccount_code}
       />
-    </div>
-  );
-}
-
-function InfoRow({ label, value }) {
-  return (
-    <div>
-      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">{label}</p>
-      <p className="text-sm text-black">{value}</p>
     </div>
   );
 }
