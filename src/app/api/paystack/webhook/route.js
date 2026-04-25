@@ -30,6 +30,14 @@ export async function POST(req) {
         })
         .eq('id', metadata.studio_id);
 
+      await supabaseAdmin.from('subscription_payments').insert({
+        studio_id: metadata.studio_id,
+        amount: Math.round(event.data.amount / 100),
+        billing: metadata.billing,
+        paystack_reference: event.data.reference,
+        paid_at: new Date().toISOString(),
+      });
+
       return new Response('OK', { status: 200 });
     }
 
@@ -101,6 +109,12 @@ export async function POST(req) {
     const customerEmail = event.data.customer?.email;
     if (!customerEmail) return new Response('OK', { status: 200 });
 
+    const { data: studio } = await supabaseAdmin
+      .from('studios')
+      .select('id, subscription_billing')
+      .eq('subscription_customer_email', customerEmail)
+      .maybeSingle();
+
     await supabaseAdmin
       .from('studios')
       .update({
@@ -109,6 +123,16 @@ export async function POST(req) {
         plan_expires_at: event.data.next_payment_date || null,
       })
       .eq('subscription_customer_email', customerEmail);
+
+    if (studio && event.data.amount) {
+      await supabaseAdmin.from('subscription_payments').insert({
+        studio_id: studio.id,
+        amount: Math.round(event.data.amount / 100),
+        billing: studio.subscription_billing,
+        paystack_reference: event.data.reference || null,
+        paid_at: new Date().toISOString(),
+      });
+    }
 
     return new Response('OK', { status: 200 });
   }

@@ -21,8 +21,8 @@ export default async function AdminRevenuePage() {
         <p className="text-[10px] uppercase tracking-[0.4em] font-bold mb-2" style={{ color: 'var(--a-accent)' }}>
           Platform Control
         </p>
-        <h1 className="font-serif text-4xl md:text-5xl" style={{ color: 'var(--a-text)' }}>Revenue</h1>
-        <p className="text-sm mt-1.5" style={{ color: 'var(--a-muted)' }}>All Paystack transactions across every studio.</p>
+        <h1 className="font-serif text-4xl md:text-5xl" style={{ color: 'var(--a-text)' }}>Studio Revenue</h1>
+        <p className="text-sm mt-1.5" style={{ color: 'var(--a-muted)' }}>Booking payments collected by photographers across every studio.</p>
       </div>
 
       {/* Stats */}
