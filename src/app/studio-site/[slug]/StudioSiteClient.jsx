@@ -205,16 +205,17 @@ export default function StudioSiteClient({ studio, portfolio, services, websiteC
           {heroPhoto ? (
             <>
               <div className="absolute inset-0">
-                <img src={heroPhoto} alt="" className="w-full h-full object-cover opacity-50"
+                <img src={heroPhoto} alt="" className="w-full h-full object-cover"
                   style={{ animation: 'kenBurns 20s ease-in-out infinite alternate' }} />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
+              <div className="absolute inset-0 bg-black/50" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30" />
             </>
           ) : (
             <div className="absolute inset-0" style={{ backgroundColor: '#111', background: `radial-gradient(ellipse at 60% 40%, ${accent}25 0%, transparent 60%)` }} />
           )}
 
-          <div className="relative z-10 space-y-5 max-w-2xl text-white">
+          <div className="relative z-10 space-y-5 max-w-2xl text-white" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.6)' }}>
             {studio.location && (
               <p className="text-[10px] uppercase tracking-[0.4em] font-bold" style={{ color: accent }}>{studio.location}</p>
             )}
