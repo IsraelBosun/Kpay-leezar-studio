@@ -1,5 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase';
-import { initializePayment } from '@/lib/paystack';
+import { supabaseAdmin } from '@/lib/supabase';
+import { initializePayment, verifyPayment } from '@/lib/paystack';
 import { randomUUID } from 'crypto';
 
 export async function POST(req) {
@@ -14,7 +15,6 @@ export async function POST(req) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return Response.json({ error: 'Not authenticated' }, { status: 401 });
 
-    // Verify this booking belongs to the authenticated photographer
     const { data: studio } = await supabase
       .from('studios')
       .select('id, name, paystack_subaccount_code')
@@ -35,14 +35,50 @@ export async function POST(req) {
       return Response.json({ error: `No ${payment_type} amount set on this booking` }, { status: 400 });
     }
 
-    // Reuse existing pending reference so the photographer can re-share the same link
+    // Check if a payment record already exists
     const { data: existing } = await supabase
       .from('payments')
-      .select('paystack_reference')
+      .select('*')
       .eq('booking_id', booking_id)
       .eq('type', payment_type)
       .eq('status', 'pending')
       .maybeSingle();
+
+    if (existing?.paystack_reference) {
+      // Verify with Paystack whether this was actually paid already
+      try {
+        const verified = await verifyPayment(existing.paystack_reference);
+
+        if (verified.status === 'success') {
+          // Payment was made but webhook missed it — catch up the DB now
+          await supabaseAdmin
+            .from('payments')
+            .update({ status: 'paid', paid_at: verified.paid_at || new Date().toISOString() })
+            .eq('id', existing.id);
+
+          if (payment_type === 'deposit') {
+            await supabaseAdmin
+              .from('bookings')
+              .update({ deposit_paid: true, status: 'confirmed' })
+              .eq('id', booking_id);
+          }
+
+          if (payment_type === 'balance') {
+            await supabaseAdmin
+              .from('bookings')
+              .update({ balance_paid: true, status: 'completed' })
+              .eq('id', booking_id);
+          }
+
+          return Response.json(
+            { error: 'This payment has already been completed. Refresh the page to see the updated status.' },
+            { status: 400 }
+          );
+        }
+      } catch {
+        // Verification failed — Paystack couldn't find it, treat as still pending and reuse reference
+      }
+    }
 
     const reference = existing?.paystack_reference
       || `ps_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
@@ -61,7 +97,6 @@ export async function POST(req) {
       callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pay/success`,
     });
 
-    // Create payment record if one doesn't exist yet
     if (!existing) {
       await supabase.from('payments').insert({
         booking_id,
