@@ -92,31 +92,36 @@ export async function saveServices({ toUpsert, toDelete }) {
   if (!studio) return { error: 'Studio not found.' };
 
   if (toDelete.length) {
-    await supabase.from('services').delete().in('id', toDelete).eq('studio_id', studio.id);
+    const { error } = await supabase.from('services').delete().in('id', toDelete).eq('studio_id', studio.id);
+    if (error) return { error: error.message };
   }
 
   const existing = toUpsert.filter(s => s.id);
-  await Promise.all(existing.map(s =>
-    supabase.from('services').update({
+  for (const s of existing) {
+    const { error } = await supabase.from('services').update({
       title: s.title,
       description: s.description || null,
       price: s.price !== '' ? Number(s.price) : null,
-      currency: 'NGN',
-    }).eq('id', s.id).eq('studio_id', studio.id)
-  ));
-
-  const newOnes = toUpsert.filter(s => !s.id);
-  if (newOnes.length) {
-    await supabase.from('services').insert(newOnes.map(s => ({
-      studio_id: studio.id,
-      title: s.title,
-      description: s.description || null,
-      price: s.price !== '' ? Number(s.price) : null,
-      currency: 'NGN',
-    })));
+    }).eq('id', s.id).eq('studio_id', studio.id);
+    if (error) return { error: error.message };
   }
 
-  return { success: true };
+  const newOnes = toUpsert.filter(s => !s.id);
+  let inserted = [];
+  if (newOnes.length) {
+    const { data, error } = await supabase.from('services').insert(
+      newOnes.map(s => ({
+        studio_id: studio.id,
+        title: s.title,
+        description: s.description || null,
+        price: s.price !== '' ? Number(s.price) : null,
+      }))
+    ).select();
+    if (error) return { error: error.message };
+    inserted = data ?? [];
+  }
+
+  return { success: true, inserted };
 }
 
 export async function savePhotoCategories(updates) {

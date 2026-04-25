@@ -211,6 +211,17 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     if (result?.error) {
       setServicesError(result.error);
     } else {
+      // Merge returned IDs into local state so newly saved services get real IDs
+      if (result.inserted?.length) {
+        let insertIdx = 0;
+        setServices(prev => prev.map(s => {
+          if (!s.id && s.title.trim()) {
+            const saved = result.inserted[insertIdx++];
+            return saved ? { ...s, id: saved.id, _key: saved.id } : s;
+          }
+          return s;
+        }));
+      }
       setServicesSaved(true);
       setDeletedIds([]);
       setTimeout(() => setServicesSaved(false), 3000);
