@@ -105,7 +105,7 @@ function PlanCard({ title, price, period, note, features, loading, disabled, onU
         </div>
       )}
 
-      <div className="px-6 py-6 flex-1 space-y-5">
+      <div className="px-4 sm:px-6 py-4 sm:py-6 flex-1 space-y-5">
         <div>
           <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-2">{title}</p>
           <p className="text-3xl font-serif text-black leading-none">{price}</p>
@@ -123,7 +123,7 @@ function PlanCard({ title, price, period, note, features, loading, disabled, onU
         </ul>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="px-4 sm:px-6 pb-4 sm:pb-6">
         <button
           type="button"
           onClick={onUpgrade}

@@ -85,7 +85,7 @@ export default function BookingInfo({ booking, services }) {
   if (editing) {
     return (
       <div className="bg-white border border-gray-100 divide-y divide-gray-50">
-        <div className="px-6 py-4 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
           <p className="text-[10px] uppercase tracking-widest font-bold text-primary">Edit Booking</p>
           <button type="button" onClick={handleCancel}
             className="text-xs text-neutral-gray hover:text-black transition-colors">
@@ -93,7 +93,7 @@ export default function BookingInfo({ booking, services }) {
           </button>
         </div>
 
-        <div className="px-6 py-5 grid sm:grid-cols-2 gap-5">
+        <div className="px-4 sm:px-6 py-5 grid sm:grid-cols-2 gap-4 sm:gap-5">
           <EditField label="Client Name *">
             <input type="text" required value={form.client_name}
               onChange={e => set('client_name', e.target.value)} className={inputClass} />
@@ -121,7 +121,7 @@ export default function BookingInfo({ booking, services }) {
           </EditField>
         </div>
 
-        <div className="px-6 py-5 grid sm:grid-cols-2 gap-5">
+        <div className="px-4 sm:px-6 py-5 grid sm:grid-cols-2 gap-4 sm:gap-5">
           <EditField label="Deposit Amount (₦)">
             <input type="number" min="0" value={form.deposit_amount}
               onChange={e => set('deposit_amount', e.target.value)} className={inputClass} />
@@ -132,7 +132,7 @@ export default function BookingInfo({ booking, services }) {
           </EditField>
         </div>
 
-        <div className="px-6 py-5">
+        <div className="px-4 sm:px-6 py-5">
           <EditField label="Notes">
             <textarea rows={3} value={form.notes}
               onChange={e => set('notes', e.target.value)}
@@ -141,7 +141,7 @@ export default function BookingInfo({ booking, services }) {
           </EditField>
         </div>
 
-        <div className="px-6 py-4 flex flex-col gap-3">
+        <div className="px-4 sm:px-6 py-4 flex flex-col gap-3">
           {saveError && (
             <p className="text-xs text-red-500 bg-red-50 border border-red-100 px-3 py-2">{saveError}</p>
           )}
@@ -182,7 +182,7 @@ export default function BookingInfo({ booking, services }) {
         </button>
       </div>
       {display.notes && (
-        <div className="px-6 py-5">
+        <div className="px-4 sm:px-6 py-5">
           <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-2">Notes</p>
           <p className="text-sm text-neutral-gray leading-relaxed">{display.notes}</p>
         </div>

@@ -20,7 +20,7 @@ export default function StudioDetailsForm({ studio }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-gray-100 divide-y divide-gray-50">
-      <div className="px-8 py-6 space-y-5">
+      <div className="px-4 sm:px-8 py-6 space-y-5">
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label="Studio Name *">
             <input type="text" name="name" required defaultValue={studio.name} className={inputClass} />
@@ -46,7 +46,7 @@ export default function StudioDetailsForm({ studio }) {
         </Field>
       </div>
 
-      <div className="px-8 py-5 flex flex-col gap-3">
+      <div className="px-4 sm:px-8 py-5 flex flex-col gap-3">
         {status === 'saved' && (
           <p className="text-xs text-green-600 bg-green-50 border border-green-200 px-4 py-3 font-bold uppercase tracking-widest">
             ✓ Details saved

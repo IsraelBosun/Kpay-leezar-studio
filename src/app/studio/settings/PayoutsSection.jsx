@@ -116,7 +116,7 @@ export default function PayoutsSection({ studio }) {
   // ── Edit / setup form ─────────────────────────────────────────────────────
   return (
     <div className="bg-white border border-gray-100 divide-y divide-gray-50">
-      <div className="px-8 py-6 space-y-5">
+      <div className="px-4 sm:px-8 py-6 space-y-5">
         {alreadySetUp && (
           <div className="flex items-center justify-between">
             <p className="text-xs text-neutral-gray">Enter new bank details and verify before saving.</p>
@@ -195,7 +195,7 @@ export default function PayoutsSection({ studio }) {
         </div>
       </div>
 
-      <div className="px-8 py-5 flex flex-col gap-3">
+      <div className="px-4 sm:px-8 py-5 flex flex-col gap-3">
         {saveStatus === 'saved' && (
           <p className="text-xs text-green-600 bg-green-50 border border-green-200 px-4 py-3 font-bold uppercase tracking-widest">
             ✓ Bank account saved — you&apos;re ready to receive payments

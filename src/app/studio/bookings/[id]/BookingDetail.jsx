@@ -30,7 +30,7 @@ export default function BookingDetail({ booking, payments, hasSubaccount }) {
     <div className="space-y-4">
 
       {/* How it works */}
-      <div className="bg-gray-50 border border-gray-100 px-5 py-4 space-y-3">
+      <div className="bg-gray-50 border border-gray-100 px-4 py-4 space-y-3">
         <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">How Booking Status Works</p>
         <div className="flex items-center gap-0 flex-wrap">
           {STATUS_FLOW.map((s, i) => (
@@ -56,7 +56,7 @@ export default function BookingDetail({ booking, payments, hasSubaccount }) {
 
       {/* Manual status controls */}
       {!isCancelled && (
-        <div className="bg-white border border-gray-100 px-6 py-4">
+        <div className="bg-white border border-gray-100 px-4 sm:px-6 py-4">
           <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-3">Update Status Manually</p>
           <div className="flex flex-wrap gap-2">
             {status === 'pending' && (
@@ -199,11 +199,11 @@ function PaymentRow({ label, amount, isPaid, paidAt, bookingId, paymentType, cli
   );
 
   return (
-    <div className="bg-white border border-gray-100 px-6 py-5">
+    <div className="bg-white border border-gray-100 px-4 sm:px-6 py-4 sm:py-5">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">{label}</p>
-          <p className="text-2xl font-serif text-black">
+          <p className="text-xl sm:text-2xl font-serif text-black">
             {nairaAmount > 0 ? `₦${nairaAmount.toLocaleString()}` : '—'}
           </p>
         </div>

@@ -40,7 +40,7 @@ export default async function GalleriesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Studio</p>
-          <h1 className="text-3xl md:text-4xl font-serif text-black">Galleries</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black">Galleries</h1>
         </div>
         {atLimit ? (
           <div className="bg-amber-50 border border-amber-200 px-5 py-3 text-xs uppercase tracking-widest font-bold text-amber-700 flex items-center gap-3">
@@ -59,7 +59,7 @@ export default async function GalleriesPage() {
 
       {/* Gallery grid */}
       {!galleries || galleries.length === 0 ? (
-        <div className="bg-white border border-gray-100 px-8 py-16 text-center">
+        <div className="bg-white border border-gray-100 px-4 sm:px-8 py-12 sm:py-16 text-center">
           <p className="font-serif text-2xl text-black mb-2">No galleries yet</p>
           <p className="text-sm text-neutral-gray italic mb-6">Create a gallery and share photos with your clients.</p>
           <Link

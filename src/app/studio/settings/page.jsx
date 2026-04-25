@@ -17,7 +17,7 @@ export default async function SettingsPage() {
     <div className="space-y-12 max-w-2xl">
       <div>
         <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Studio</p>
-        <h1 className="text-3xl md:text-4xl font-serif text-black">Settings</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black">Settings</h1>
       </div>
 
       <Section title="Studio Details" description="Your studio profile and contact information.">

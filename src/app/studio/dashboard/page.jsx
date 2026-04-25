@@ -101,7 +101,7 @@ export default async function DashboardPage({ searchParams }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Dashboard</p>
-          <h1 className="text-3xl md:text-4xl font-serif text-black">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black">
             Welcome back{studio.name ? `, ${studio.name.split(' ')[0]}` : ''}.
           </h1>
         </div>
@@ -180,7 +180,7 @@ export default async function DashboardPage({ searchParams }) {
         </div>
 
         {!recentBookings || recentBookings.length === 0 ? (
-          <div className="bg-white border border-gray-100 px-8 py-16 text-center">
+          <div className="bg-white border border-gray-100 px-4 sm:px-8 py-12 sm:py-16 text-center">
             <p className="font-serif text-2xl text-black mb-2">No bookings yet</p>
             <p className="text-sm text-neutral-gray italic mb-6">When clients book sessions they'll appear here.</p>
             <Link

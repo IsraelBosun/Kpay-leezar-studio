@@ -58,7 +58,7 @@ export default async function BookingDetailPage({ params }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Booking</p>
-            <h1 className="text-3xl md:text-4xl font-serif text-black">{booking.client_name}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black">{booking.client_name}</h1>
             {booking.status_updated_at && (
               <p className="text-[10px] text-neutral-gray mt-1">
                 Status updated {new Date(booking.status_updated_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}

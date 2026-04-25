@@ -38,7 +38,7 @@ export default async function BookingsPage({ searchParams }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Studio</p>
-          <h1 className="text-3xl md:text-4xl font-serif text-black">Bookings</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black">Bookings</h1>
         </div>
         <Link
           href="/studio/bookings/new"
@@ -67,7 +67,7 @@ export default async function BookingsPage({ searchParams }) {
 
       {/* Table */}
       {!bookings || bookings.length === 0 ? (
-        <div className="bg-white border border-gray-100 px-8 py-16 text-center">
+        <div className="bg-white border border-gray-100 px-4 sm:px-8 py-12 sm:py-16 text-center">
           <p className="font-serif text-2xl text-black mb-2">No bookings found</p>
           <p className="text-sm text-neutral-gray italic mb-6">
             {filter === 'all' ? 'Add your first booking to get started.' : `No ${filter} bookings.`}

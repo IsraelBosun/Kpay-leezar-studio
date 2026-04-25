@@ -26,14 +26,14 @@ export default function NewBookingForm({ services }) {
         <Link href="/studio/bookings" className="text-xs uppercase tracking-widest text-neutral-gray hover:text-primary transition-colors font-bold">
           ← Back to Bookings
         </Link>
-        <h1 className="text-3xl md:text-4xl font-serif text-black mt-4">New Booking</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black mt-4">New Booking</h1>
         <p className="text-sm text-neutral-gray italic mt-1">Add a client session to your calendar.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-100 divide-y divide-gray-50">
 
         {/* Client details */}
-        <div className="px-8 py-6 space-y-5">
+        <div className="px-4 sm:px-8 py-6 space-y-5">
           <p className="text-[10px] uppercase tracking-widest font-bold text-primary">Client Details</p>
 
           <div className="grid sm:grid-cols-2 gap-5">
@@ -54,7 +54,7 @@ export default function NewBookingForm({ services }) {
         </div>
 
         {/* Session details */}
-        <div className="px-8 py-6 space-y-5">
+        <div className="px-4 sm:px-8 py-6 space-y-5">
           <p className="text-[10px] uppercase tracking-widest font-bold text-primary">Session Details</p>
 
           <div className="grid sm:grid-cols-2 gap-5">
@@ -78,7 +78,7 @@ export default function NewBookingForm({ services }) {
         </div>
 
         {/* Payment */}
-        <div className="px-8 py-6 space-y-5">
+        <div className="px-4 sm:px-8 py-6 space-y-5">
           <p className="text-[10px] uppercase tracking-widest font-bold text-primary">Payment</p>
 
           <div className="grid sm:grid-cols-2 gap-5">
@@ -94,7 +94,7 @@ export default function NewBookingForm({ services }) {
         </div>
 
         {/* Submit */}
-        <div className="px-8 py-6 flex flex-col gap-3">
+        <div className="px-4 sm:px-8 py-6 flex flex-col gap-3">
           {error && (
             <p className="text-xs text-red-500 bg-red-50 border border-red-100 px-4 py-3">{error}</p>
           )}
