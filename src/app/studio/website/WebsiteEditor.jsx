@@ -232,7 +232,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     { id: 'photos',   label: 'Photos' },
     { id: 'design',   label: 'Design' },
     { id: 'content',  label: 'Content' },
-    { id: 'services', label: 'Services' },
   ];
 
   return (
