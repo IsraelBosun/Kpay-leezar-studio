@@ -238,12 +238,12 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
   return (
     <div className="bg-white border border-gray-100">
       {/* Tab bar */}
-      <div className="flex border-b border-gray-100">
+      <div className="flex border-b border-gray-100 overflow-x-auto scrollbar-hide">
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id)}
-            className={`px-8 py-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${
+            className={`flex-shrink-0 px-5 sm:px-8 py-4 text-[10px] uppercase tracking-widest font-bold transition-colors ${
               activeTab === t.id
                 ? 'border-b-2 border-primary text-primary -mb-px'
                 : 'text-zinc-400 hover:text-black'
