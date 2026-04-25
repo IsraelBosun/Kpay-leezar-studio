@@ -68,3 +68,49 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* ── Admin theme: light (default) ── */
+.admin-shell {
+  --a-bg: #f8f7f5;
+  --a-surface: #ffffff;
+  --a-border: #e4e4e7;
+  --a-text: #18181b;
+  --a-muted: #6b7280;
+  --a-subtle: #9ca3af;
+  --a-hover: #f4f4f5;
+  --a-divider: #f4f4f5;
+  --a-accent: #7c3aed;
+  --a-accent-bg: #f5f3ff;
+  --a-accent-text: #7c3aed;
+  --a-green: #059669;
+  --a-green-bg: #f0fdf4;
+  --a-amber: #d97706;
+  --a-amber-bg: #fffbeb;
+  --a-red: #dc2626;
+  --a-red-bg: #fef2f2;
+  --a-blue-bg: #eff6ff;
+  --a-blue-text: #2563eb;
+}
+
+/* ── Admin theme: dark ── */
+.admin-shell.admin-dark {
+  --a-bg: #080810;
+  --a-surface: rgba(255,255,255,0.035);
+  --a-border: rgba(255,255,255,0.08);
+  --a-text: #ffffff;
+  --a-muted: rgba(255,255,255,0.40);
+  --a-subtle: rgba(255,255,255,0.22);
+  --a-hover: rgba(255,255,255,0.03);
+  --a-divider: rgba(255,255,255,0.05);
+  --a-accent: #a78bfa;
+  --a-accent-bg: rgba(124,58,237,0.15);
+  --a-accent-text: #a78bfa;
+  --a-green: #10b981;
+  --a-green-bg: rgba(16,185,129,0.12);
+  --a-amber: #f59e0b;
+  --a-amber-bg: rgba(245,158,11,0.12);
+  --a-red: #ef4444;
+  --a-red-bg: rgba(239,68,68,0.12);
+  --a-blue-bg: rgba(59,130,246,0.12);
+  --a-blue-text: #93c5fd;
+}
