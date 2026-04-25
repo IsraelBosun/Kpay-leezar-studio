@@ -116,6 +116,7 @@ export const DEFAULT_CONFIG = {
   show_services: true,
   show_about: true,
   show_booking: true,
+  hero_photo_id: null,
 };
 
 export function resolveConfig(raw) {

@@ -130,6 +130,20 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     }
   }
 
+  // ── Set hero photo ────────────────────────────────────────────────────
+  const [settingHero, setSettingHero] = useState(false);
+  const [heroSet, setHeroSet] = useState(false);
+
+  async function handleSetHero(photoId) {
+    setSettingHero(photoId);
+    const next = { ...config, hero_photo_id: photoId };
+    setConfig(next);
+    await saveWebsiteConfig(next);
+    setSettingHero(false);
+    setHeroSet(true);
+    setTimeout(() => setHeroSet(false), 2500);
+  }
+
   // ── Content save ─────────────────────────────────────────────────────
   async function handleSaveContent() {
     setSavingContent(true);
@@ -265,6 +279,20 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
             </label>
           </div>
 
+          {/* Hero / Banner explainer */}
+          <div className="bg-amber-50 border border-amber-100 px-4 py-4 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-amber-700">About the Banner (Hero)</p>
+            <p className="text-xs text-amber-900 leading-relaxed">
+              The <span className="font-bold">banner</span> (also called hero) is the large full-screen image visitors see first when they open your website. Choose a photo that represents your best work and makes a strong first impression.
+            </p>
+            <p className="text-[11px] text-amber-800 leading-relaxed">
+              <span className="font-bold">Best choice:</span> Wide/landscape orientation · Simple or blurred background · Well-lit · Atmospheric — a couple shot, outdoor scene, or venue wide angle works great. Avoid close-up detail shots or very dark/very bright images.
+            </p>
+            {heroSet && (
+              <p className="text-[11px] font-bold text-green-700">✓ Banner photo updated — live on your site</p>
+            )}
+          </div>
+
           {/* Sample photos shortcut */}
           <div className="flex items-center gap-3">
             <button
@@ -299,35 +327,57 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {photos.map(photo => (
-                  <div key={photo.id} className="group relative">
-                    <div className="aspect-square bg-gray-100 overflow-hidden rounded-sm">
-                      <img
-                        src={photo.thumbnail_url || photo.src}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                {photos.map(photo => {
+                  const isHero = config.hero_photo_id === photo.id || (!config.hero_photo_id && photos[0]?.id === photo.id);
+                  return (
+                    <div key={photo.id} className="group relative">
+                      <div className="aspect-square bg-gray-100 overflow-hidden rounded-sm">
+                        <img
+                          src={photo.thumbnail_url || photo.src}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* Hero badge */}
+                      {isHero && (
+                        <div className="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[8px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-sm">
+                          Banner
+                        </div>
+                      )}
+
+                      {/* Delete button */}
+                      <button
+                        onClick={() => deletePhoto(photo.id)}
+                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-sm hover:bg-red-600">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+
+                      {/* Set as hero button */}
+                      {!isHero && (
+                        <button
+                          onClick={() => handleSetHero(photo.id)}
+                          disabled={settingHero === photo.id}
+                          className="absolute bottom-8 left-0 right-0 mx-auto w-max bg-black/70 text-white text-[8px] uppercase tracking-widest font-bold px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-amber-500 rounded-sm disabled:opacity-40">
+                          {settingHero === photo.id ? '...' : 'Set as Banner'}
+                        </button>
+                      )}
+
+                      {/* Category select */}
+                      <select
+                        value={categories[photo.id] || ''}
+                        onChange={e => setCategories(prev => ({ ...prev, [photo.id]: e.target.value }))}
+                        className="mt-1.5 w-full text-[10px] bg-gray-50 border border-gray-200 py-1.5 px-2 focus:outline-none focus:border-primary text-zinc-600">
+                        <option value="">No category</option>
+                        {CATEGORIES.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
                     </div>
-                    {/* Delete button */}
-                    <button
-                      onClick={() => deletePhoto(photo.id)}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-sm hover:bg-red-600">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                    {/* Category select */}
-                    <select
-                      value={categories[photo.id] || ''}
-                      onChange={e => setCategories(prev => ({ ...prev, [photo.id]: e.target.value }))}
-                      className="mt-1.5 w-full text-[10px] bg-gray-50 border border-gray-200 py-1.5 px-2 focus:outline-none focus:border-primary text-zinc-600">
-                      <option value="">No category</option>
-                      {CATEGORIES.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="flex items-center gap-3 pt-2">

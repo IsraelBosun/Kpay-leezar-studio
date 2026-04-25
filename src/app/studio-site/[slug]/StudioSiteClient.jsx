@@ -42,7 +42,10 @@ export default function StudioSiteClient({ studio, portfolio, services, websiteC
     return () => { document.body.style.overflow = ''; };
   }, [lightboxIndex, menuOpen]);
 
-  const heroPhoto = portfolio[0]?.thumbnail_url || portfolio[0]?.src || null;
+  const heroPortfolioPhoto = config.hero_photo_id
+    ? portfolio.find(p => p.id === config.hero_photo_id)
+    : portfolio[0];
+  const heroPhoto = heroPortfolioPhoto?.thumbnail_url || heroPortfolioPhoto?.src || null;
 
   async function handleBooking(e) {
     e.preventDefault();
