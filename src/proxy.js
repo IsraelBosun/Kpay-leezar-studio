@@ -51,9 +51,16 @@ export async function proxy(req) {
   // ── Route protection on root domain ──
   if (currentHost === ROOT_DOMAIN || currentHost === `www.${ROOT_DOMAIN}` || currentHost === 'localhost') {
 
+    const isAdminRoute = url.pathname.startsWith('/admin');
     const isStudioRoute = url.pathname.startsWith('/studio');
     const isAuthRoute = url.pathname.startsWith('/auth');
     const isOnboarding = url.pathname.startsWith('/auth/onboarding');
+
+    // Admin routes — must be logged in AND be the admin email
+    if (isAdminRoute) {
+      if (!user) return NextResponse.redirect(new URL('/auth/login', req.url));
+      if (user.email !== process.env.ADMIN_EMAIL) return NextResponse.redirect(new URL('/studio/dashboard', req.url));
+    }
 
     // Unauthenticated trying to access studio dashboard → login
     if (isStudioRoute && !user) {

@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import { PHProvider } from '@/components/PostHogProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,10 +29,12 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} scroll-smooth`}>
       <body className="font-sans antialiased text-neutral-gray overflow-x-hidden">
-        {!isStudioSite && <ConditionalNavbar />}
-        {children}
-        {!isStudioSite && <ConditionalFooter />}
-        {!isStudioSite && <WhatsAppButton />}
+        <PHProvider>
+          {!isStudioSite && <ConditionalNavbar />}
+          {children}
+          {!isStudioSite && <ConditionalFooter />}
+          {!isStudioSite && <WhatsAppButton />}
+        </PHProvider>
       </body>
     </html>
   );
