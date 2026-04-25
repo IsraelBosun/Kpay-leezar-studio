@@ -130,17 +130,23 @@ Studio shares link on Instagram immediately
 
 ## Pricing Plans
 
-| Feature | Free | Pro (₦15,000/mo) | Studio (₦35,000/mo) |
-|---|---|---|---|
-| Studio website | ✅ | ✅ | ✅ |
-| Subdomain | ✅ | ✅ | ✅ |
-| Custom domain | ❌ | ✅ | ✅ |
-| Client galleries | 1 | Unlimited | Unlimited |
-| Photos per gallery | 50 | Unlimited | Unlimited |
-| Online booking | ❌ | ✅ | ✅ |
-| Paystack payments | ❌ | ✅ | ✅ |
-| Desktop uploader | ❌ | ❌ | ✅ |
-| Priority support | ❌ | ❌ | ✅ |
+Two tiers only — Free and Pro. Pro has two billing options.
+
+| Feature | Free | Pro |
+|---|---|---|
+| Studio website | ✅ | ✅ |
+| Subdomain (`yourstudio.photostudio.ng`) | ✅ | ✅ |
+| Custom domain | ❌ | ✅ |
+| Client galleries | Unlimited (20 photos each) | Unlimited |
+| Online booking | ❌ | ✅ |
+| Paystack payments | ❌ | ✅ |
+| Email notifications to clients | ✅ | ✅ |
+
+**Pro pricing:**
+- Monthly: ₦10,000/month
+- Yearly: ₦100,000/year (₦8,333/mo — saves ₦20,000)
+
+**14-day free trial** included on signup — full Pro access, no card required. After trial ends, must upgrade to keep booking and payments.
 
 Free plan is the hook — studio gets a real website instantly, upgrades when they want booking and payments.
 
@@ -166,9 +172,16 @@ Free plan is the hook — studio gets a real website instantly, upgrades when th
 ```sql
 -- Studios (one row per photography business)
 studios
-  id, name, slug, custom_domain, plan,
+  id, name, slug, custom_domain, plan (free/pro),
   logo_url, accent_color, bio,
-  location, email, phone,
+  location, email, phone, instagram_url,
+  website_config JSONB,
+  paystack_subaccount_code, paystack_bank_name,
+  paystack_bank_code, paystack_account_number, paystack_account_name,
+  subscription_status (active/disabled),
+  subscription_customer_email,   ← used to match renewal/cancellation webhooks
+  subscription_billing (monthly/yearly),
+  plan_expires_at,               ← populated on renewal events
   created_at
 
 -- Studio services
@@ -178,9 +191,9 @@ services
 -- Bookings
 bookings
   id, studio_id, client_name, client_email, client_phone,
-  service_id, session_date, status, notes,
-  deposit_amount, deposit_paid, balance_amount, balance_paid,
-  created_at
+  service_id, session_date, status (pending/confirmed/completed/cancelled),
+  notes, deposit_amount, deposit_paid, balance_amount, balance_paid,
+  status_updated_at, created_at
 
 -- Client galleries
 galleries
@@ -195,18 +208,27 @@ photos
   file_name, file_size,
   uploaded_at
 
+-- Portfolio photos (public website, separate from gallery photos)
+portfolio_photos
+  id, studio_id, src, thumbnail_url, category, sort_order, created_at
+
 -- Photo selections (per person per gallery)
 selections
   id, gallery_id, photo_id,
   selector_name, selector_role (bride/groom/family),
   note, created_at
 
--- Payments
+-- Booking payments (deposit + balance from clients)
 payments
   id, booking_id, studio_id,
   amount, currency, type (deposit/balance),
   paystack_reference, status (pending/paid/failed),
   paid_at
+
+-- Subscription payments (platform revenue — studio → platform)
+subscription_payments
+  id, studio_id, amount (Naira), billing (monthly/yearly),
+  paystack_reference, paid_at
 
 -- Studio users (photographer accounts)
 users
@@ -462,29 +484,36 @@ Full platform is live and functional at `https://photostudio.ng`. The product is
 - **Subaccount model**: photographer provides Nigerian bank account → platform creates Paystack subaccount → Paystack settles directly to photographer's bank within 24h. Platform takes 0% cut.
 - `createSubaccount`, `updateSubaccount`, `initializePayment` (with subaccount + bearer: "subaccount"), `resolveBankAccount`, `verifyWebhookSignature`
 - `GET /api/paystack/resolve-account` — verifies account number + bank code, returns account name
-- `POST /api/paystack/initialize` — creates payment link for a booking's deposit or balance
-- `POST /api/paystack/webhook` — verifies HMAC SHA-512 signature, handles `charge.success`: marks payment paid, sets deposit_paid/balance_paid on booking, unlocks gallery if balance payment, sends gallery-ready email
-- Settings → Payouts section: 22 Nigerian banks dropdown, account number input, Verify button, existing details shown if set up
+- `POST /api/paystack/initialize` — creates payment link for a booking's deposit or balance. Verifies with Paystack before reusing an existing reference (prevents duplicate reference error if payment already went through)
+- `POST /api/paystack/webhook` — uses `supabaseAdmin` throughout (CRITICAL: session-based client silently fails in webhook context due to RLS). Handles:
+  - `charge.success` + metadata has `studio_id + billing` → subscription payment → upgrade to pro, store `subscription_billing`, log to `subscription_payments`
+  - `charge.success` + no metadata → booking payment → mark paid, update deposit/balance, unlock gallery if balance, send gallery-ready email
+  - `invoice.payment_succeeded` → subscription renewal → extend `plan_expires_at`, log to `subscription_payments`
+  - `subscription.disabled` → downgrade to free
+- `POST /api/paystack/subscribe` — creates Paystack transaction with plan code, sends `billing` (monthly/yearly) in metadata so webhook can identify it
+- Settings → Payouts section: 22 Nigerian banks dropdown, account number input, Verify button, read-only view when set up (Edit button to change)
 
 ### ✅ Booking Detail Page (`/studio/bookings/[id]`)
-- Warning banner if no Paystack subaccount set up (links to Settings → Payouts)
-- Deposit row + Balance row with paid status, paid date
-- "Get payment link" → calls `/api/paystack/initialize` → shows authorization_url
-- Copy link button + WhatsApp share with pre-filled message
-- Balance row disabled until deposit is paid
+- **`BookingInfo.jsx`** — view mode with Edit button; edit mode with all fields inline (client name, email, phone, service, session date, deposit amount, balance amount, notes). Local `display` state updates immediately on save without page reload.
+- **`BookingDetail.jsx`** — "How Booking Status Works" explanation box (Pending → Confirmed → Completed flow). Manual status buttons: Mark Confirmed, Mark Completed, Cancel, Reopen. Optimistic status update via `useState`. `status_updated_at` stamped on every status change.
+- Payment rows: warning banner if no subaccount, deposit + balance with paid status and date, "Get payment link" → authorization_url, copy + WhatsApp share. Balance locked until deposit paid.
+- Status flow: Pending (new booking) → Confirmed (deposit paid) → Completed (balance paid). Paystack updates automatically; manual buttons for cash/bank transfer payments.
 
 ### ✅ Studio Admin Dashboard (`/studio/*`)
-- Sidebar: Dashboard, Bookings, Galleries, Payments, **Website** (globe icon), Settings — Website link added between Payments and Settings
-- Mobile: fixed top bar + slide-in drawer
-- **Dashboard** (`/studio/dashboard`) — stats cards, recent bookings, studio URL banner
+- Sidebar: Dashboard, Bookings, Galleries, Payments, **Website** (globe icon), Settings
+- Mobile: fixed top bar + slide-in drawer, fully responsive across all pages
+- **Dashboard** (`/studio/dashboard`) — stats cards, recent bookings table (mobile card layout), studio URL banner. Shows `?upgraded=1` success banner after Pro subscription. Shows trial banner (days remaining) or expired trial banner with upgrade CTA.
 - **Bookings** (`/studio/bookings`) — filter tabs (scrollable on mobile), card/table layout, status badges
 - **New Booking** (`/studio/bookings/new`) — full form, sends confirmation email
 - **Galleries** (`/studio/galleries`) — list of all galleries
 - **New Gallery** (`/studio/galleries/new`) — create gallery with title, slug, password
 - **Gallery Manager** (`/studio/galleries/[id]`) — Photos tab + Selections tab
-- **Payments** (`/studio/payments`) — exists, needs full implementation
+- **Payments** (`/studio/payments`) — payment tracking for all bookings
 - **Website** (`/studio/website`) — Photos / Design / Content tabs (see above)
-- **Settings** (`/studio/settings`) — studio info, contact, branding, plan, Payouts (Paystack bank details)
+- **Settings** (`/studio/settings`) — three independent sections:
+  - **Studio Details** — name, location, phone, email, Instagram (separate Save button)
+  - **Your Plan** — Free: side-by-side Monthly (₦10k) and Yearly (₦100k) upgrade cards. Pro: green active badge + renewal date (amber warning within 7 days)
+  - **Payouts** — read-only bank details with Edit button gate; form only opens on first setup or after Edit clicked
 
 ### ✅ Client Gallery Portal (`/(client)/gallery/[slug]`)
 - Password gate → name/role step → photo grid
@@ -494,6 +523,15 @@ Full platform is live and functional at `https://photostudio.ng`. The product is
 - Multi-person support (each person submits independently)
 - Submit → confirmation screen → WhatsApp share
 
+### ✅ Admin Panel (`/admin/*`)
+- Protected by `ADMIN_EMAIL` env var — redirects anyone else to studio dashboard
+- Dark/light mode toggle (persisted via `AdminThemeContext`)
+- **Overview** — total studios, revenue, bookings, galleries, new this week, plans breakdown bar chart (Free vs Pro), recent signups list with `PlanBadge`
+- **Studios** — full list with bookings count, galleries count, revenue per studio, plan badge. Selects `subscription_billing` to show "Pro Monthly" / "Pro Yearly" / "Pro" / "Free"
+- **Studio Revenue** (`/admin/revenue`) — all booking payments (deposits + balances) across every studio. Client name, studio, amount, type, status.
+- **Subscriptions** (`/admin/subscriptions`) — platform owner revenue from Pro subscriptions. Shows: total earned, MRR estimate, monthly vs yearly plan counts, full payment history from `subscription_payments` table.
+- `PlanBadge` component exported from `admin/page.jsx` — accepts `plan` and `billing` props, renders "Pro Monthly" / "Pro Yearly" / "Pro" / "Free"
+
 ### ✅ APIs
 - `POST /api/bookings` — client booking form → saved as `pending` → confirmation email
 - `POST /api/galleries/upload` — uploads to R2, returns thumbnail_url + original_url
@@ -501,8 +539,9 @@ Full platform is live and functional at `https://photostudio.ng`. The product is
 - `POST /api/portfolio/upload` — portfolio photos for public website
 - `DELETE /api/portfolio/delete` — removes portfolio photo
 - `GET /api/paystack/resolve-account` — verifies Nigerian bank account
-- `POST /api/paystack/initialize` — creates Paystack payment link
-- `POST /api/paystack/webhook` — handles payment confirmation + gallery unlock
+- `POST /api/paystack/initialize` — creates Paystack payment link (with duplicate reference protection)
+- `POST /api/paystack/subscribe` — initiates Pro subscription via Paystack plan code
+- `POST /api/paystack/webhook` — handles all Paystack events (booking payments, subscription payments, renewals, cancellations)
 - `GET /api/pay/success` — post-payment confirmation page
 
 ### ✅ Email (`src/lib/email.js`)
@@ -522,6 +561,8 @@ Full platform is live and functional at `https://photostudio.ng`. The product is
 
 ## Required DB Migrations (run in Supabase SQL editor)
 
+All migrations are safe to re-run (`IF NOT EXISTS` / `IF NOT EXISTS`).
+
 ```sql
 -- Paystack payout columns
 ALTER TABLE studios
@@ -537,6 +578,16 @@ ALTER TABLE studios ADD COLUMN IF NOT EXISTS website_config JSONB DEFAULT '{}';
 -- Instagram / social
 ALTER TABLE studios ADD COLUMN IF NOT EXISTS instagram_url text;
 
+-- Subscription tracking
+ALTER TABLE studios
+  ADD COLUMN IF NOT EXISTS subscription_status text,
+  ADD COLUMN IF NOT EXISTS subscription_customer_email text,
+  ADD COLUMN IF NOT EXISTS subscription_billing text,
+  ADD COLUMN IF NOT EXISTS plan_expires_at timestamptz;
+
+-- Booking status timestamp
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS status_updated_at timestamptz;
+
 -- Portfolio photos for public website (separate from gallery photos)
 CREATE TABLE IF NOT EXISTS portfolio_photos (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -547,6 +598,29 @@ CREATE TABLE IF NOT EXISTS portfolio_photos (
   sort_order integer DEFAULT 0,
   created_at timestamptz DEFAULT now()
 );
+
+-- Platform subscription revenue log
+CREATE TABLE IF NOT EXISTS subscription_payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  studio_id uuid REFERENCES studios(id) ON DELETE CASCADE,
+  amount integer NOT NULL,
+  billing text NOT NULL,
+  paystack_reference text,
+  paid_at timestamptz DEFAULT now()
+);
+```
+
+**Backfill for existing Pro studios** (run once if studio subscribed before migrations):
+```sql
+-- Set billing type for existing Pro studios
+UPDATE studios SET subscription_billing = 'monthly'
+WHERE plan = 'pro' AND subscription_status = 'active' AND subscription_billing IS NULL;
+
+-- Insert their initial payment into the log
+INSERT INTO subscription_payments (studio_id, amount, billing, paid_at)
+SELECT id, 10000, 'monthly', now()
+FROM studios
+WHERE plan = 'pro' AND subscription_status = 'active';
 ```
 
 ---
@@ -575,22 +649,20 @@ https://photostudio.ng/studio-site/[slug]  ← direct path fallback
 - **Two image versions** always — compressed thumbnail served to clients, original only on download
 - **Free plan** includes a real working website — this is the hook that drives signups
 - **Desktop uploader** deferred to Phase 3 — validate with web uploader first
+- **Two-tier pricing** — Free + Pro only (dropped Starter/Studio tiers). Pro has monthly (₦10k) and yearly (₦100k) billing options. Simpler to sell and understand.
+- **Webhook must use `supabaseAdmin`** — session-based client silently fails in webhook context because there is no user session. All webhook DB writes use service role client.
+- **Subscription vs booking payments distinguished by metadata** — `charge.success` fires for both. Check `metadata.studio_id && metadata.billing` to identify subscription payments. No metadata = booking payment.
+- **`subscription_customer_email` stored on studio** — used to match future renewal (`invoice.payment_succeeded`) and cancellation (`subscription.disabled`) events back to the correct studio row.
+- **Settlement timing (important for FAQ)** — app updates instantly via webhook when payment is confirmed. Bank receives money T+1 (next business day). Client-facing status shows "paid" immediately; bank account reflects it next day.
+- **Payouts section read-only by default** — Edit button gate prevents accidental bank detail changes.
 
 ---
 
 ## Deferred Features (implement later)
 
-### Paystack Gallery Auto-Unlock
-When a client pays the balance for their booking, the gallery should automatically unlock (set `is_locked = false`).
-
-**Implementation plan:**
-1. Paystack webhook at `/api/paystack/webhook` receives `charge.success` event
-2. Match `paystack_reference` to a payment row in the `payments` table
-3. Mark payment as `paid`, set `paid_at = now()`
-4. If `payment.type = 'balance'`, find the linked gallery (`galleries` where `booking_id = payment.booking_id`) and set `is_locked = false`
-5. Send gallery-ready email to client via Resend (`sendGalleryReady`)
-6. Also update `bookings.balance_paid = true`
-
-**Files to touch:** `src/app/api/paystack/webhook/route.js`, `src/lib/email.js`
-
-**Note:** Paystack sends webhook events — must verify the `x-paystack-signature` header using HMAC SHA-512 with `PAYSTACK_SECRET_KEY` before processing.
+- Custom domain support (Pro plan upgrade hook)
+- Calendar availability for bookings
+- Payment reminders (automated)
+- Analytics per studio (page views, booking conversion rate)
+- Desktop uploader app (Electron) — for bulk Lightroom export uploads
+- Watermarking support
