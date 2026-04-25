@@ -41,8 +41,8 @@ export default async function DashboardPage({ searchParams }) {
   const stats = [
     { label: 'Total Bookings', value: totalBookings ?? 0, sub: `${pendingBookings ?? 0} pending`, href: '/studio/bookings' },
     { label: 'Galleries', value: totalGalleries ?? 0, sub: 'Client galleries', href: '/studio/galleries' },
-    { label: 'Revenue', value: `₦${totalRevenue.toLocaleString()}`, sub: 'Total collected', href: '/studio/payments' },
-    { label: 'Studio Plan', value: studio.plan.toUpperCase(), sub: studio.plan === 'free' ? 'Upgrade for more' : 'Active', href: '/studio/settings' },
+    { label: 'Revenue', value: `₦${totalRevenue.toLocaleString()}`, sub: 'Total collected', href: '/studio/payments', accent: 'green' },
+    { label: 'Studio Plan', value: studio.plan.toUpperCase(), sub: studio.plan === 'free' ? 'Upgrade for more' : 'Active', href: '/studio/settings', accent: 'amber' },
   ];
 
   const statusVariant = {
@@ -127,12 +127,20 @@ export default async function DashboardPage({ searchParams }) {
           <Link
             key={stat.label}
             href={stat.href}
-            className="bg-white border border-gray-100 p-6 hover:border-primary/30 hover:shadow-sm transition-all duration-300 group"
+            className="bg-white border p-6 hover:shadow-sm transition-all duration-300 group"
+            style={{
+              borderColor: stat.accent === 'green' ? '#bbf7d0' : stat.accent === 'amber' ? '#fde68a' : '#f3f4f6',
+              backgroundColor: stat.accent === 'green' ? '#f0fdf4' : stat.accent === 'amber' ? '#fffbeb' : '#ffffff',
+            }}
           >
-            <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-gray mb-3 group-hover:text-primary transition-colors">
+            <p className="text-[10px] uppercase tracking-widest font-bold mb-3 group-hover:text-primary transition-colors"
+              style={{ color: stat.accent === 'green' ? '#16a34a' : stat.accent === 'amber' ? '#d97706' : '#6b7280' }}>
               {stat.label}
             </p>
-            <p className="text-3xl font-serif text-black leading-none mb-1">{stat.value}</p>
+            <p className="text-3xl font-serif leading-none mb-1"
+              style={{ color: stat.accent === 'green' ? '#15803d' : stat.accent === 'amber' ? '#b45309' : '#000000' }}>
+              {stat.value}
+            </p>
             <p className="text-xs text-neutral-gray">{stat.sub}</p>
           </Link>
         ))}
