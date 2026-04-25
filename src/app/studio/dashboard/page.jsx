@@ -203,8 +203,34 @@ export default async function DashboardPage({ searchParams }) {
               <Link
                 key={booking.id}
                 href={`/studio/bookings/${booking.id}`}
-                className={`grid grid-cols-2 md:grid-cols-5 px-6 py-4 gap-2 hover:bg-gray-50 transition-colors ${i < recentBookings.length - 1 ? 'border-b border-gray-50' : ''}`}
+                className={`hover:bg-gray-50 transition-colors ${i < recentBookings.length - 1 ? 'border-b border-gray-50' : ''}`}
               >
+                {/* Mobile layout */}
+                <div className="md:hidden px-4 py-4 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-black truncate">{booking.client_name}</p>
+                      <p className="text-xs text-neutral-gray truncate">{booking.client_email}</p>
+                    </div>
+                    <Badge variant={statusVariant[booking.status] ?? 'default'}>{booking.status}</Badge>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-neutral-gray">
+                    {booking.session_date && (
+                      <span>{new Date(booking.session_date).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    )}
+                  </div>
+                  <div className="flex gap-4 text-xs font-medium">
+                    <span className={booking.deposit_paid ? 'text-green-600' : 'text-neutral-gray'}>
+                      Deposit: {booking.deposit_paid ? '✓ ' : ''}₦{Number(booking.deposit_amount).toLocaleString()}
+                    </span>
+                    <span className={booking.balance_paid ? 'text-green-600' : 'text-neutral-gray'}>
+                      Balance: {booking.balance_paid ? '✓ ' : ''}₦{Number(booking.balance_amount).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Desktop layout */}
+                <div className="hidden md:grid grid-cols-5 px-6 py-4 gap-2">
                 <div>
                   <p className="text-sm font-medium text-black">{booking.client_name}</p>
                   <p className="text-xs text-neutral-gray">{booking.client_email}</p>
@@ -230,6 +256,7 @@ export default async function DashboardPage({ searchParams }) {
                     ? <span className="text-green-600 font-medium">✓ ₦{Number(booking.balance_amount).toLocaleString()}</span>
                     : <span className="text-neutral-gray">₦{Number(booking.balance_amount).toLocaleString()}</span>
                   }
+                </div>
                 </div>
               </Link>
             ))}
