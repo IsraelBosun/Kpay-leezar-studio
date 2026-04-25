@@ -7,15 +7,22 @@ export default async function WebsitePage() {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, name, slug, accent_color, website_config, bio, email, phone, instagram_url')
+    .select('id, name, slug, accent_color, website_config, bio, email, phone, instagram_url, logo_url')
     .eq('owner_id', user.id)
     .single();
 
-  const { data: portfolioPhotos } = await supabase
-    .from('portfolio_photos')
-    .select('*')
-    .eq('studio_id', studio.id)
-    .order('sort_order', { ascending: true });
+  const [{ data: portfolioPhotos }, { data: services }] = await Promise.all([
+    supabase
+      .from('portfolio_photos')
+      .select('*')
+      .eq('studio_id', studio.id)
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('services')
+      .select('*')
+      .eq('studio_id', studio.id)
+      .order('created_at', { ascending: true }),
+  ]);
 
   const siteUrl = process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng'
     ? `https://${studio.slug}.photostudio.ng`
@@ -45,6 +52,7 @@ export default async function WebsitePage() {
         studio={studio}
         portfolioPhotos={portfolioPhotos ?? []}
         websiteConfig={studio.website_config}
+        initialServices={services ?? []}
       />
     </div>
   );
