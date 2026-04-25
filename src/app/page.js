@@ -49,28 +49,21 @@ function Item({ children, className = '' }) {
 
 const AMBER = '#F0940A';
 
-const PLANS = [
-  {
-    name: 'Starter',
-    price: '₦15,000',
-    period: '/per month',
-    highlight: false,
-    features: ['1 photographer', '50GB storage', '20 active galleries', 'Paystack payments'],
-  },
-  {
-    name: 'Studio',
-    price: '₦35,000',
-    period: '/per month',
-    highlight: true,
-    features: ['3 photographers', '200GB storage', 'Unlimited galleries', 'Client proofing'],
-  },
-  {
-    name: 'Pro',
-    price: '₦65,000',
-    period: '/per month',
-    highlight: false,
-    features: ['Unlimited team', '500GB storage', 'Custom domain', 'Priority support'],
-  },
+const FREE_FEATURES = [
+  'Studio website + subdomain',
+  '20 portfolio photos',
+  '1 client gallery (20 photos max)',
+  'Photo selections (hearts)',
+];
+
+const PRO_FEATURES = [
+  'Everything in Free',
+  'Unlimited galleries + photos',
+  'Online booking form',
+  'Paystack payment links',
+  'Password-protected galleries',
+  'Gallery auto-unlock after payment',
+  'Priority support',
 ];
 
 const FEATURES = [
@@ -295,50 +288,79 @@ export default function HomePage() {
 
       {/* ── Pricing ───────────────────────────────────────────────────────── */}
       <section className="py-24 px-6 bg-gray-50" id="pricing">
-        <div className="max-w-4xl mx-auto">
-          <FadeUp className="mb-12">
+        <div className="max-w-3xl mx-auto">
+          <FadeUp className="mb-4">
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: AMBER }}>Pricing</p>
-            <h2 className="font-bold text-3xl md:text-4xl text-zinc-900">Simple Naira pricing</h2>
+            <h2 className="font-bold text-3xl md:text-4xl text-zinc-900">Two plans. No confusion.</h2>
+          </FadeUp>
+          <FadeUp delay={0.08} className="mb-12">
+            <p className="text-zinc-500">Start free. Upgrade when you need bookings and payments.</p>
           </FadeUp>
 
-          <Stagger className="grid md:grid-cols-3 gap-5">
-            {PLANS.map((plan) => (
-              <Item key={plan.name}>
-                <div className="bg-white p-6 h-full flex flex-col rounded-sm relative"
-                  style={{
-                    border: plan.highlight ? `2px solid ${AMBER}` : '1px solid #e4e4e7',
-                  }}>
-                  {plan.highlight && (
-                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest px-3 py-1 text-white rounded-full whitespace-nowrap"
-                      style={{ backgroundColor: AMBER }}>
-                      Most popular
-                    </span>
-                  )}
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">{plan.name}</p>
-                  <div className="flex items-baseline gap-1 mb-5">
-                    <span className="font-bold text-3xl text-zinc-900">{plan.price}</span>
-                    <span className="text-xs text-zinc-400">{plan.period}</span>
-                  </div>
-                  <ul className="space-y-2.5 mb-6 flex-1">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-zinc-600">
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: AMBER }} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/auth/signup"
-                    className="block text-center py-2.5 text-sm font-semibold rounded-sm transition-all duration-200"
-                    style={plan.highlight
-                      ? { backgroundColor: AMBER, color: 'white', border: `1px solid ${AMBER}` }
-                      : { backgroundColor: 'white', color: '#18181b', border: '1px solid #d4d4d8' }
-                    }>
-                    Get started
-                  </Link>
+          <Stagger className="grid md:grid-cols-2 gap-5 mb-6">
+
+            {/* Free */}
+            <Item>
+              <div className="bg-white p-7 h-full flex flex-col rounded-sm border border-zinc-200">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Free</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="font-bold text-4xl text-zinc-900">₦0</span>
                 </div>
-              </Item>
-            ))}
+                <p className="text-xs text-zinc-400 mb-6">Forever</p>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {FREE_FEATURES.map(f => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-zinc-600">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 bg-zinc-300" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/auth/signup"
+                  className="block text-center py-3 text-sm font-semibold rounded-sm transition-all duration-200 border border-zinc-300 text-zinc-700 hover:border-zinc-900 hover:text-zinc-900">
+                  Start free
+                </Link>
+              </div>
+            </Item>
+
+            {/* Pro */}
+            <Item>
+              <div className="bg-white p-7 h-full flex flex-col rounded-sm relative"
+                style={{ border: `2px solid ${AMBER}` }}>
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest px-3 py-1 text-white rounded-full whitespace-nowrap"
+                  style={{ backgroundColor: AMBER }}>
+                  14-day free trial
+                </span>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Pro</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="font-bold text-4xl text-zinc-900">₦10,000</span>
+                  <span className="text-xs text-zinc-400">/month</span>
+                </div>
+                <p className="text-xs mb-6" style={{ color: AMBER }}>
+                  or ₦100,000/year — 2 months free
+                </p>
+                <ul className="space-y-3 mb-8 flex-1">
+                  {PRO_FEATURES.map(f => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-zinc-600">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 flex-shrink-0" style={{ backgroundColor: AMBER }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/auth/signup"
+                  className="block text-center py-3 text-sm font-semibold rounded-sm transition-all duration-200 text-white hover:opacity-90"
+                  style={{ backgroundColor: AMBER }}>
+                  Start free trial — no card needed
+                </Link>
+              </div>
+            </Item>
+
           </Stagger>
+
+          <FadeUp delay={0.15}>
+            <p className="text-center text-xs text-zinc-400">
+              Every new studio gets <span className="font-semibold text-zinc-600">14 days of Pro free</span>. No credit card required. Cancel anytime.
+            </p>
+          </FadeUp>
         </div>
       </section>
 

@@ -49,17 +49,17 @@ export default function SignupPage() {
         </div>
 
         <div className="relative z-10 space-y-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold">Get Started Free</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold">14-day free trial</p>
           <h1 className="text-4xl font-serif text-white leading-tight">
             Your studio website.<br />
             <span className="italic text-white/60">Live in 10 minutes.</span>
           </h1>
           <ul className="space-y-3 text-white/50 text-sm font-light">
             {[
+              'Full Pro access free for 14 days — no card needed',
               'Professional website at yourstudio.photostudio.ng',
-              'Private client gallery portal',
+              'Private client galleries with photo selections',
               'Online booking & Paystack payments',
-              'No web designer or developer needed',
             ].map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <span className="text-primary mt-0.5">—</span>
@@ -84,7 +84,7 @@ export default function SignupPage() {
           </Link>
 
           <h2 className="text-3xl font-serif text-black mb-1">Create your studio</h2>
-          <p className="text-sm text-neutral-gray italic mb-10">Free to start — no credit card required</p>
+          <p className="text-sm text-neutral-gray italic mb-10">14 days full access free. No credit card required.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col space-y-2">

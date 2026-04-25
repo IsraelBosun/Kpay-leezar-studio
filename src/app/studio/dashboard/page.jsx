@@ -29,6 +29,13 @@ export default async function DashboardPage() {
 
   const totalRevenue = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
 
+  // Trial: 14 days from signup
+  const trialEndsAt = new Date(new Date(studio.created_at).getTime() + 14 * 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const trialDaysLeft = Math.max(0, Math.ceil((trialEndsAt - now) / (1000 * 60 * 60 * 24)));
+  const inTrial = studio.plan === 'free' && now < trialEndsAt;
+  const trialExpired = studio.plan === 'free' && now >= trialEndsAt;
+
   const stats = [
     { label: 'Total Bookings', value: totalBookings ?? 0, sub: `${pendingBookings ?? 0} pending`, href: '/studio/bookings' },
     { label: 'Galleries', value: totalGalleries ?? 0, sub: 'Client galleries', href: '/studio/galleries' },
@@ -45,6 +52,38 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10">
+
+      {/* Trial banner */}
+      {inTrial && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50 border border-amber-200 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+            <p className="text-sm text-amber-900">
+              <span className="font-bold">Free trial — {trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} left.</span>{' '}
+              You have full Pro access until your trial ends.
+            </p>
+          </div>
+          <Link href="/studio/settings"
+            className="flex-shrink-0 text-[10px] uppercase tracking-widest font-bold px-4 py-2 text-white transition-colors hover:opacity-90"
+            style={{ backgroundColor: '#F0940A' }}>
+            Upgrade to Pro
+          </Link>
+        </div>
+      )}
+
+      {trialExpired && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 px-5 py-4">
+          <div>
+            <p className="text-sm font-bold text-white mb-0.5">Your free trial has ended.</p>
+            <p className="text-xs text-white/50">Upgrade to Pro to keep using booking, payments, and unlimited galleries.</p>
+          </div>
+          <Link href="/studio/settings"
+            className="flex-shrink-0 text-[10px] uppercase tracking-widest font-bold px-5 py-2.5 text-white transition-colors hover:opacity-90"
+            style={{ backgroundColor: '#F0940A' }}>
+            Upgrade — ₦10,000/mo
+          </Link>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
