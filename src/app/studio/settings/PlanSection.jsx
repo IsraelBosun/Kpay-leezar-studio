@@ -35,15 +35,43 @@ export default function PlanSection({ studio }) {
   }
 
   if (isPro) {
+    const renewalDate = studio.plan_expires_at ? new Date(studio.plan_expires_at) : null;
+    const daysUntilRenewal = renewalDate
+      ? Math.ceil((renewalDate - new Date()) / (1000 * 60 * 60 * 24))
+      : null;
+    const renewingSoon = daysUntilRenewal !== null && daysUntilRenewal <= 7;
+
     return (
-      <div className="bg-white border border-gray-100 px-8 py-6 flex items-center gap-4">
-        <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0" />
-        <div>
-          <p className="text-sm font-bold text-black">Pro Plan — Active</p>
-          <p className="text-xs text-neutral-gray mt-0.5">
-            Online booking, Paystack payments, and unlimited galleries are enabled.
-          </p>
+      <div className="bg-white border border-gray-100 px-4 sm:px-8 py-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-black">Pro Plan — Active</p>
+            <p className="text-xs text-neutral-gray mt-0.5">
+              Online booking, Paystack payments, and unlimited galleries are enabled.
+            </p>
+          </div>
         </div>
+
+        {renewalDate && (
+          <div className={`flex items-center gap-3 px-4 py-3 border ${renewingSoon ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-100'}`}>
+            <svg className={`w-4 h-4 flex-shrink-0 ${renewingSoon ? 'text-amber-500' : 'text-neutral-gray'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <div>
+              <p className={`text-xs font-bold ${renewingSoon ? 'text-amber-800' : 'text-black'}`}>
+                {renewingSoon
+                  ? `Renews in ${daysUntilRenewal} day${daysUntilRenewal !== 1 ? 's' : ''}`
+                  : `Next renewal: ${renewalDate.toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+              </p>
+              <p className={`text-[10px] mt-0.5 ${renewingSoon ? 'text-amber-700' : 'text-neutral-gray'}`}>
+                {renewingSoon
+                  ? `On ${renewalDate.toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })} — make sure your card is valid`
+                  : 'Billed automatically via Paystack · Cancel anytime'}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
