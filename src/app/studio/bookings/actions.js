@@ -3,6 +3,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { sendBookingConfirmation } from '@/lib/email';
+import { isPro } from '@/lib/plan';
 
 export async function createBooking(formData) {
   const supabase = await createServerSupabase();
@@ -11,10 +12,12 @@ export async function createBooking(formData) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, name, email, phone, accent_color')
+    .select('id, name, email, phone, accent_color, plan, created_at')
     .eq('owner_id', user.id)
     .single();
   if (!studio) return { error: 'Studio not found.' };
+
+  if (!isPro(studio)) return { error: 'Bookings are a Pro feature. Upgrade to create bookings.' };
 
   const serviceId = formData.get('service_id') || null;
   const sessionDate = formData.get('session_date') || null;
@@ -75,6 +78,18 @@ export async function updateBookingStatus(bookingId, status) {
     .eq('id', bookingId);
 
   if (error) return { error: error.message };
+
+  if (status === 'completed') {
+    const { data: gallery } = await supabase
+      .from('galleries')
+      .select('id')
+      .eq('booking_id', bookingId)
+      .maybeSingle();
+    if (gallery) {
+      await supabase.from('galleries').update({ downloads_enabled: true }).eq('id', gallery.id);
+    }
+  }
+
   return { success: true };
 }
 

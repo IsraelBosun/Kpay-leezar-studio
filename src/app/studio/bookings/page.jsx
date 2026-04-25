@@ -1,6 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
+import { isPro } from '@/lib/plan';
 
 const STATUS_TABS = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
 
@@ -18,9 +19,32 @@ export default async function BookingsPage({ searchParams }) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id')
+    .select('id, plan, created_at')
     .eq('owner_id', user.id)
     .single();
+
+  if (!isPro(studio)) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-1">Studio</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-black">Bookings</h1>
+        </div>
+        <div className="bg-white border border-gray-100 px-8 py-16 text-center space-y-4">
+          <p className="font-serif text-2xl text-black">Bookings is a Pro feature</p>
+          <p className="text-sm text-neutral-gray italic max-w-sm mx-auto">
+            Upgrade to Pro to manage client bookings, send confirmation emails, and collect deposits and balance payments.
+          </p>
+          <Link
+            href="/studio/settings"
+            className="inline-block bg-primary text-white px-8 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors mt-2"
+          >
+            Upgrade to Pro →
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   let query = supabase
     .from('bookings')

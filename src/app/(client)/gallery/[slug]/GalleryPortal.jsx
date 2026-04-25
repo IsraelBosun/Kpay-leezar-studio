@@ -3,7 +3,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 
-export default function GalleryPortal({ gallery, photos, studioName, accentColor, isLocked }) {
+export default function GalleryPortal({ gallery, photos, deliveryPhotos, studioName, accentColor, isLocked, downloadsEnabled }) {
+  const deliveryMode = downloadsEnabled && deliveryPhotos.length > 0;
+
+  // ── Delivery mode state ──
+  const [deliveryIndex, setDeliveryIndex] = useState(null);
+  const isDeliveryOpen = deliveryIndex !== null;
+  const currentDelivery = isDeliveryOpen ? deliveryPhotos[deliveryIndex] : null;
+
+  const closeDelivery = useCallback(() => setDeliveryIndex(null), []);
+  const deliveryNext = useCallback(() => setDeliveryIndex(i => (i + 1) % deliveryPhotos.length), [deliveryPhotos.length]);
+  const deliveryPrev = useCallback(() => setDeliveryIndex(i => (i - 1 + deliveryPhotos.length) % deliveryPhotos.length), [deliveryPhotos.length]);
+
+  // ── Selection mode state ──
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectorName, setSelectorName] = useState('');
   const [selectorRole, setSelectorRole] = useState('');
@@ -14,16 +26,22 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
 
   const isOpen = lightboxIndex !== null;
   const currentPhoto = isOpen ? photos[lightboxIndex] : null;
-
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const goNext = useCallback(() => setLightboxIndex(i => (i + 1) % photos.length), [photos.length]);
+  const goPrev = useCallback(() => setLightboxIndex(i => (i - 1 + photos.length) % photos.length), [photos.length]);
 
-  const goNext = useCallback(() => {
-    setLightboxIndex(i => (i + 1) % photos.length);
-  }, [photos.length]);
-
-  const goPrev = useCallback(() => {
-    setLightboxIndex(i => (i - 1 + photos.length) % photos.length);
-  }, [photos.length]);
+  // ── Keyboard navigation ──
+  useEffect(() => {
+    if (isDeliveryOpen) {
+      function onKey(e) {
+        if (e.key === 'Escape') closeDelivery();
+        if (e.key === 'ArrowRight') deliveryNext();
+        if (e.key === 'ArrowLeft') deliveryPrev();
+      }
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }
+  }, [isDeliveryOpen, closeDelivery, deliveryNext, deliveryPrev]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -36,21 +54,24 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, closeLightbox, goNext, goPrev]);
 
-  // Lock body scroll when lightbox is open
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
+    document.body.style.overflow = (isOpen || isDeliveryOpen) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  }, [isOpen, isDeliveryOpen]);
 
-  // Touch swipe for mobile
+  // Touch swipe
   useEffect(() => {
-    if (!isOpen) return;
+    const lightboxOpen = isOpen || isDeliveryOpen;
+    if (!lightboxOpen) return;
     let startX = null;
     function onTouchStart(e) { startX = e.touches[0].clientX; }
     function onTouchEnd(e) {
       if (startX === null) return;
       const diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev();
+      if (Math.abs(diff) > 50) {
+        if (isDeliveryOpen) diff > 0 ? deliveryNext() : deliveryPrev();
+        else diff > 0 ? goNext() : goPrev();
+      }
       startX = null;
     }
     window.addEventListener('touchstart', onTouchStart);
@@ -59,7 +80,7 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchend', onTouchEnd);
     };
-  }, [isOpen, goNext, goPrev]);
+  }, [isOpen, isDeliveryOpen, goNext, goPrev, deliveryNext, deliveryPrev]);
 
   function toggleSelect(photoId) {
     setSelectedIds(prev => {
@@ -87,11 +108,119 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
     setSubmitted(true);
   }
 
-  function shareWhatsApp() {
-    const text = `My photo selections from ${gallery.title} (${studioName}):\n${selectedIds.size} photos selected.\n\nView gallery: ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  function downloadPhoto(photo) {
+    const a = document.createElement('a');
+    a.href = `/api/download?photo_id=${photo.id}`;
+    a.download = photo.file_name || 'photo.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
+  // ── Delivery mode UI ──────────────────────────────────────────────────────
+  if (deliveryMode) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white">
+        <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-sm border-b border-white/5 px-4 sm:px-6 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+            <div>
+              <p className="font-serif text-lg text-white leading-none">{gallery.title}</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold mt-0.5" style={{ color: accentColor }}>
+                {studioName}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-bold text-white/60">{deliveryPhotos.length} photo{deliveryPhotos.length !== 1 ? 's' : ''}</p>
+              <p className="text-[10px] text-white/30 mt-0.5">Ready to download</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Ready banner */}
+        <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 px-5 py-4 border border-white/10 bg-white/5 mb-6">
+            <div className="w-8 h-8 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: accentColor }}>
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Your photos are ready</p>
+              <p className="text-xs text-white/40">Click any photo to view full screen, or tap the download icon.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {deliveryPhotos.map((photo, index) => (
+              <div key={photo.id} className="relative aspect-square overflow-hidden group bg-zinc-900">
+                <button onClick={() => setDeliveryIndex(index)} className="absolute inset-0 w-full h-full focus:outline-none" aria-label="View full screen">
+                  <Image src={photo.thumbnail_url} alt={photo.file_name || ''} fill
+                    className="object-cover transition-all duration-300 brightness-90 group-hover:brightness-100"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" unoptimized />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); downloadPhoto(photo); }}
+                  className="absolute bottom-2 right-2 z-10 w-8 h-8 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white transition-colors rounded-full opacity-0 group-hover:opacity-100 touch-action:manipulation"
+                  aria-label="Download"
+                  style={{ touchAction: 'manipulation' }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Delivery lightbox */}
+        {isDeliveryOpen && currentDelivery && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
+              <div>
+                <p className="text-white/60 text-xs truncate max-w-xs">{currentDelivery.file_name}</p>
+                <p className="text-white/30 text-[10px] tabular-nums">{deliveryIndex + 1} / {deliveryPhotos.length}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => downloadPhoto(currentDelivery)}
+                  className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-bold text-white transition-colors"
+                  style={{ backgroundColor: accentColor }}>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download
+                </button>
+                <button onClick={closeDelivery} className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white bg-white/10 hover:bg-white/20 transition-colors active:scale-90">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 relative flex items-center justify-center min-h-0">
+              {deliveryPhotos.length > 1 && (
+                <button onClick={deliveryPrev} className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+              )}
+              <div className="relative w-full h-full">
+                <Image key={currentDelivery.id} src={currentDelivery.thumbnail_url} alt={currentDelivery.file_name || ''} fill className="object-contain" sizes="100vw" unoptimized />
+              </div>
+              {deliveryPhotos.length > 1 && (
+                <button onClick={deliveryNext} className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              )}
+            </div>
+            <div className="flex-shrink-0 px-4 py-3 text-center">
+              <p className="text-white/30 text-xs">{currentDelivery.file_name}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Selection mode UI ─────────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6 text-center">
@@ -106,7 +235,10 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
             {studioName} has received your {selectedIds.size} photo selections and will be in touch soon.
           </p>
           <button
-            onClick={shareWhatsApp}
+            onClick={() => {
+              const text = `My photo selections from ${gallery.title} (${studioName}):\n${selectedIds.size} photos selected.\n\nView gallery: ${window.location.href}`;
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            }}
             className="flex items-center gap-2 mx-auto px-6 py-3 text-xs uppercase tracking-widest font-bold text-white bg-[#25D366] hover:bg-[#1da851] transition-colors"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -121,13 +253,10 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-sm border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-sm border-b border-white/5 px-4 sm:px-6 py-4 flex items-center justify-between">
         <div>
           <p className="font-serif text-lg text-white leading-none">{gallery.title}</p>
-          <p className="text-[10px] uppercase tracking-widest font-bold mt-0.5" style={{ color: accentColor }}>
-            {studioName}
-          </p>
+          <p className="text-[10px] uppercase tracking-widest font-bold mt-0.5" style={{ color: accentColor }}>{studioName}</p>
         </div>
         {selectedIds.size > 0 && !nameStep && (
           <button onClick={submitSelections} disabled={submitting}
@@ -138,7 +267,6 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
         )}
       </header>
 
-      {/* Name step */}
       {nameStep ? (
         <div className="flex items-center justify-center min-h-[80vh] px-6">
           <div className="w-full max-w-sm space-y-6">
@@ -158,18 +286,12 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
                   <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Your Role</label>
                   <span className="text-[10px] text-white/20">{selectorRole.length}/10</span>
                 </div>
-                <input
-                  type="text"
-                  value={selectorRole}
-                  onChange={(e) => setSelectorRole(e.target.value)}
-                  maxLength={10}
+                <input type="text" value={selectorRole} onChange={(e) => setSelectorRole(e.target.value)} maxLength={10}
                   placeholder="e.g. Bride, Friend… (optional)"
-                  className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 font-light placeholder:text-white/20"
-                />
+                  className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 font-light placeholder:text-white/20" />
               </div>
             </div>
-            <button onClick={() => selectorName.trim() && setNameStep(false)}
-              disabled={!selectorName.trim()}
+            <button onClick={() => selectorName.trim() && setNameStep(false)} disabled={!selectorName.trim()}
               className="w-full py-3.5 text-xs uppercase tracking-widest font-bold text-white transition-colors disabled:opacity-30"
               style={{ backgroundColor: accentColor }}>
               View Photos →
@@ -178,9 +300,9 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
         </div>
       ) : (
         <>
-          <div className="px-6 py-4 bg-zinc-900 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
+          <div className="px-4 sm:px-6 py-4 bg-zinc-900 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm text-white/60">
-              Heart to select · tap photo to view full screen
+              Heart to select · tap to view full screen
               <span className="ml-2 text-white/30">{selectedIds.size} selected</span>
             </p>
             {selectedIds.size > 0 && (
@@ -201,41 +323,18 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
               {photos.map((photo, index) => {
                 const isSelected = selectedIds.has(photo.id);
                 return (
-                  <div
-                    key={photo.id}
-                    className="relative aspect-square overflow-hidden group"
-                    style={isSelected ? { outline: `2px solid ${accentColor}`, outlineOffset: '2px' } : {}}
-                  >
-                    {/* Photo — click opens lightbox */}
-                    <button
-                      onClick={() => setLightboxIndex(index)}
-                      className="absolute inset-0 w-full h-full focus:outline-none"
-                      aria-label="View full screen"
-                    >
-                      <Image
-                        src={photo.thumbnail_url}
-                        alt={photo.file_name || ''}
-                        fill
+                  <div key={photo.id} className="relative aspect-square overflow-hidden group"
+                    style={isSelected ? { outline: `2px solid ${accentColor}`, outlineOffset: '2px' } : {}}>
+                    <button onClick={() => setLightboxIndex(index)} className="absolute inset-0 w-full h-full focus:outline-none" aria-label="View full screen">
+                      <Image src={photo.thumbnail_url} alt={photo.file_name || ''} fill
                         className="object-cover transition-all duration-300 brightness-75 group-hover:brightness-100"
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                        unoptimized
-                      />
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" unoptimized />
                     </button>
-
-                    {/* Heart — always visible, click toggles selection */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleSelect(photo.id); }}
+                    <button onClick={(e) => { e.stopPropagation(); toggleSelect(photo.id); }}
                       className="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full shadow-lg transition-all duration-200 focus:outline-none"
-                      style={{ backgroundColor: isSelected ? accentColor : 'rgba(0,0,0,0.45)' }}
-                      aria-label={isSelected ? 'Remove from selection' : 'Add to selection'}
-                    >
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill={isSelected ? 'currentColor' : 'none'}
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
+                      style={{ backgroundColor: isSelected ? accentColor : 'rgba(0,0,0,0.45)', touchAction: 'manipulation' }}
+                      aria-label={isSelected ? 'Remove from selection' : 'Add to selection'}>
+                      <svg className="w-4 h-4 text-white" fill={isSelected ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                       </svg>
                     </button>
@@ -253,76 +352,40 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
         </>
       )}
 
-      {/* Lightbox */}
+      {/* Selection lightbox */}
       {isOpen && currentPhoto && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col">
-          {/* Top bar */}
           <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-            <span className="text-white/40 text-xs tabular-nums">
-              {lightboxIndex + 1} / {photos.length}
-            </span>
+            <span className="text-white/40 text-xs tabular-nums">{lightboxIndex + 1} / {photos.length}</span>
             <div className="flex items-center gap-3">
-              {/* Select toggle */}
-              <button
-                onClick={() => toggleSelect(currentPhoto.id)}
+              <button onClick={() => toggleSelect(currentPhoto.id)}
                 className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest font-bold transition-colors"
-                style={
-                  selectedIds.has(currentPhoto.id)
-                    ? { backgroundColor: accentColor, color: '#fff' }
-                    : { backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff' }
-                }
-              >
+                style={selectedIds.has(currentPhoto.id) ? { backgroundColor: accentColor, color: '#fff' } : { backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff' }}>
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
                 {selectedIds.has(currentPhoto.id) ? 'Selected' : 'Select'}
               </button>
-              {/* Close */}
-              <button onClick={closeLightbox}
-                className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors bg-white/10 hover:bg-white/20">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={closeLightbox} className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors bg-white/10 hover:bg-white/20">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
           </div>
-
-          {/* Image */}
           <div className="flex-1 relative flex items-center justify-center min-h-0">
-            {/* Prev */}
             {photos.length > 1 && (
-              <button onClick={goPrev}
-                className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
+              <button onClick={goPrev} className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
               </button>
             )}
-
             <div className="relative w-full h-full">
-              <Image
-                key={currentPhoto.id}
-                src={currentPhoto.thumbnail_url}
-                alt={currentPhoto.file_name || ''}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                unoptimized
-              />
+              <Image key={currentPhoto.id} src={currentPhoto.thumbnail_url} alt={currentPhoto.file_name || ''} fill className="object-contain" sizes="100vw" unoptimized />
             </div>
-
-            {/* Next */}
             {photos.length > 1 && (
-              <button onClick={goNext}
-                className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
+              <button onClick={goNext} className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
               </button>
             )}
           </div>
-
-          {/* Bottom filename */}
           <div className="flex-shrink-0 px-4 py-3 text-center">
             <p className="text-white/30 text-xs truncate">{currentPhoto.file_name}</p>
           </div>

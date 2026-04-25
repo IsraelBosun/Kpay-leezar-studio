@@ -9,13 +9,11 @@ export async function signUp(formData) {
 
   const email = formData.get('email');
   const password = formData.get('password');
-  const studioName = formData.get('studioName');
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { studio_name: studioName },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
     },
   });

@@ -3,7 +3,6 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import { headers } from 'next/headers';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
 import ConditionalFooter from '@/components/ConditionalFooter';
-import WhatsAppButton from '@/components/WhatsAppButton';
 import { PHProvider } from '@/components/PostHogProvider';
 
 const inter = Inter({
@@ -20,6 +19,7 @@ const playfair = Playfair_Display({
 export const metadata = {
   title: 'photostudio.ng — Your photography studio, live in 10 minutes',
   description: 'Professional website, client galleries, online bookings, and Paystack payments for Nigerian photography studios. Free to start.',
+  icons: { icon: '/photostudio_icon.png' },
 };
 
 export default async function RootLayout({ children }) {
@@ -33,7 +33,6 @@ export default async function RootLayout({ children }) {
           {!isStudioSite && <ConditionalNavbar />}
           {children}
           {!isStudioSite && <ConditionalFooter />}
-          {!isStudioSite && <WhatsAppButton />}
         </PHProvider>
       </body>
     </html>

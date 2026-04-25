@@ -600,11 +600,11 @@ export default function StudioSiteClient({ studio, portfolio, services, websiteC
 
       {/* ── Lightbox ── */}
       {lightboxIndex !== null && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+        <div className="fixed inset-0 z-[200] bg-black/95"
           onClick={() => setLightboxIndex(null)}>
           <button
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + portfolio.length) % portfolio.length); }}
-            className="absolute left-3 md:left-8 p-3 text-white/60 hover:text-white transition-colors z-10">
+            className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white transition-colors z-10">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 19l-7-7 7-7" />
             </svg>
@@ -613,12 +613,12 @@ export default function StudioSiteClient({ studio, portfolio, services, websiteC
           <img
             src={portfolio[lightboxIndex]?.src || portfolio[lightboxIndex]?.thumbnail_url}
             alt=""
-            className="max-h-[85vh] max-w-[90vw] md:max-w-[85vw] object-contain"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[85vh] max-w-[90vw] md:max-w-[85vw] object-contain"
             onClick={(e) => e.stopPropagation()} />
 
           <button
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % portfolio.length); }}
-            className="absolute right-3 md:right-8 p-3 text-white/60 hover:text-white transition-colors z-10">
+            className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white transition-colors z-10">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5l7 7-7 7" />
             </svg>

@@ -1,5 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase';
+import { redirect } from 'next/navigation';
 import NewBookingForm from './NewBookingForm';
+import { isPro } from '@/lib/plan';
 
 export default async function NewBookingPage() {
   const supabase = await createServerSupabase();
@@ -7,9 +9,11 @@ export default async function NewBookingPage() {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id')
+    .select('id, plan, created_at')
     .eq('owner_id', user.id)
     .single();
+
+  if (!isPro(studio)) redirect('/studio/bookings');
 
   const { data: services } = await supabase
     .from('services')

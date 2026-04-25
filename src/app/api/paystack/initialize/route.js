@@ -2,6 +2,7 @@ import { createServerSupabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase';
 import { initializePayment, verifyPayment } from '@/lib/paystack';
 import { randomUUID } from 'crypto';
+import { isPro } from '@/lib/plan';
 
 export async function POST(req) {
   try {
@@ -17,10 +18,14 @@ export async function POST(req) {
 
     const { data: studio } = await supabase
       .from('studios')
-      .select('id, name, paystack_subaccount_code')
+      .select('id, name, paystack_subaccount_code, plan, created_at')
       .eq('owner_id', user.id)
       .single();
     if (!studio) return Response.json({ error: 'Studio not found' }, { status: 404 });
+
+    if (!isPro(studio)) {
+      return Response.json({ error: 'Payments are a Pro feature. Upgrade to accept client payments.' }, { status: 403 });
+    }
 
     const { data: booking } = await supabase
       .from('bookings')

@@ -83,23 +83,10 @@ export default function SignupPage() {
             <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-primary">.ng</span>
           </Link>
 
-          <h2 className="text-3xl font-serif text-black mb-1">Create your studio</h2>
+          <h2 className="text-3xl font-serif text-black mb-1">Create your account</h2>
           <p className="text-sm text-neutral-gray italic mb-10">14 days full access free. No credit card required.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-                .ng Name
-              </label>
-              <input
-                type="text"
-                name="studioName"
-                required
-                placeholder="e.g. Lagos Lens Studio"
-                className="bg-transparent border-b-2 border-gray-200 py-3 focus:outline-none focus:border-primary transition-all text-black placeholder:text-gray-300 font-light"
-              />
-            </div>
-
             <div className="flex flex-col space-y-2">
               <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
                 Email Address
@@ -181,7 +168,7 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full bg-primary text-white py-4 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
-              {loading ? 'Creating studio...' : 'Create .ng — Free'}
+              {loading ? 'Creating account...' : 'Create Account — Free'}
             </button>
           </form>
 

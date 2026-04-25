@@ -2,6 +2,7 @@ import { createServerSupabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import GalleryManager from './GalleryManager';
+import { isPro } from '@/lib/plan';
 
 export default async function GalleryDetailPage({ params }) {
   const { id } = await params;
@@ -10,7 +11,7 @@ export default async function GalleryDetailPage({ params }) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, slug')
+    .select('id, slug, plan, created_at')
     .eq('owner_id', user.id)
     .single();
 
@@ -23,11 +24,10 @@ export default async function GalleryDetailPage({ params }) {
 
   if (!gallery) notFound();
 
-  const { data: photos } = await supabase
-    .from('photos')
-    .select('*')
-    .eq('gallery_id', id)
-    .order('uploaded_at', { ascending: true });
+  const [{ data: photos }, { data: deliveryPhotos }] = await Promise.all([
+    supabase.from('photos').select('*').eq('gallery_id', id).eq('photo_type', 'selection').order('uploaded_at', { ascending: true }),
+    supabase.from('photos').select('*').eq('gallery_id', id).eq('photo_type', 'delivery').order('uploaded_at', { ascending: true }),
+  ]);
 
   const { data: selections } = await supabase
     .from('selections')
@@ -36,6 +36,7 @@ export default async function GalleryDetailPage({ params }) {
     .order('created_at', { ascending: true });
 
   const clientUrl = `${process.env.NEXT_PUBLIC_APP_URL}/gallery/${gallery.slug}`;
+  const isProStudio = isPro(studio);
 
   return (
     <div className="space-y-8">
@@ -62,8 +63,10 @@ export default async function GalleryDetailPage({ params }) {
       <GalleryManager
         gallery={gallery}
         photos={photos ?? []}
+        deliveryPhotos={deliveryPhotos ?? []}
         selections={selections ?? []}
         clientUrl={clientUrl}
+        isProStudio={isProStudio}
       />
     </div>
   );

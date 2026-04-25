@@ -167,7 +167,7 @@ export default function GalleryPageClient({ studio, photos }) {
       {/* ── Lightbox ── */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-[100] bg-black/97 flex items-center justify-center"
+          className="fixed inset-0 z-[200] bg-black/97"
           onClick={() => setLightboxIndex(null)}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}>
@@ -175,7 +175,7 @@ export default function GalleryPageClient({ studio, photos }) {
           {/* Prev */}
           <button
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + filtered.length) % filtered.length); }}
-            className="absolute left-3 md:left-8 z-10 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center rounded-full bg-white/10 md:bg-transparent md:p-3 text-white/60 hover:text-white active:scale-90 transition-all">
+            className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center rounded-full bg-white/10 md:bg-transparent md:p-3 text-white/60 hover:text-white active:scale-90 transition-all">
             <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 19l-7-7 7-7" />
             </svg>
@@ -184,13 +184,13 @@ export default function GalleryPageClient({ studio, photos }) {
           <img
             src={filtered[lightboxIndex]?.src || filtered[lightboxIndex]?.thumbnail_url}
             alt=""
-            className="max-h-[85vh] max-w-[88vw] object-contain shadow-2xl"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[85vh] max-w-[88vw] object-contain shadow-2xl"
             onClick={(e) => e.stopPropagation()} />
 
           {/* Next */}
           <button
             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % filtered.length); }}
-            className="absolute right-3 md:right-8 z-10 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center rounded-full bg-white/10 md:bg-transparent md:p-3 text-white/60 hover:text-white active:scale-90 transition-all">
+            className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center rounded-full bg-white/10 md:bg-transparent md:p-3 text-white/60 hover:text-white active:scale-90 transition-all">
             <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5l7 7-7 7" />
             </svg>

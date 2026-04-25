@@ -3,6 +3,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { deleteFromR2 } from '@/lib/r2';
 import { redirect } from 'next/navigation';
+import { isPro } from '@/lib/plan';
 
 export async function createGallery(formData) {
   const supabase = await createServerSupabase();
@@ -11,18 +12,17 @@ export async function createGallery(formData) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, plan')
+    .select('id, plan, created_at')
     .eq('owner_id', user.id)
     .single();
   if (!studio) return { error: 'Studio not found.' };
 
-  // Free plan: max 1 gallery
-  if (studio.plan === 'free') {
+  if (!isPro(studio)) {
     const { count } = await supabase
       .from('galleries')
       .select('*', { count: 'exact', head: true })
       .eq('studio_id', studio.id);
-    if (count >= 1) return { error: 'Free plan allows 1 gallery. Upgrade to create more.' };
+    if (count >= 1) return { error: 'Free plan allows 1 gallery. Upgrade to Pro to create more.' };
   }
 
   const title = formData.get('title');
@@ -51,6 +51,18 @@ export async function createGallery(formData) {
   redirect(`/studio/galleries/${gallery.id}`);
 }
 
+export async function toggleGalleryDownloads(galleryId, enabled) {
+  const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated.' };
+  const { error } = await supabase
+    .from('galleries')
+    .update({ downloads_enabled: enabled })
+    .eq('id', galleryId);
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
 export async function toggleGalleryLock(galleryId, locked) {
   const supabase = await createServerSupabase();
   const { error } = await supabase
@@ -59,6 +71,10 @@ export async function toggleGalleryLock(galleryId, locked) {
     .eq('id', galleryId);
   if (error) return { error: error.message };
   return { success: true };
+}
+
+export async function deleteDeliveryPhoto(photoId) {
+  return deletePhoto(photoId);
 }
 
 export async function deletePhoto(photoId) {

@@ -113,6 +113,92 @@ const STEPS = [
   { n: 3, title: 'Get paid', body: 'Clients pay deposits and balances directly. Naira. Instantly.' },
 ];
 
+const FAQ_ITEMS = [
+  {
+    q: 'How long does it take to set up my studio?',
+    a: 'Under 10 minutes. Fill in your name, bio, and services, upload a few portfolio photos, and your website is live at yourname.photostudio.ng. No developer needed.',
+  },
+  {
+    q: 'Do I need any technical knowledge?',
+    a: 'None at all. If you can fill out a form and drag photos, you can set up your studio. Everything is designed for photographers, not developers.',
+  },
+  {
+    q: 'What happens if I don\'t upgrade after the free trial?',
+    a: 'Your studio website stays live and clients can still browse your portfolio. But booking, payments, and new galleries are locked. You can upgrade anytime to unlock them — your data is never deleted.',
+  },
+  {
+    q: 'Can I cancel my Pro plan anytime?',
+    a: 'Yes. Cancel from your settings and you won\'t be billed again. Your account drops to the free plan at the end of the current billing period.',
+  },
+  {
+    q: 'What\'s the difference between monthly and yearly billing?',
+    a: 'Monthly is ₦10,000/month. Yearly is ₦100,000 upfront — that\'s two months free, saving you ₦20,000 per year.',
+  },
+  {
+    q: 'Can multiple people select photos from the same gallery?',
+    a: 'Yes. Each person (bride, groom, family, etc.) enters their name when they open the gallery, and their selections are tracked separately. You see everyone\'s picks consolidated in your dashboard.',
+  },
+  {
+    q: 'How do clients access their gallery?',
+    a: 'You share a private link. Clients open it, enter their name, and start selecting photos. Galleries can be password-protected for extra privacy.',
+  },
+  {
+    q: 'How do clients pay?',
+    a: 'Via Paystack — card, bank transfer, or USSD. You send them a payment link from your dashboard. Deposit first to confirm the booking, balance before the gallery unlocks.',
+  },
+  {
+    q: 'When does the money reach my account?',
+    a: 'Your dashboard shows "paid" the moment Paystack confirms the transaction. The money hits your bank account the next business day (T+1 settlement).',
+  },
+  {
+    q: 'Do you take a percentage of my payments?',
+    a: 'No. 100% of what your clients pay goes straight to your bank account via Paystack. We charge a flat monthly or yearly subscription — no commissions, no hidden fees.',
+  },
+];
+
+function FAQItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-zinc-200 last:border-0">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-4 py-5 text-left group"
+      >
+        <span className="text-sm font-semibold text-zinc-800 group-hover:text-zinc-900 transition-colors leading-snug">{q}</span>
+        <span
+          className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full border border-zinc-200 group-hover:border-zinc-400 transition-all"
+          style={open ? { backgroundColor: AMBER, borderColor: AMBER } : {}}
+        >
+          <svg className="w-3 h-3 transition-transform duration-200" style={{ color: open ? '#fff' : '#71717a', transform: open ? 'rotate(45deg)' : 'none' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+      </button>
+      {open && (
+        <p className="text-sm text-zinc-500 leading-relaxed pb-5 pr-10">{a}</p>
+      )}
+    </div>
+  );
+}
+
+function FAQSection() {
+  return (
+    <section className="py-24 px-6 bg-white border-t border-zinc-200" id="faq">
+      <div className="max-w-2xl mx-auto">
+        <FadeUp className="mb-12">
+          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: AMBER }}>FAQ</p>
+          <h2 className="font-bold text-3xl md:text-4xl text-zinc-900">Common questions</h2>
+        </FadeUp>
+        <div>
+          {FAQ_ITEMS.map((item) => (
+            <FAQItem key={item.q} q={item.q} a={item.a} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
   return (
     <main className="overflow-x-hidden bg-white">
@@ -384,6 +470,9 @@ export default function HomePage() {
           </div>
         </FadeUp>
       </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      <FAQSection />
 
       {/* ── CTA ───────────────────────────────────────────────────────────── */}
       <section className="py-24 px-6 bg-gray-50 border-t border-zinc-200">

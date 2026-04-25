@@ -80,7 +80,7 @@ export async function POST(req) {
       if (gallery) {
         await supabaseAdmin
           .from('galleries')
-          .update({ is_locked: false })
+          .update({ is_locked: false, downloads_enabled: true })
           .eq('id', gallery.id);
 
         const { data: studio } = await supabaseAdmin
