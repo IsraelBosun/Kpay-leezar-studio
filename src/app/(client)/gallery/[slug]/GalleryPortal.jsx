@@ -154,15 +154,18 @@ export default function GalleryPortal({ gallery, photos, studioName, accentColor
                   className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 font-light placeholder:text-white/20" />
               </div>
               <div>
-                <label className="text-[10px] uppercase tracking-widest font-bold text-white/40 block mb-2">Your Role</label>
-                <select value={selectorRole} onChange={(e) => setSelectorRole(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 font-light">
-                  <option value="">— Optional —</option>
-                  <option value="bride">Bride</option>
-                  <option value="groom">Groom</option>
-                  <option value="family">Family</option>
-                  <option value="other">Other</option>
-                </select>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Your Role</label>
+                  <span className="text-[10px] text-white/20">{selectorRole.length}/10</span>
+                </div>
+                <input
+                  type="text"
+                  value={selectorRole}
+                  onChange={(e) => setSelectorRole(e.target.value)}
+                  maxLength={10}
+                  placeholder="e.g. Bride, Friend… (optional)"
+                  className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 font-light placeholder:text-white/20"
+                />
               </div>
             </div>
             <button onClick={() => selectorName.trim() && setNameStep(false)}
