@@ -19,15 +19,20 @@ export default async function GalleriesPage() {
     .order('created_at', { ascending: false });
 
   const photoCountMap = {};
+  const coverPhotoMap = {};
   if (galleries) {
     const galleryIds = galleries.map(g => g.id);
     if (galleryIds.length > 0) {
-      const { data: counts } = await supabase
+      const { data: photos } = await supabase
         .from('photos')
-        .select('gallery_id')
-        .in('gallery_id', galleryIds);
-      counts?.forEach(({ gallery_id }) => {
+        .select('gallery_id, thumbnail_url')
+        .in('gallery_id', galleryIds)
+        .order('uploaded_at', { ascending: true });
+      photos?.forEach(({ gallery_id, thumbnail_url }) => {
         photoCountMap[gallery_id] = (photoCountMap[gallery_id] || 0) + 1;
+        if (!coverPhotoMap[gallery_id] && thumbnail_url) {
+          coverPhotoMap[gallery_id] = thumbnail_url;
+        }
       });
     }
   }
@@ -75,27 +80,39 @@ export default async function GalleriesPage() {
             <Link
               key={g.id}
               href={`/studio/galleries/${g.id}`}
-              className="bg-white border border-gray-100 p-6 hover:border-primary/30 hover:shadow-sm transition-all group"
+              className="bg-white border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all group overflow-hidden"
             >
-              {/* Icon */}
-              <div className="w-10 h-10 bg-gray-50 flex items-center justify-center mb-4 group-hover:bg-primary/5 transition-colors">
-                <svg className="w-5 h-5 text-neutral-gray group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+              {/* Cover photo */}
+              <div className="aspect-[3/2] bg-gray-50 overflow-hidden">
+                {coverPhotoMap[g.id] ? (
+                  <img
+                    src={coverPhotoMap[g.id]}
+                    alt=""
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
               </div>
 
-              <p className="font-medium text-black text-sm mb-1 group-hover:text-primary transition-colors truncate">{g.title}</p>
-              {g.bookings?.client_name && (
-                <p className="text-xs text-neutral-gray mb-3">for {g.bookings.client_name}</p>
-              )}
+              <div className="p-4">
+                <p className="font-medium text-black text-sm mb-0.5 group-hover:text-primary transition-colors truncate">{g.title}</p>
+                {g.bookings?.client_name && (
+                  <p className="text-xs text-primary mb-3">for {g.bookings.client_name}</p>
+                )}
 
-              <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
-                <p className="text-xs text-neutral-gray">
-                  {photoCountMap[g.id] ?? 0} photo{photoCountMap[g.id] !== 1 ? 's' : ''}
-                </p>
-                <Badge variant={g.is_locked ? 'warning' : 'success'}>
-                  {g.is_locked ? 'Locked' : 'Unlocked'}
-                </Badge>
+                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                  <p className="text-xs text-neutral-gray">
+                    {photoCountMap[g.id] ?? 0} photo{photoCountMap[g.id] !== 1 ? 's' : ''}
+                  </p>
+                  <Badge variant={g.is_locked ? 'warning' : 'success'}>
+                    {g.is_locked ? 'Locked' : 'Unlocked'}
+                  </Badge>
+                </div>
               </div>
             </Link>
           ))}
