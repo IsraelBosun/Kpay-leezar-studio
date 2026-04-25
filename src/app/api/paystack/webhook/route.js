@@ -26,6 +26,7 @@ export async function POST(req) {
           plan: 'pro',
           subscription_status: 'active',
           subscription_customer_email: event.data.customer?.email || event.data.email,
+          subscription_billing: metadata.billing,
         })
         .eq('id', metadata.studio_id);
 

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminStudiosPage() {
   const { data: studios } = await supabaseAdmin
     .from('studios')
-    .select('id, name, slug, plan, created_at, email, location, accent_color')
+    .select('id, name, slug, plan, subscription_billing, created_at, email, location, accent_color')
     .order('created_at', { ascending: false });
 
   const studioIds = (studios ?? []).map(s => s.id);
@@ -65,7 +65,7 @@ export default async function AdminStudiosPage() {
                 </div>
               </div>
 
-              <div><PlanBadge plan={studio.plan} /></div>
+              <div><PlanBadge plan={studio.plan} billing={studio.subscription_billing} /></div>
 
               <p className="hidden md:block text-sm" style={{ color: 'var(--a-muted)' }}>{bookings[studio.id] ?? 0}</p>
               <p className="hidden md:block text-sm" style={{ color: 'var(--a-muted)' }}>{galleries[studio.id] ?? 0}</p>

@@ -51,7 +51,7 @@ export default async function AdminOverview() {
     supabaseAdmin.from('galleries').select('*', { count: 'exact', head: true }),
     supabaseAdmin.from('payments').select('amount').eq('status', 'paid'),
     supabaseAdmin.from('studios')
-      .select('id, name, slug, plan, created_at, accent_color')
+      .select('id, name, slug, plan, subscription_billing, created_at, accent_color')
       .order('created_at', { ascending: false })
       .limit(8),
   ]);
@@ -63,8 +63,9 @@ export default async function AdminOverview() {
     return acc;
   }, {});
 
-  const PLAN_ORDER = ['free', 'starter', 'studio', 'pro'];
-  const planColors = { free: '#9ca3af', starter: '#3b82f6', studio: '#7c3aed', pro: '#f59e0b' };
+  const PLAN_ORDER = ['free', 'pro'];
+  const planColors = { free: '#9ca3af', pro: '#f59e0b' };
+  const proCount = (planCounts.pro ?? 0);
 
   return (
     <div className="space-y-8">
@@ -108,7 +109,7 @@ export default async function AdminOverview() {
           </div>
           <div className="mt-6 pt-5 border-t" style={{ borderColor: 'var(--a-border)' }}>
             <p className="text-xs" style={{ color: 'var(--a-subtle)' }}>
-              {Math.round(((planCounts.free ?? 0) / (totalStudios || 1)) * 100)}% on free plan
+              {proCount} Pro · {planCounts.free ?? 0} Free
             </p>
           </div>
         </div>
@@ -140,7 +141,7 @@ export default async function AdminOverview() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                  <PlanBadge plan={studio.plan} />
+                  <PlanBadge plan={studio.plan} billing={studio.subscription_billing} />
                   <p className="text-[11px] hidden sm:block" style={{ color: 'var(--a-subtle)' }}>
                     {new Date(studio.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
                   </p>
@@ -158,18 +159,20 @@ export default async function AdminOverview() {
   );
 }
 
-export function PlanBadge({ plan }) {
-  const styles = {
-    free:    { bg: 'var(--a-hover)',     text: 'var(--a-muted)' },
-    starter: { bg: 'var(--a-blue-bg)',   text: 'var(--a-blue-text)' },
-    studio:  { bg: 'var(--a-accent-bg)', text: 'var(--a-accent-text)' },
-    pro:     { bg: 'var(--a-amber-bg)',  text: 'var(--a-amber)' },
-  };
-  const s = styles[plan] ?? styles.free;
+export function PlanBadge({ plan, billing }) {
+  const isPro = plan === 'pro';
+  const label = isPro
+    ? billing === 'monthly' ? 'Pro Monthly'
+    : billing === 'yearly'  ? 'Pro Yearly'
+    : 'Pro'
+    : 'Free';
+  const style = isPro
+    ? { backgroundColor: 'var(--a-amber-bg)', color: 'var(--a-amber)' }
+    : { backgroundColor: 'var(--a-hover)',     color: 'var(--a-muted)' };
   return (
     <span className="text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full"
-      style={{ backgroundColor: s.bg, color: s.text }}>
-      {plan}
+      style={style}>
+      {label}
     </span>
   );
 }
