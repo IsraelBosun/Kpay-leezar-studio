@@ -5,16 +5,12 @@ export const dynamic = 'force-dynamic';
 
 function StatCard({ label, value, sub, accent, href }) {
   const inner = (
-    <div className="rounded-xl p-6 border transition-all duration-200 group"
-      style={{ backgroundColor: 'var(--a-surface)', borderColor: 'var(--a-border)' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--a-accent)'; e.currentTarget.style.boxShadow = '0 0 0 1px var(--a-accent-bg)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--a-border)'; e.currentTarget.style.boxShadow = ''; }}>
-      <p className="text-[10px] uppercase tracking-widest font-bold mb-4"
-        style={{ color: 'var(--a-subtle)' }}>
+    <div className="admin-card rounded-xl p-6 border"
+      style={{ backgroundColor: 'var(--a-surface)', borderColor: 'var(--a-border)' }}>
+      <p className="text-[10px] uppercase tracking-widest font-bold mb-4" style={{ color: 'var(--a-subtle)' }}>
         {label}
       </p>
-      <p className="font-serif text-4xl leading-none mb-2"
-        style={{ color: accent || 'var(--a-text)' }}>
+      <p className="font-serif text-4xl leading-none mb-2" style={{ color: accent || 'var(--a-text)' }}>
         {value}
       </p>
       {sub && <p className="text-xs" style={{ color: 'var(--a-muted)' }}>{sub}</p>}
@@ -75,8 +71,9 @@ export default async function AdminOverview() {
 
       {/* Header */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.4em] font-bold mb-2"
-          style={{ color: 'var(--a-accent)' }}>Platform Control</p>
+        <p className="text-[10px] uppercase tracking-[0.4em] font-bold mb-2" style={{ color: 'var(--a-accent)' }}>
+          Platform Control
+        </p>
         <h1 className="font-serif text-4xl md:text-5xl" style={{ color: 'var(--a-text)' }}>Overview</h1>
         <p className="text-sm mt-1.5" style={{ color: 'var(--a-muted)' }}>Everything happening on photostudio.ng.</p>
       </div>
@@ -119,29 +116,22 @@ export default async function AdminOverview() {
         {/* Recent signups */}
         <div className="lg:col-span-2 rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--a-surface)', borderColor: 'var(--a-border)' }}>
           <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--a-border)' }}>
-            <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: 'var(--a-subtle)' }}>
-              Recent Signups
-            </p>
+            <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: 'var(--a-subtle)' }}>Recent Signups</p>
             <Link href="/admin/studios" className="text-[10px] uppercase tracking-widest font-bold transition-opacity hover:opacity-70"
               style={{ color: 'var(--a-accent)' }}>
               View All →
             </Link>
           </div>
           <div>
-            {(recentStudios ?? []).map((studio, i) => (
+            {(recentStudios ?? []).map(studio => (
               <Link
                 key={studio.id}
                 href={`/admin/studios/${studio.id}`}
-                className="flex items-center justify-between px-6 py-3.5 transition-colors border-b last:border-b-0"
-                style={{ borderColor: 'var(--a-divider)' }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--a-hover)'}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}>
+                className="admin-row flex items-center justify-between px-6 py-3.5 border-b last:border-b-0"
+                style={{ borderColor: 'var(--a-divider)' }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold uppercase"
-                    style={{
-                      backgroundColor: `${studio.accent_color || '#F0940A'}18`,
-                      color: studio.accent_color || '#F0940A',
-                    }}>
+                    style={{ backgroundColor: `${studio.accent_color || '#F0940A'}18`, color: studio.accent_color || '#F0940A' }}>
                     {studio.name?.[0] || '?'}
                   </div>
                   <div className="min-w-0">

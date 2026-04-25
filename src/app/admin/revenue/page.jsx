@@ -52,10 +52,8 @@ export default async function AdminRevenuePage() {
         <div>
           {(payments ?? []).map(p => (
             <div key={p.id}
-              className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center border-b last:border-b-0 transition-colors"
-              style={{ borderColor: 'var(--a-divider)' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--a-hover)'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}>
+              className="admin-row grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center border-b last:border-b-0"
+              style={{ borderColor: 'var(--a-divider)' }}>
               <div className="min-w-0">
                 <p className="text-sm font-semibold truncate" style={{ color: 'var(--a-text)' }}>
                   {p.bookings?.client_name ?? '—'}

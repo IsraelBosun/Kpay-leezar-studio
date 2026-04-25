@@ -69,6 +69,16 @@ body {
   animation-play-state: paused;
 }
 
+/* ── Admin hover utilities (CSS-only, works in server components) ── */
+.admin-shell .admin-card { transition: border-color 200ms; }
+.admin-shell .admin-card:hover { border-color: var(--a-accent) !important; }
+.admin-shell .admin-row { transition: background-color 150ms; }
+.admin-shell .admin-row:hover { background-color: var(--a-hover); }
+.admin-shell .admin-link-btn { transition: background-color 150ms, color 150ms; }
+.admin-shell .admin-link-btn:hover { background-color: var(--a-accent-bg) !important; color: var(--a-accent-text) !important; }
+.admin-shell .admin-outline-btn { transition: color 150ms, border-color 150ms; }
+.admin-shell .admin-outline-btn:hover { color: var(--a-text) !important; border-color: var(--a-text) !important; }
+
 /* ── Admin theme: light (default) ── */
 .admin-shell {
   --a-bg: #f8f7f5;

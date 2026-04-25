@@ -7,10 +7,10 @@ export const dynamic = 'force-dynamic';
 
 function StatusBadge({ status }) {
   const map = {
-    pending:   { bg: 'var(--a-amber-bg)',  text: 'var(--a-amber)' },
-    confirmed: { bg: 'var(--a-green-bg)',  text: 'var(--a-green)' },
-    completed: { bg: 'var(--a-hover)',     text: 'var(--a-muted)' },
-    cancelled: { bg: 'var(--a-red-bg)',    text: 'var(--a-red)' },
+    pending:   { bg: 'var(--a-amber-bg)', text: 'var(--a-amber)' },
+    confirmed: { bg: 'var(--a-green-bg)', text: 'var(--a-green)' },
+    completed: { bg: 'var(--a-hover)',    text: 'var(--a-muted)' },
+    cancelled: { bg: 'var(--a-red-bg)',   text: 'var(--a-red)' },
   };
   const s = map[status] ?? map.pending;
   return (
@@ -55,7 +55,7 @@ export default async function AdminStudioDetail({ params }) {
 
       {/* Back */}
       <Link href="/admin/studios"
-        className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold transition-opacity hover:opacity-60"
+        className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold hover:opacity-60 transition-opacity"
         style={{ color: 'var(--a-muted)' }}>
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 19l-7-7 7-7" />
@@ -78,10 +78,8 @@ export default async function AdminStudioDetail({ params }) {
         <div className="flex items-center gap-3">
           <PlanBadge plan={studio.plan} />
           <a href={`https://${studio.slug}.photostudio.ng`} target="_blank" rel="noopener noreferrer"
-            className="text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg border transition-colors"
-            style={{ borderColor: 'var(--a-border)', color: 'var(--a-muted)' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--a-text)'; e.currentTarget.style.borderColor = 'var(--a-text)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--a-muted)'; e.currentTarget.style.borderColor = 'var(--a-border)'; }}>
+            className="admin-outline-btn text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg border"
+            style={{ borderColor: 'var(--a-border)', color: 'var(--a-muted)' }}>
             Visit Site ↗
           </a>
         </div>
@@ -90,10 +88,10 @@ export default async function AdminStudioDetail({ params }) {
       {/* Quick stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Bookings',        value: bookings?.length ?? 0 },
-          { label: 'Galleries',       value: galleries?.length ?? 0 },
+          { label: 'Bookings',         value: bookings?.length ?? 0 },
+          { label: 'Galleries',        value: galleries?.length ?? 0 },
           { label: 'Portfolio Photos', value: photoCount ?? 0 },
-          { label: 'Revenue',         value: `₦${totalRevenue.toLocaleString()}`, accent: 'var(--a-green)' },
+          { label: 'Revenue',          value: `₦${totalRevenue.toLocaleString()}`, accent: 'var(--a-green)' },
         ].map(s => (
           <div key={s.label} className="rounded-xl border p-5" style={{ backgroundColor: 'var(--a-surface)', borderColor: 'var(--a-border)' }}>
             <p className="text-[10px] uppercase tracking-widest font-bold mb-3" style={{ color: 'var(--a-subtle)' }}>{s.label}</p>
@@ -106,11 +104,11 @@ export default async function AdminStudioDetail({ params }) {
       <Section title="Studio Info">
         <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { label: 'Email',      value: studio.email },
-            { label: 'Phone',      value: studio.phone },
-            { label: 'Location',   value: studio.location },
-            { label: 'Instagram',  value: studio.instagram_url },
-            { label: 'Signed up',  value: new Date(studio.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' }) },
+            { label: 'Email',     value: studio.email },
+            { label: 'Phone',     value: studio.phone },
+            { label: 'Location',  value: studio.location },
+            { label: 'Instagram', value: studio.instagram_url },
+            { label: 'Signed up', value: new Date(studio.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' }) },
           ].filter(f => f.value).map(field => (
             <div key={field.label} className="flex items-start gap-3">
               <p className="text-[10px] uppercase tracking-widest font-bold w-20 flex-shrink-0 pt-0.5" style={{ color: 'var(--a-subtle)' }}>
@@ -130,7 +128,7 @@ export default async function AdminStudioDetail({ params }) {
           )}
         </div>
         {studio.bio && (
-          <div className="px-6 pb-6 pt-0 border-t" style={{ borderColor: 'var(--a-border)' }}>
+          <div className="px-6 pb-6 border-t" style={{ borderColor: 'var(--a-border)' }}>
             <p className="text-[10px] uppercase tracking-widest font-bold mb-2 mt-5" style={{ color: 'var(--a-subtle)' }}>Bio</p>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--a-muted)' }}>{studio.bio}</p>
           </div>
@@ -141,8 +139,8 @@ export default async function AdminStudioDetail({ params }) {
       <Section title="Bookings" count={bookings?.length ?? 0}>
         {bookings && bookings.length > 0 ? (
           <div>
-            {bookings.map((b, i) => (
-              <div key={b.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b last:border-b-0"
+            {bookings.map(b => (
+              <div key={b.id} className="admin-row px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b last:border-b-0"
                 style={{ borderColor: 'var(--a-divider)' }}>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--a-text)' }}>{b.client_name}</p>
@@ -169,18 +167,16 @@ export default async function AdminStudioDetail({ params }) {
         {galleries && galleries.length > 0 ? (
           <div>
             {galleries.map(g => (
-              <div key={g.id} className="px-6 py-4 flex items-center justify-between border-b last:border-b-0"
+              <div key={g.id} className="admin-row px-6 py-4 flex items-center justify-between border-b last:border-b-0"
                 style={{ borderColor: 'var(--a-divider)' }}>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--a-text)' }}>{g.title}</p>
                   <p className="text-[11px]" style={{ color: 'var(--a-subtle)' }}>/gallery/{g.slug}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full"
-                    style={{ backgroundColor: g.is_locked ? 'var(--a-red-bg)' : 'var(--a-green-bg)', color: g.is_locked ? 'var(--a-red)' : 'var(--a-green)' }}>
-                    {g.is_locked ? 'Locked' : 'Unlocked'}
-                  </span>
-                </div>
+                <span className="text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full"
+                  style={{ backgroundColor: g.is_locked ? 'var(--a-red-bg)' : 'var(--a-green-bg)', color: g.is_locked ? 'var(--a-red)' : 'var(--a-green)' }}>
+                  {g.is_locked ? 'Locked' : 'Unlocked'}
+                </span>
               </div>
             ))}
           </div>
@@ -194,13 +190,11 @@ export default async function AdminStudioDetail({ params }) {
         <Section title="Payments" count={payments.length}>
           <div>
             {payments.map(p => (
-              <div key={p.id} className="px-6 py-4 flex items-center justify-between border-b last:border-b-0"
+              <div key={p.id} className="admin-row px-6 py-4 flex items-center justify-between border-b last:border-b-0"
                 style={{ borderColor: 'var(--a-divider)' }}>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--a-text)' }}>₦{Number(p.amount).toLocaleString()}</p>
-                  <p className="text-[11px]" style={{ color: 'var(--a-subtle)' }}>
-                    {p.type} · {p.paystack_reference}
-                  </p>
+                  <p className="text-[11px]" style={{ color: 'var(--a-subtle)' }}>{p.type} · {p.paystack_reference}</p>
                 </div>
                 <span className="text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full"
                   style={{ backgroundColor: p.status === 'paid' ? 'var(--a-green-bg)' : 'var(--a-amber-bg)', color: p.status === 'paid' ? 'var(--a-green)' : 'var(--a-amber)' }}>

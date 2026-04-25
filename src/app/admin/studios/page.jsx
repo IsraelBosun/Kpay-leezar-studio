@@ -19,12 +19,12 @@ export default async function AdminStudiosPage() {
     supabaseAdmin.from('payments').select('studio_id, amount').eq('status', 'paid').in('studio_id', studioIds.length ? studioIds : [fallbackId]),
   ]);
 
-  const byStudio = (rows, key, val = 1) =>
-    (rows ?? []).reduce((acc, r) => { acc[r[key]] = (acc[r[key]] || 0) + (val ? Number(r[val] ?? 1) : 1); return acc; }, {});
+  const countBy  = (rows, key) => (rows ?? []).reduce((acc, r) => { acc[r[key]] = (acc[r[key]] || 0) + 1; return acc; }, {});
+  const sumBy    = (rows, key, val) => (rows ?? []).reduce((acc, r) => { acc[r[key]] = (acc[r[key]] || 0) + Number(r[val]); return acc; }, {});
 
-  const bookings  = byStudio(bookingRows,  'studio_id');
-  const galleries = byStudio(galleryRows,  'studio_id');
-  const revenue   = byStudio(paymentRows,  'studio_id', 'amount');
+  const bookings  = countBy(bookingRows,  'studio_id');
+  const galleries = countBy(galleryRows,  'studio_id');
+  const revenue   = sumBy(paymentRows,    'studio_id', 'amount');
 
   return (
     <div className="space-y-8">
@@ -41,7 +41,6 @@ export default async function AdminStudiosPage() {
       {/* Table */}
       <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--a-surface)', borderColor: 'var(--a-border)' }}>
 
-        {/* Header row */}
         <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b"
           style={{ borderColor: 'var(--a-border)', backgroundColor: 'var(--a-hover)' }}>
           {['Studio', 'Plan', 'Bookings', 'Galleries', 'Revenue', ''].map(h => (
@@ -49,14 +48,11 @@ export default async function AdminStudiosPage() {
           ))}
         </div>
 
-        {/* Rows */}
         <div>
           {(studios ?? []).map(studio => (
             <div key={studio.id}
-              className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center border-b last:border-b-0 transition-colors"
-              style={{ borderColor: 'var(--a-divider)' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--a-hover)'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}>
+              className="admin-row grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center border-b last:border-b-0"
+              style={{ borderColor: 'var(--a-divider)' }}>
 
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold uppercase"
@@ -81,14 +77,13 @@ export default async function AdminStudiosPage() {
 
               <div className="flex items-center gap-1 justify-end">
                 <Link href={`/admin/studios/${studio.id}`}
-                  className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg transition-colors"
-                  style={{ color: 'var(--a-accent)' }}
-                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--a-accent-bg)'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}>
+                  className="admin-link-btn text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg"
+                  style={{ color: 'var(--a-accent)' }}>
                   View →
                 </Link>
                 <a href={`https://${studio.slug}.photostudio.ng`} target="_blank" rel="noopener noreferrer"
-                  className="text-sm px-2 py-1.5 transition-colors" style={{ color: 'var(--a-subtle)' }}>
+                  className="text-sm px-2 py-1.5 transition-colors hover:opacity-60"
+                  style={{ color: 'var(--a-subtle)' }}>
                   ↗
                 </a>
               </div>
