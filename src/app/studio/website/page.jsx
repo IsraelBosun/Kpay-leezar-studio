@@ -11,18 +11,17 @@ export default async function WebsitePage() {
     .eq('owner_id', user.id)
     .single();
 
-  const [{ data: portfolioPhotos }, { data: services }] = await Promise.all([
-    supabase
-      .from('portfolio_photos')
-      .select('*')
-      .eq('studio_id', studio.id)
-      .order('sort_order', { ascending: true }),
-    supabase
-      .from('services')
-      .select('*')
-      .eq('studio_id', studio.id)
-      .order('created_at', { ascending: true }),
-  ]);
+  const { data: portfolioPhotos } = await supabase
+    .from('portfolio_photos')
+    .select('*')
+    .eq('studio_id', studio.id)
+    .order('sort_order', { ascending: true });
+
+  const { data: services } = await supabase
+    .from('services')
+    .select('*')
+    .eq('studio_id', studio.id)
+    .order('created_at', { ascending: true });
 
   const siteUrl = process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng'
     ? `https://${studio.slug}.photostudio.ng`
