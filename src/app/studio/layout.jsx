@@ -12,7 +12,7 @@ export default async function StudioLayout({ children }) {
   // Fetch studio for this user
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, name, slug, plan')
+    .select('id, name, slug, plan, created_at')
     .eq('owner_id', user.id)
     .single();
 

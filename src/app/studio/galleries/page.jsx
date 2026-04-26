@@ -1,6 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
+import { isPro } from '@/lib/plan';
 
 export default async function GalleriesPage() {
   const supabase = await createServerSupabase();
@@ -8,7 +9,7 @@ export default async function GalleriesPage() {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, plan')
+    .select('id, plan, created_at')
     .eq('owner_id', user.id)
     .single();
 
@@ -37,7 +38,7 @@ export default async function GalleriesPage() {
     }
   }
 
-  const atLimit = studio.plan === 'free' && (galleries?.length ?? 0) >= 1;
+  const atLimit = !isPro(studio) && (galleries?.length ?? 0) >= 1;
 
   return (
     <div className="space-y-8">

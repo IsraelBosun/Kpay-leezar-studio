@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from '@/app/auth/actions';
+import { isPro } from '@/lib/plan';
 
 const navLinks = [
   {
@@ -63,9 +64,16 @@ const navLinks = [
   },
 ];
 
+function getPlanLabel(studio) {
+  if (studio.plan === 'pro') return 'pro';
+  if (isPro(studio)) return 'trial';
+  return 'free';
+}
+
 export default function Sidebar({ studio }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const planLabel = getPlanLabel(studio);
 
   const SidebarContent = ({ showLogo = true }) => (
     <div className="flex flex-col h-full">
@@ -84,13 +92,13 @@ export default function Sidebar({ studio }) {
         <p className="text-white font-medium text-sm truncate">{studio.name}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className={`text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 ${
-            studio.plan === 'pro' ? 'bg-primary text-white' :
-            studio.plan === 'studio' ? 'bg-yellow-500 text-black' :
+            planLabel === 'pro' ? 'bg-primary text-white' :
+            planLabel === 'trial' ? 'bg-amber-500 text-white' :
             'bg-white/10 text-white/50'
           }`}>
-            {studio.plan}
+            {planLabel}
           </span>
-          {studio.plan === 'free' && (
+          {planLabel !== 'pro' && (
             <Link href="/studio/settings#upgrade" className="text-[9px] uppercase tracking-widest text-primary font-bold hover:underline">
               Upgrade
             </Link>
