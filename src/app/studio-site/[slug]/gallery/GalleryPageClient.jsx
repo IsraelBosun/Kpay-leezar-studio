@@ -159,9 +159,13 @@ export default function GalleryPageClient({ studio, photos }) {
 
       {/* ── Footer ── */}
       <footer className="border-t px-8 py-8 text-center" style={{ borderColor: `${accent}20` }}>
-        <p className="text-[10px] text-white/20 uppercase tracking-widest">
+        <a
+          href="https://photostudio.ng"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-white/20 uppercase tracking-widest hover:text-white/40 transition-colors">
           Powered by <span style={{ color: accent }}>photostudio.ng</span>
-        </p>
+        </a>
       </footer>
 
       {/* ── Lightbox ── */}

@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabase';
+import { createServerSupabase, supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import GalleryManager from './GalleryManager';
@@ -35,6 +35,14 @@ export default async function GalleryDetailPage({ params }) {
     .eq('gallery_id', id)
     .order('created_at', { ascending: true });
 
+  const { data: hearts } = await supabaseAdmin
+    .from('photo_hearts')
+    .select('photo_id')
+    .eq('gallery_id', id);
+
+  const heartCounts = {};
+  hearts?.forEach(h => { heartCounts[h.photo_id] = (heartCounts[h.photo_id] || 0) + 1; });
+
   const clientUrl = `${process.env.NEXT_PUBLIC_APP_URL}/gallery/${gallery.slug}`;
   const isProStudio = isPro(studio);
 
@@ -65,6 +73,7 @@ export default async function GalleryDetailPage({ params }) {
         photos={photos ?? []}
         deliveryPhotos={deliveryPhotos ?? []}
         selections={selections ?? []}
+        heartCounts={heartCounts}
         clientUrl={clientUrl}
         isProStudio={isProStudio}
       />

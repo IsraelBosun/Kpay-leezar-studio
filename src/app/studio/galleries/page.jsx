@@ -80,7 +80,7 @@ export default async function GalleriesPage() {
             <Link
               key={g.id}
               href={`/studio/galleries/${g.id}`}
-              className="bg-white border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all group overflow-hidden"
+              className="bg-white border border-primary/20 hover:border-primary/50 hover:shadow-sm transition-all group overflow-hidden"
             >
               {/* Cover photo */}
               <div className="aspect-[3/2] bg-gray-50 overflow-hidden">

@@ -27,6 +27,8 @@ const ACCENT_COLORS = [
 
 export default function WebsiteEditor({ studio, portfolioPhotos: initial, websiteConfig, initialServices }) {
   const [activeTab, setActiveTab] = useState('photos');
+
+  // ── Photos state ───────────────────────────────────────────────────
   const [photos, setPhotos] = useState(initial);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -36,24 +38,17 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
   const [savingCats, setSavingCats] = useState(false);
   const [catsSaved, setCatsSaved] = useState(false);
   const [loadingSamples, setLoadingSamples] = useState(false);
+  const [settingHero, setSettingHero] = useState(false);
+  const [heroSet, setHeroSet] = useState(false);
 
+  // ── Design state ───────────────────────────────────────────────────
   const [config, setConfig] = useState(resolveConfig(websiteConfig));
-  const [savingDesign, setSavingDesign] = useState(false);
-  const [designSaved, setDesignSaved] = useState(false);
-
-  // ── Content state ──────────────────────────────────────────────────
-  const [bio, setBio] = useState(studio.bio || '');
-  const [email, setEmail] = useState(studio.email || '');
-  const [phone, setPhone] = useState(studio.phone || '');
-  const [instagramUrl, setInstagramUrl] = useState(studio.instagram_url || '');
   const [accentColor, setAccentColor] = useState(studio.accent_color || '#F0940A');
-  const [savingContent, setSavingContent] = useState(false);
-  const [contentSaved, setContentSaved] = useState(false);
-
-  // ── Logo state ─────────────────────────────────────────────────────
   const [logoUrl, setLogoUrl] = useState(studio.logo_url || null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoError, setLogoError] = useState(null);
+  const [savingDesign, setSavingDesign] = useState(false);
+  const [designSaved, setDesignSaved] = useState(false);
 
   // ── Services state ─────────────────────────────────────────────────
   const [services, setServices] = useState(
@@ -63,13 +58,21 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
   const [savingServices, setSavingServices] = useState(false);
   const [servicesSaved, setServicesSaved] = useState(false);
   const [servicesError, setServicesError] = useState(null);
+  const [servicesOpen, setServicesOpen] = useState(true);
+
+  // ── Content state ──────────────────────────────────────────────────
+  const [bio, setBio] = useState(studio.bio || '');
+  const [email, setEmail] = useState(studio.email || '');
+  const [phone, setPhone] = useState(studio.phone || '');
+  const [instagramUrl, setInstagramUrl] = useState(studio.instagram_url || '');
+  const [savingContent, setSavingContent] = useState(false);
+  const [contentSaved, setContentSaved] = useState(false);
 
   // ── Photo upload ────────────────────────────────────────────────────
   const uploadFiles = useCallback(async (files) => {
     const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
     if (!imageFiles.length) return;
     setUploading(true);
-
     for (const file of imageFiles) {
       const fd = new FormData();
       fd.append('file', file);
@@ -116,7 +119,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     if (!result?.error) setCatsSaved(true);
   }
 
-  // ── Sample photos ────────────────────────────────────────────────────
   async function handleLoadSamples() {
     setLoadingSamples(true);
     const result = await loadSamplePhotos();
@@ -130,10 +132,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     }
   }
 
-  // ── Set hero photo ────────────────────────────────────────────────────
-  const [settingHero, setSettingHero] = useState(false);
-  const [heroSet, setHeroSet] = useState(false);
-
   async function handleSetHero(photoId) {
     setSettingHero(photoId);
     const next = { ...config, hero_photo_id: photoId };
@@ -142,24 +140,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     setSettingHero(false);
     setHeroSet(true);
     setTimeout(() => setHeroSet(false), 2500);
-  }
-
-  // ── Content save ─────────────────────────────────────────────────────
-  async function handleSaveContent() {
-    setSavingContent(true);
-    setContentSaved(false);
-    await saveStudioContent({ bio, email, phone, instagram_url: instagramUrl, accent_color: accentColor });
-    setSavingContent(false);
-    setContentSaved(true);
-  }
-
-  // ── Design save ─────────────────────────────────────────────────────
-  async function handleSaveDesign() {
-    setSavingDesign(true);
-    setDesignSaved(false);
-    await saveWebsiteConfig(config);
-    setSavingDesign(false);
-    setDesignSaved(true);
   }
 
   // ── Logo upload ───────────────────────────────────────────────────
@@ -183,6 +163,18 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
       setLogoError('Upload failed. Please try again.');
     }
     setUploadingLogo(false);
+  }
+
+  // ── Design save — persists config + accent colour ─────────────────
+  async function handleSaveDesign() {
+    setSavingDesign(true);
+    setDesignSaved(false);
+    await Promise.all([
+      saveWebsiteConfig(config),
+      saveStudioContent({ bio, email, phone, instagram_url: instagramUrl, accent_color: accentColor }),
+    ]);
+    setSavingDesign(false);
+    setDesignSaved(true);
   }
 
   // ── Services handlers ─────────────────────────────────────────────
@@ -211,7 +203,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     if (result?.error) {
       setServicesError(result.error);
     } else {
-      // Merge returned IDs into local state so newly saved services get real IDs
       if (result.inserted?.length) {
         let insertIdx = 0;
         setServices(prev => prev.map(s => {
@@ -228,10 +219,19 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     }
   }
 
+  // ── Content save ─────────────────────────────────────────────────────
+  async function handleSaveContent() {
+    setSavingContent(true);
+    setContentSaved(false);
+    await saveStudioContent({ bio, email, phone, instagram_url: instagramUrl, accent_color: accentColor });
+    setSavingContent(false);
+    setContentSaved(true);
+  }
+
   const tabs = [
-    { id: 'photos',   label: 'Photos' },
-    { id: 'design',   label: 'Design' },
-    { id: 'content',  label: 'Content' },
+    { id: 'photos',  label: 'Photos' },
+    { id: 'design',  label: 'Design' },
+    { id: 'content', label: 'Content' },
   ];
 
   return (
@@ -349,14 +349,12 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
                         />
                       </div>
 
-                      {/* Hero badge */}
                       {isHero && (
                         <div className="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[8px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-sm">
                           Banner
                         </div>
                       )}
 
-                      {/* Delete button */}
                       <button
                         onClick={() => deletePhoto(photo.id)}
                         className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-sm hover:bg-red-600">
@@ -365,7 +363,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
                         </svg>
                       </button>
 
-                      {/* Set as hero button */}
                       {!isHero && (
                         <button
                           onClick={() => handleSetHero(photo.id)}
@@ -375,7 +372,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
                         </button>
                       )}
 
-                      {/* Category select */}
                       <select
                         value={categories[photo.id] || ''}
                         onChange={e => setCategories(prev => ({ ...prev, [photo.id]: e.target.value }))}
@@ -410,7 +406,35 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
       {activeTab === 'design' && (
         <div className="p-6 md:p-8 space-y-10">
 
-          {/* Theme picker */}
+          {/* Accent colour */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Accent Colour</p>
+            <p className="text-xs text-neutral-gray mb-5">The brand colour used for buttons, highlights, and links across your site.</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {ACCENT_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setAccentColor(c.value)}
+                  title={c.label}
+                  className={`w-9 h-9 transition-all duration-150 relative flex-shrink-0 ${accentColor === c.value ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'}`}
+                  style={{ backgroundColor: c.value }}>
+                  {accentColor === c.value && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-400">
+              Selected: <span className="font-bold text-black">{ACCENT_COLORS.find(c => c.value === accentColor)?.label ?? accentColor}</span>
+            </p>
+          </div>
+
+          {/* Theme */}
           <div>
             <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Theme</p>
             <p className="text-xs text-neutral-gray mb-5">Choose the overall look and feel of your website.</p>
@@ -419,19 +443,25 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
                 <button
                   key={key}
                   onClick={() => setConfig(c => ({ ...c, theme: key }))}
-                  className={`text-left p-4 border rounded-sm transition-all ${
+                  className={`text-left p-3 border rounded-sm transition-all ${
                     config.theme === key
                       ? 'border-primary ring-1 ring-primary'
                       : 'border-gray-200 hover:border-gray-400'
                   }`}>
-                  {/* Color swatches */}
-                  <div className="flex gap-1 mb-3">
-                    {theme.swatch.map((color, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border border-black/10 flex-shrink-0"
-                        style={{ backgroundColor: color }} />
-                    ))}
-                    <div className="w-6 h-6 rounded-full border border-black/10 flex-shrink-0"
-                      style={{ backgroundColor: studio.accent_color || '#F0940A' }} />
+                  {/* Mini site preview */}
+                  <div className="h-16 rounded-sm mb-3 overflow-hidden" style={{ background: theme.bg }}>
+                    <div className="h-4 flex items-center justify-between px-2" style={{ background: theme.surface }}>
+                      <div className="w-6 h-1 rounded-sm" style={{ background: theme.text }} />
+                      <div className="flex gap-1">
+                        <div className="w-3 h-0.5 rounded-sm" style={{ background: theme.textMuted }} />
+                        <div className="w-3 h-0.5 rounded-sm" style={{ background: theme.textMuted }} />
+                      </div>
+                    </div>
+                    <div className="px-2 pt-1.5 flex flex-col gap-1">
+                      <div className="w-10 h-1.5 rounded-sm" style={{ background: theme.text }} />
+                      <div className="w-7 h-1 rounded-sm" style={{ background: theme.textMuted }} />
+                      <div className="w-8 h-2 rounded-sm mt-0.5" style={{ background: accentColor }} />
+                    </div>
                   </div>
                   <p className="text-xs font-bold text-black">{theme.name}</p>
                   <p className="text-[10px] text-neutral-gray mt-0.5 leading-snug">{theme.description}</p>
@@ -440,6 +470,38 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
                   )}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Logo */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Studio Logo</p>
+            <p className="text-xs text-neutral-gray mb-5">Appears on your website header and emails. Square PNG with transparent background works best — at least 400×400px.</p>
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 border border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0 overflow-hidden rounded-sm">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Studio logo" className="w-full h-full object-contain" />
+                ) : (
+                  <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </div>
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id="logo-upload"
+                  onChange={e => handleLogoUpload(e.target.files?.[0])}
+                />
+                <label htmlFor="logo-upload"
+                  className="inline-block cursor-pointer px-5 py-2.5 border border-gray-300 text-xs uppercase tracking-widest font-bold text-black hover:border-black transition-colors">
+                  {uploadingLogo ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+                </label>
+                <p className="text-[10px] text-zinc-400">JPG, PNG or WebP · Saved immediately on upload</p>
+                {logoError && <p className="text-[11px] text-red-500">{logoError}</p>}
+              </div>
             </div>
           </div>
 
@@ -538,13 +600,127 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
             </div>
           </div>
 
-          {/* Section toggles */}
+          {/* Sections */}
           <div>
             <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Sections</p>
             <p className="text-xs text-neutral-gray mb-5">Choose which sections appear on your website.</p>
             <div className="space-y-3">
+
+              {/* Services & Pricing — toggle + collapsible inline editor */}
+              <div className="border border-gray-100 rounded-sm">
+                <div className="flex items-center justify-between gap-4 p-4 hover:bg-gray-50 transition-colors">
+                  <div>
+                    <p className="text-sm font-semibold text-black">Services & Pricing</p>
+                    <p className="text-xs text-neutral-gray">Your list of services with prices</p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {/* Show/hide on site toggle */}
+                    <div
+                      onClick={() => setConfig(c => ({ ...c, show_services: !c.show_services }))}
+                      className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${config.show_services ? 'bg-primary' : 'bg-gray-200'}`}>
+                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${config.show_services ? 'translate-x-5' : ''}`} />
+                    </div>
+                    {/* Collapse editor chevron */}
+                    <button
+                      type="button"
+                      onClick={() => setServicesOpen(o => !o)}
+                      className="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-black transition-colors">
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {config.show_services && servicesOpen && (
+                  <div className="border-t border-gray-100 p-4 space-y-3">
+                    <div className="space-y-3">
+                      {services.length === 0 && (
+                        <p className="text-xs text-neutral-gray italic">No services yet. Add your first one below.</p>
+                      )}
+                      {services.map(s => (
+                        <div key={s._key} className="border border-gray-100 p-3 space-y-2.5 bg-gray-50 rounded-sm">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-1 grid sm:grid-cols-2 gap-2">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Service Name *</label>
+                                <input
+                                  type="text"
+                                  value={s.title}
+                                  onChange={e => updateService(s._key, 'title', e.target.value)}
+                                  placeholder="e.g. Wedding Photography"
+                                  className="text-sm bg-white border border-gray-200 py-2 px-3 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Price (₦)</label>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-medium">₦</span>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={s.price}
+                                    onChange={e => updateService(s._key, 'price', e.target.value)}
+                                    placeholder="0"
+                                    className="w-full text-sm bg-white border border-gray-200 py-2 pl-7 pr-3 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeService(s._key, s.id)}
+                              className="mt-5 w-7 h-7 flex items-center justify-center text-zinc-300 hover:text-red-500 transition-colors flex-shrink-0">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Description (optional)</label>
+                            <input
+                              type="text"
+                              value={s.description || ''}
+                              onChange={e => updateService(s._key, 'description', e.target.value)}
+                              placeholder="e.g. Full day coverage, 500+ edited photos, online gallery"
+                              className="text-sm bg-white border border-gray-200 py-2 px-3 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={addService}
+                      className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 text-[10px] uppercase tracking-widest font-bold text-zinc-400 hover:border-primary hover:text-primary transition-colors">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add a Service
+                    </button>
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <button
+                        onClick={handleSaveServices}
+                        disabled={savingServices}
+                        className="bg-primary text-white px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold hover:bg-black transition-colors disabled:opacity-50">
+                        {savingServices ? 'Saving...' : 'Save Services'}
+                      </button>
+                      {servicesSaved && (
+                        <span className="text-[10px] text-green-600 font-bold uppercase tracking-widest">✓ Saved</span>
+                      )}
+                      {servicesError && (
+                        <span className="text-[10px] text-red-500">{servicesError}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {[
-                { key: 'show_services', label: 'Services & Pricing', desc: 'Your list of services with prices' },
                 { key: 'show_about', label: 'About Section', desc: 'Your bio and collage of photos' },
                 { key: 'show_booking', label: 'Booking Form', desc: 'Online enquiry form for clients' },
               ].map(({ key, label, desc }) => (
@@ -563,7 +739,7 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
             </div>
           </div>
 
-          {/* Save */}
+          {/* Save design */}
           <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
             <button
               onClick={handleSaveDesign}
@@ -581,38 +757,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
       {/* ── Content tab ── */}
       {activeTab === 'content' && (
         <div className="p-6 md:p-8 space-y-10">
-
-          {/* Logo */}
-          <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Studio Logo</p>
-            <p className="text-xs text-neutral-gray mb-5">Appears on your website header and emails. Square PNG with transparent background works best — at least 400×400px.</p>
-            <div className="flex items-center gap-5">
-              <div className="w-20 h-20 border border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0 overflow-hidden rounded-sm">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Studio logo" className="w-full h-full object-contain" />
-                ) : (
-                  <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                )}
-              </div>
-              <div className="space-y-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id="logo-upload"
-                  onChange={e => handleLogoUpload(e.target.files?.[0])}
-                />
-                <label htmlFor="logo-upload"
-                  className="inline-block cursor-pointer px-5 py-2.5 border border-gray-300 text-xs uppercase tracking-widest font-bold text-black hover:border-black transition-colors">
-                  {uploadingLogo ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
-                </label>
-                <p className="text-[10px] text-zinc-400">JPG, PNG or WebP · Saved immediately on upload</p>
-                {logoError && <p className="text-[11px] text-red-500">{logoError}</p>}
-              </div>
-            </div>
-          </div>
 
           {/* Bio */}
           <div>
@@ -687,35 +831,7 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
             </div>
           </div>
 
-          {/* Accent colour */}
-          <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Accent Colour</p>
-            <p className="text-xs text-neutral-gray mb-5">The brand colour used for buttons, highlights, and links across your site.</p>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {ACCENT_COLORS.map(c => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setAccentColor(c.value)}
-                  title={c.label}
-                  className={`w-9 h-9 transition-all duration-150 relative flex-shrink-0 ${accentColor === c.value ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105'}`}
-                  style={{ backgroundColor: c.value }}>
-                  {accentColor === c.value && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <p className="text-[10px] text-zinc-400">
-              Selected: <span className="font-bold text-black">{ACCENT_COLORS.find(c => c.value === accentColor)?.label ?? accentColor}</span>
-            </p>
-          </div>
-
-          {/* Save */}
+          {/* Save content */}
           <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
             <button
               onClick={handleSaveContent}
@@ -727,101 +843,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
               <span className="text-xs text-green-600 font-bold uppercase tracking-widest">✓ Live on your site</span>
             )}
           </div>
-        </div>
-      )}
-      {/* ── Services tab ── */}
-      {activeTab === 'services' && (
-        <div className="p-6 md:p-8 space-y-6">
-
-          <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Services & Pricing</p>
-            <p className="text-xs text-neutral-gray">These appear on the Services section of your public website. Add each service you offer with an optional description and price.</p>
-          </div>
-
-          {/* Service rows */}
-          <div className="space-y-3">
-            {services.length === 0 && (
-              <p className="text-sm text-neutral-gray italic py-4">No services yet. Add your first one below.</p>
-            )}
-            {services.map(s => (
-              <div key={s._key} className="border border-gray-100 p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex-1 grid sm:grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Service Name *</label>
-                      <input
-                        type="text"
-                        value={s.title}
-                        onChange={e => updateService(s._key, 'title', e.target.value)}
-                        placeholder="e.g. Wedding Photography"
-                        className="text-sm bg-gray-50 border border-gray-200 py-2.5 px-3 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Price (₦)</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-medium">₦</span>
-                        <input
-                          type="number"
-                          min="0"
-                          value={s.price}
-                          onChange={e => updateService(s._key, 'price', e.target.value)}
-                          placeholder="0"
-                          className="w-full text-sm bg-gray-50 border border-gray-200 py-2.5 pl-7 pr-3 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeService(s._key, s.id)}
-                    className="mt-6 w-8 h-8 flex items-center justify-center text-zinc-300 hover:text-red-500 transition-colors flex-shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Description (optional)</label>
-                  <input
-                    type="text"
-                    value={s.description || ''}
-                    onChange={e => updateService(s._key, 'description', e.target.value)}
-                    placeholder="e.g. Full day coverage, 500+ edited photos, online gallery"
-                    className="text-sm bg-gray-50 border border-gray-200 py-2.5 px-3 focus:outline-none focus:border-primary text-black placeholder:text-zinc-400"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Add service */}
-          <button
-            type="button"
-            onClick={addService}
-            className="flex items-center gap-2 px-5 py-3 border border-dashed border-gray-300 text-xs uppercase tracking-widest font-bold text-zinc-400 hover:border-primary hover:text-primary transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add a Service
-          </button>
-
-          {/* Save */}
-          <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
-            <button
-              onClick={handleSaveServices}
-              disabled={savingServices}
-              className="bg-primary text-white px-6 py-3.5 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors disabled:opacity-50">
-              {savingServices ? 'Saving...' : 'Save Services'}
-            </button>
-            {servicesSaved && (
-              <span className="text-xs text-green-600 font-bold uppercase tracking-widest">✓ Live on your site</span>
-            )}
-            {servicesError && (
-              <span className="text-xs text-red-500">{servicesError}</span>
-            )}
-          </div>
-
         </div>
       )}
 

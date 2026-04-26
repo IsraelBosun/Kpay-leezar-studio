@@ -21,7 +21,7 @@ export default async function WebsitePage() {
     .from('services')
     .select('*')
     .eq('studio_id', studio.id)
-    .order('created_at', { ascending: true });
+    .order('sort_order', { ascending: true });
 
   const siteUrl = process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng'
     ? `https://${studio.slug}.photostudio.ng`

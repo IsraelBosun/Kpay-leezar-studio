@@ -592,9 +592,14 @@ export default function StudioSiteClient({ studio, portfolio, services, websiteC
             )}
           </div>
 
-          <p className="text-[10px] uppercase tracking-widest" style={{ color: theme.textMuted }}>
+          <a
+            href="https://photostudio.ng"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] uppercase tracking-widest hover:opacity-70 transition-opacity"
+            style={{ color: theme.textMuted }}>
             Powered by <span style={{ color: accent }}>photostudio.ng</span>
-          </p>
+          </a>
         </div>
       </footer>
 

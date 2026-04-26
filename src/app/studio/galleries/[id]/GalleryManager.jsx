@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { toggleGalleryLock, toggleGalleryDownloads, deletePhoto, deleteDeliveryPhoto } from '../actions';
 
-export default function GalleryManager({ gallery, photos: initialPhotos, deliveryPhotos: initialDelivery, selections, clientUrl, isProStudio }) {
+export default function GalleryManager({ gallery, photos: initialPhotos, deliveryPhotos: initialDelivery, selections, heartCounts = {}, clientUrl, isProStudio }) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [deliveryPhotos, setDeliveryPhotos] = useState(initialDelivery);
   const [uploadQueue, setUploadQueue] = useState([]);
@@ -283,12 +283,23 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                {photos.map((photo, index) => (
-                  <div key={photo.id} className="relative group aspect-square bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(index)}>
-                    <Image src={photo.thumbnail_url} alt={photo.file_name || 'Photo'} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw" unoptimized />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200" />
-                  </div>
-                ))}
+                {photos.map((photo, index) => {
+                  const hearts = heartCounts[photo.id] || 0;
+                  return (
+                    <div key={photo.id} className="relative group aspect-square bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(index)}>
+                      <Image src={photo.thumbnail_url} alt={photo.file_name || 'Photo'} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw" unoptimized />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200" />
+                      {hearts > 0 && (
+                        <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 bg-black/60 text-white rounded-full px-2 py-0.5">
+                          <svg className="w-2.5 h-2.5 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                          </svg>
+                          <span className="text-[10px] font-bold leading-none">{hearts}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 <UploadQueueGrid queue={uploadQueue} />
               </div>
             )}

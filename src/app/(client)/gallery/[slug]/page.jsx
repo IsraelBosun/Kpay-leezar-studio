@@ -1,8 +1,10 @@
 import { createServerSupabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
+import { THEMES, resolveConfig } from '@/lib/themes';
+import { isPro } from '@/lib/plan';
 import GalleryPortal from './GalleryPortal';
 import GalleryPasswordForm from './GalleryPasswordForm';
-import { isPro } from '@/lib/plan';
 
 export default async function ClientGalleryPage({ params, searchParams }) {
   const { slug } = await params;
@@ -12,15 +14,18 @@ export default async function ClientGalleryPage({ params, searchParams }) {
 
   const { data: gallery } = await supabase
     .from('galleries')
-    .select('*, studios(name, accent_color, plan, created_at), bookings(status)')
+    .select('*, studios(name, accent_color, logo_url, website_config, plan, created_at), bookings(status)')
     .eq('slug', slug)
     .single();
 
   if (!gallery) notFound();
 
   const studio = gallery.studios;
+  const config = resolveConfig(studio?.website_config);
+  const studioTheme = THEMES[config.theme] || THEMES.classic;
+  const accentColor = studio?.accent_color || '#F0940A';
 
-  // Access control: Pro studio, oldest gallery, booking completed, or already delivered
+  // Access control
   const studioIsPro = isPro(studio);
   let accessible = studioIsPro || gallery.downloads_enabled || gallery.bookings?.status === 'completed';
 
@@ -37,10 +42,10 @@ export default async function ClientGalleryPage({ params, searchParams }) {
 
   if (!accessible) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6">
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: studioTheme.bg }}>
         <div className="text-center space-y-4 max-w-sm">
-          <p className="font-serif text-3xl text-white">{gallery.title}</p>
-          <p className="text-white/40 text-sm">
+          <p className="font-serif text-3xl" style={{ color: studioTheme.text }}>{gallery.title}</p>
+          <p className="text-sm" style={{ color: studioTheme.textMuted }}>
             This gallery is currently unavailable. Please contact {studio?.name ?? 'the studio'} for access.
           </p>
         </div>
@@ -48,21 +53,27 @@ export default async function ClientGalleryPage({ params, searchParams }) {
     );
   }
 
-  // Password only required while gallery is locked
+  // Password gate
   if (gallery.is_locked && gallery.password_hash && pw !== gallery.password_hash) {
     return (
       <GalleryPasswordForm
         slug={slug}
         studioName={studio?.name}
-        accentColor={studio?.accent_color}
+        logoUrl={studio?.logo_url}
+        accentColor={accentColor}
+        studioTheme={studioTheme}
       />
     );
   }
 
-  const [{ data: photos }, { data: deliveryPhotos }] = await Promise.all([
+  const [{ data: photos }, { data: deliveryPhotos }, { data: allHearts }] = await Promise.all([
     supabase.from('photos').select('id, thumbnail_url, original_url, file_name').eq('gallery_id', gallery.id).eq('photo_type', 'selection').order('uploaded_at', { ascending: true }),
     supabase.from('photos').select('id, thumbnail_url, original_url, file_name').eq('gallery_id', gallery.id).eq('photo_type', 'delivery').order('uploaded_at', { ascending: true }),
+    supabaseAdmin.from('photo_hearts').select('photo_id').eq('gallery_id', gallery.id),
   ]);
+
+  const initialHeartCounts = {};
+  allHearts?.forEach(h => { initialHeartCounts[h.photo_id] = (initialHeartCounts[h.photo_id] || 0) + 1; });
 
   return (
     <GalleryPortal
@@ -70,9 +81,12 @@ export default async function ClientGalleryPage({ params, searchParams }) {
       photos={photos ?? []}
       deliveryPhotos={deliveryPhotos ?? []}
       studioName={studio?.name}
-      accentColor={studio?.accent_color || '#F0940A'}
+      logoUrl={studio?.logo_url || null}
+      studioTheme={studioTheme}
+      accentColor={accentColor}
       isLocked={gallery.is_locked}
       downloadsEnabled={gallery.downloads_enabled ?? false}
+      initialHeartCounts={initialHeartCounts}
     />
   );
 }
