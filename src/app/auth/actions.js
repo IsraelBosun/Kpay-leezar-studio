@@ -21,7 +21,21 @@ export async function signUp(formData) {
   if (error) return { error: error.message };
   if (!data.user) return { error: 'Signup failed. Please try again.' };
 
-  redirect('/auth/onboarding');
+  redirect(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+}
+
+// ── Resend verification email ────────────────────────────
+export async function resendVerificationEmail(email) {
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+    },
+  });
+  if (error) return { error: error.message };
+  return { success: true };
 }
 
 // ── Sign In ──────────────────────────────────────────────

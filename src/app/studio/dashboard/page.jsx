@@ -1,6 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
+import OnboardingChecklist from '@/components/studio/OnboardingChecklist';
 
 export default async function DashboardPage({ searchParams }) {
   const params = await searchParams;
@@ -21,14 +22,14 @@ export default async function DashboardPage({ searchParams }) {
     { count: totalGalleries },
     { data: recentBookings },
     { data: payments },
-    { count: servicesCount },
+    { count: portfolioCount },
   ] = await Promise.all([
     supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('studio_id', studio.id),
     supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('studio_id', studio.id).eq('status', 'pending'),
     supabase.from('galleries').select('*', { count: 'exact', head: true }).eq('studio_id', studio.id),
     supabase.from('bookings').select('*').eq('studio_id', studio.id).order('created_at', { ascending: false }).limit(5),
     supabase.from('payments').select('amount').eq('studio_id', studio.id).eq('status', 'paid'),
-    supabase.from('services').select('*', { count: 'exact', head: true }).eq('studio_id', studio.id),
+    supabase.from('portfolio_photos').select('*', { count: 'exact', head: true }).eq('studio_id', studio.id),
   ]);
 
   const totalRevenue = payments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
@@ -39,6 +40,17 @@ export default async function DashboardPage({ searchParams }) {
   const trialDaysLeft = Math.max(0, Math.ceil((trialEndsAt - now) / (1000 * 60 * 60 * 24)));
   const inTrial = studio.plan === 'free' && now < trialEndsAt;
   const trialExpired = studio.plan === 'free' && now >= trialEndsAt;
+
+  const studioUrl = process.env.NEXT_PUBLIC_ROOT_DOMAIN === 'photostudio.ng'
+    ? `https://${studio.slug}.photostudio.ng`
+    : `${process.env.NEXT_PUBLIC_APP_URL}/studio-site/${studio.slug}`;
+
+  const checklistSteps = [
+    { id: 'profile', done: !!studio.logo_url, label: 'Add your studio logo and profile photo', href: '/studio/website' },
+    { id: 'website', done: !!studio.website_config, label: 'Customize your website theme and banner', href: '/studio/website' },
+    { id: 'photos', done: (portfolioCount ?? 0) > 0, label: 'Upload your first portfolio photos', href: '/studio/website' },
+    { id: 'payment', done: !!studio.paystack_subaccount_code, label: 'Set up your payment account', href: '/studio/settings' },
+  ];
 
   const stats = [
     { label: 'Total Bookings', value: totalBookings ?? 0, sub: `${pendingBookings ?? 0} pending`, href: '/studio/bookings' },
@@ -148,39 +160,12 @@ export default async function DashboardPage({ searchParams }) {
         ))}
       </div>
 
-      {/* Profile completion checklist */}
-      {(() => {
-        const steps = [
-          { done: !!studio.bio, label: 'Add your studio bio', href: '/studio/settings' },
-          { done: !!studio.logo_url, label: 'Upload your logo', href: '/studio/settings' },
-          { done: (servicesCount ?? 0) > 0, label: 'Add your services & pricing', href: '/studio/website' },
-        ];
-        const remaining = steps.filter(s => !s.done);
-        if (remaining.length === 0) return null;
-        return (
-          <div className="bg-white border border-gray-100 px-6 py-5">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-4">Complete your profile</p>
-            <div className="space-y-3">
-              {steps.map((s) => (
-                <div key={s.label} className="flex items-center gap-3">
-                  <div className={`w-5 h-5 flex-shrink-0 flex items-center justify-center border-2 ${s.done ? 'border-green-500 bg-green-500' : 'border-gray-200'}`}>
-                    {s.done && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                  {s.done ? (
-                    <span className="text-sm text-neutral-gray line-through">{s.label}</span>
-                  ) : (
-                    <Link href={s.href} className="text-sm text-black font-medium hover:text-primary transition-colors">{s.label} →</Link>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Onboarding checklist */}
+      <OnboardingChecklist
+        steps={checklistSteps}
+        studioUrl={studioUrl}
+        studioSlug={studio.slug}
+      />
 
       {/* Studio URL banner */}
       <div className="bg-zinc-950 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

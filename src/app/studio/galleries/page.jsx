@@ -67,7 +67,9 @@ export default async function GalleriesPage() {
       {!galleries || galleries.length === 0 ? (
         <div className="bg-white border border-gray-100 px-4 sm:px-8 py-12 sm:py-16 text-center">
           <p className="font-serif text-2xl text-black mb-2">No galleries yet</p>
-          <p className="text-sm text-neutral-gray italic mb-6">Create a gallery and share photos with your clients.</p>
+          <p className="text-sm text-neutral-gray italic mb-6 max-w-sm mx-auto">
+            After a session, create a private gallery for your client. They get a link to view, download, and favorite their photos.
+          </p>
           <Link
             href="/studio/galleries/new"
             className="inline-block bg-primary text-white px-8 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors"

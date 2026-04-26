@@ -9,6 +9,10 @@ export default async function StudioLayout({ children }) {
 
   if (!user) redirect('/auth/login');
 
+  if (!user.email_confirmed_at) {
+    redirect(`/auth/verify-email?email=${encodeURIComponent(user.email)}`);
+  }
+
   // Fetch studio for this user
   const { data: studio } = await supabase
     .from('studios')

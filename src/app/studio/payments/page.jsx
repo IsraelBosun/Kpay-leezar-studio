@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase';
+import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
 
 export default async function PaymentsPage() {
@@ -7,7 +8,7 @@ export default async function PaymentsPage() {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id')
+    .select('id, paystack_subaccount_code')
     .eq('owner_id', user.id)
     .single();
 
@@ -51,7 +52,23 @@ export default async function PaymentsPage() {
       {!payments || payments.length === 0 ? (
         <div className="bg-white border border-gray-100 px-4 sm:px-8 py-12 sm:py-16 text-center">
           <p className="font-serif text-2xl text-black mb-2">No payments yet</p>
-          <p className="text-sm text-neutral-gray italic">Payments will appear here once clients pay via Paystack.</p>
+          {studio.paystack_subaccount_code ? (
+            <p className="text-sm text-neutral-gray italic max-w-sm mx-auto">
+              When a client pays a deposit or balance through your booking link, it appears here. Funds settle to your bank account the next business day.
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-neutral-gray italic mb-6 max-w-sm mx-auto">
+                Connect your bank account first so clients can pay you directly via Paystack. You don&apos;t need a Paystack account — just your bank details.
+              </p>
+              <Link
+                href="/studio/settings"
+                className="inline-block bg-primary text-white px-8 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors"
+              >
+                Set Up Bank Account
+              </Link>
+            </>
+          )}
         </div>
       ) : (
         <div className="bg-white border border-gray-100 overflow-hidden">

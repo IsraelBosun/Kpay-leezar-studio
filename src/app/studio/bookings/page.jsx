@@ -92,16 +92,22 @@ export default async function BookingsPage({ searchParams }) {
       {/* Table */}
       {!bookings || bookings.length === 0 ? (
         <div className="bg-white border border-gray-100 px-4 sm:px-8 py-12 sm:py-16 text-center">
-          <p className="font-serif text-2xl text-black mb-2">No bookings found</p>
-          <p className="text-sm text-neutral-gray italic mb-6">
-            {filter === 'all' ? 'Add your first booking to get started.' : `No ${filter} bookings.`}
+          <p className="font-serif text-2xl text-black mb-2">
+            {filter === 'all' ? 'No bookings yet' : `No ${filter} bookings`}
           </p>
-          <Link
-            href="/studio/bookings/new"
-            className="inline-block bg-primary text-white px-8 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors"
-          >
-            Add Booking
-          </Link>
+          <p className="text-sm text-neutral-gray italic mb-6 max-w-sm mx-auto">
+            {filter === 'all'
+              ? 'Record a client shoot, set a session date, and collect a deposit upfront and balance after — all tracked from one place.'
+              : `You have no ${filter} bookings right now.`}
+          </p>
+          {filter === 'all' && (
+            <Link
+              href="/studio/bookings/new"
+              className="inline-block bg-primary text-white px-8 py-3 text-xs uppercase tracking-widest font-bold hover:bg-black transition-colors"
+            >
+              Add First Booking
+            </Link>
+          )}
         </div>
       ) : (
         <div className="bg-white border border-gray-100 overflow-hidden">

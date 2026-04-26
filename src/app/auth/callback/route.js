@@ -9,6 +9,17 @@ export async function GET(request) {
     const supabase = await createServerSupabase();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: studio } = await supabase
+          .from('studios')
+          .select('id')
+          .eq('owner_id', user.id)
+          .maybeSingle();
+        if (studio) {
+          return NextResponse.redirect(`${origin}/studio/dashboard`);
+        }
+      }
       return NextResponse.redirect(`${origin}/auth/onboarding`);
     }
   }
