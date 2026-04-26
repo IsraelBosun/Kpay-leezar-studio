@@ -282,12 +282,12 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
                 <p className="text-sm text-neutral-gray italic">Upload photos above to populate this gallery.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-2">
                 {photos.map((photo, index) => {
                   const hearts = heartCounts[photo.id] || 0;
                   return (
-                    <div key={photo.id} className="relative group aspect-square bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(index)}>
-                      <Image src={photo.thumbnail_url} alt={photo.file_name || 'Photo'} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw" unoptimized />
+                    <div key={photo.id} className="relative group bg-gray-100 overflow-hidden cursor-pointer break-inside-avoid mb-2" onClick={() => setLightboxIndex(index)}>
+                      <img src={photo.thumbnail_url} alt={photo.file_name || 'Photo'} className="w-full h-auto block transition-transform duration-300 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200" />
                       {hearts > 0 && (
                         <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 bg-black/60 text-white rounded-full px-2 py-0.5">
@@ -379,10 +379,10 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
                 <p className="text-sm text-neutral-gray italic">Upload your retouched photos above, then enable downloads.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-2">
                 {deliveryPhotos.map((photo, index) => (
-                  <div key={photo.id} className="relative group aspect-square bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setDeliveryLightboxIndex(index)}>
-                    <Image src={photo.thumbnail_url} alt={photo.file_name || 'Delivery photo'} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw" unoptimized />
+                  <div key={photo.id} className="relative group bg-gray-100 overflow-hidden cursor-pointer break-inside-avoid mb-2" onClick={() => setDeliveryLightboxIndex(index)}>
+                    <img src={photo.thumbnail_url} alt={photo.file_name || 'Delivery photo'} className="w-full h-auto block transition-transform duration-300 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200" />
                   </div>
                 ))}
@@ -414,14 +414,13 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
                       Share via WhatsApp
                     </a>
                   </div>
-                  <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  <div className="p-4 columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-3">
                     {picks.map((s, i) => (
                       <button key={s.id} onClick={() => setSelectionLightbox({ picks, index: i })}
-                        className="relative aspect-square bg-gray-100 overflow-hidden group focus:outline-none">
+                        className="relative bg-gray-100 overflow-hidden group focus:outline-none break-inside-avoid mb-3 block w-full">
                         {s.photos?.thumbnail_url && (
-                          <Image src={s.photos.thumbnail_url} alt="Selected photo" fill
-                            className="object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110"
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" unoptimized />
+                          <img src={s.photos.thumbnail_url} alt="Selected photo"
+                            className="w-full h-auto block transition-all duration-300 group-hover:scale-105 group-hover:brightness-110" />
                         )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200" />
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary flex items-center justify-center shadow">

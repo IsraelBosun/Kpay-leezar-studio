@@ -340,14 +340,9 @@ export default function GalleryPortal({
       } />
 
       {/* Hint bar */}
-      <div className="px-4 sm:px-6 py-3 border-b flex items-center justify-between gap-4 text-xs"
+      <div className="px-4 sm:px-6 py-3 border-b text-xs"
         style={{ background: surface, borderColor: border, color: textMuted }}>
-        <span>Tap the heart to save your favourites · tap any photo to view</span>
-        {myHearts.size > 0 && (
-          <span className="font-bold flex-shrink-0" style={{ color: accentColor }}>
-            {myHearts.size} hearted
-          </span>
-        )}
+        <span>Tap the heart to save your favourites · selections save automatically, no need to submit · tap any photo to view</span>
       </div>
 
       {photos.length === 0 ? (
@@ -379,8 +374,8 @@ export default function GalleryPortal({
                   {/* Gradient overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                  {/* Heart button + count */}
-                  <div className="absolute bottom-2 left-2 flex items-center gap-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  {/* Heart button + count — always visible on mobile, hover-only on desktop */}
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1.5 z-10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200"
                     onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => toggleHeart(photo.id)}
@@ -421,6 +416,15 @@ export default function GalleryPortal({
           <p className="text-sm" style={{ color: textMuted }}>🔒 Full-resolution downloads unlock after payment.</p>
         </div>
       )}
+
+      {/* Branding footer */}
+      <div className="py-6 text-center border-t" style={{ borderColor: border }}>
+        <a href="https://photostudio.ng" target="_blank" rel="noopener noreferrer"
+          className="text-[10px] uppercase tracking-widest font-bold hover:opacity-80 transition-opacity"
+          style={{ color: textMuted }}>
+          Powered by <span style={{ color: accentColor }}>photostudio.ng</span>
+        </a>
+      </div>
 
       {/* Lightbox */}
       {isOpen && currentPhoto && (
