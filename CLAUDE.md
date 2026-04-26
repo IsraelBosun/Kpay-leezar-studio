@@ -16,6 +16,8 @@ SaaS platform for Nigerian photography studios — public website, client galler
 
 **Pricing:** Free (website + subdomain) + Pro (₦10k/month or ₦100k/year, 14-day trial). Free gallery cap: 20 photos each.
 
+**Contact:** email `photostudios@gmail.com` · WhatsApp `+2349133105794` — use these whenever adding contact info anywhere on the site. Privacy page at `/privacy`; no Terms page.
+
 ---
 
 ## Architecture Gotchas
