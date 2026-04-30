@@ -108,7 +108,7 @@ export default function PrivacyPage() {
           <p>
             <a href="mailto:photostudios@gmail.com" className="font-medium hover:text-zinc-900 transition-colors" style={{ color: AMBER }}>photostudios@gmail.com</a>
             {' · '}
-            <a href="https://wa.me/2349133105794" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-zinc-900 transition-colors" style={{ color: AMBER }}>WhatsApp: +234 913 310 5794</a>
+            <a href="https://wa.me/2349133105749" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-zinc-900 transition-colors" style={{ color: AMBER }}>WhatsApp: +234 913 310 5749</a>
           </p>
         </Section>
 
