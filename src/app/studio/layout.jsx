@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createServerSupabase } from '@/lib/supabase';
 import Sidebar from '@/components/studio/Sidebar';
 import StudioPageFade from '@/components/studio/StudioPageFade';
+import PostHogIdentify from '@/components/studio/PostHogIdentify';
 
 export default async function StudioLayout({ children }) {
   const supabase = await createServerSupabase();
@@ -25,6 +26,14 @@ export default async function StudioLayout({ children }) {
 
   return (
     <div className="min-h-screen flex bg-[#f9f8f6]">
+      <PostHogIdentify
+        userId={user.id}
+        email={user.email}
+        studioId={studio.id}
+        studioName={studio.name}
+        studioSlug={studio.slug}
+        plan={studio.plan}
+      />
       <Sidebar studio={studio} />
       <main className="flex-1 min-w-0 lg:ml-64 pt-16 lg:pt-0">
         <div className="p-6 md:p-10 max-w-6xl mx-auto">
