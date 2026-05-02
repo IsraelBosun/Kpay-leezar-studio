@@ -14,7 +14,7 @@ export default async function ClientGalleryPage({ params, searchParams }) {
 
   const { data: gallery } = await supabase
     .from('galleries')
-    .select('*, studios(name, accent_color, logo_url, website_config, plan, created_at), bookings(status)')
+    .select('*, studios(name, accent_color, logo_url, website_config, plan, created_at), bookings(status, session_date)')
     .eq('slug', slug)
     .single();
 

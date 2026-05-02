@@ -49,23 +49,14 @@ export default async function GalleryDetailPage({ params }) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div>
-          <Link href="/studio/galleries" className="text-xs uppercase tracking-widest text-neutral-gray hover:text-primary transition-colors font-bold">
-            ← Galleries
-          </Link>
-          <h1 className="text-3xl md:text-4xl font-serif text-black mt-3">{gallery.title}</h1>
-          {gallery.bookings?.client_name && (
-            <p className="text-sm text-neutral-gray mt-1">for {gallery.bookings.client_name}</p>
-          )}
-        </div>
-
-        {/* Status badge */}
-        <div className={`px-4 py-2 text-xs uppercase tracking-widest font-bold self-start ${
-          gallery.is_locked ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-green-50 text-green-700 border border-green-200'
-        }`}>
-          {gallery.is_locked ? 'Locked' : 'Unlocked'}
-        </div>
+      <div>
+        <Link href="/studio/galleries" className="text-xs uppercase tracking-widest text-neutral-gray hover:text-primary transition-colors font-bold">
+          ← Galleries
+        </Link>
+        <h1 className="text-3xl md:text-4xl font-serif text-black mt-3">{gallery.title}</h1>
+        {gallery.bookings?.client_name && (
+          <p className="text-sm text-neutral-gray mt-1">for {gallery.bookings.client_name}</p>
+        )}
       </div>
 
       <GalleryManager

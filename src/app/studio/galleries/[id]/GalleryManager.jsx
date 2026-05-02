@@ -103,10 +103,6 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
         if (data.photo) {
           setPhotos(prev => [...prev, data.photo]);
           setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'done' } : q));
-          setTimeout(() => {
-            setUploadQueue(prev => prev.filter(q => q.id !== item.id));
-            URL.revokeObjectURL(item.previewUrl);
-          }, 1200);
         } else {
           setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', errorMsg: data.error } : q));
         }
@@ -115,6 +111,10 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
       }
     }
     router.refresh();
+    setTimeout(() => {
+      setUploadQueue([]);
+      items.forEach(item => URL.revokeObjectURL(item.previewUrl));
+    }, 1500);
   }
 
   async function uploadDeliveryFiles(files) {
@@ -136,10 +136,6 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
         if (data.photo) {
           setDeliveryPhotos(prev => [...prev, data.photo]);
           setDeliveryQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'done' } : q));
-          setTimeout(() => {
-            setDeliveryQueue(prev => prev.filter(q => q.id !== item.id));
-            URL.revokeObjectURL(item.previewUrl);
-          }, 1200);
         } else {
           setDeliveryQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', errorMsg: data.error } : q));
         }
@@ -148,6 +144,10 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
       }
     }
     router.refresh();
+    setTimeout(() => {
+      setDeliveryQueue([]);
+      items.forEach(item => URL.revokeObjectURL(item.previewUrl));
+    }, 1500);
   }
 
   const handleDrop = useCallback((e) => { e.preventDefault(); setIsDragging(false); uploadFiles(e.dataTransfer.files); }, [gallery.id]);
@@ -200,24 +200,28 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
   return (
     <div className="space-y-6">
       {/* Action bar */}
-      <div className="flex flex-wrap gap-3 items-center p-5 bg-white border border-gray-100">
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1">Client Link</p>
-          <p className="text-sm text-neutral-gray truncate font-mono">{clientUrl}</p>
-        </div>
-        <button onClick={copyLink}
-          className={`px-4 py-2 text-xs uppercase tracking-widest font-bold transition-colors whitespace-nowrap ${copied ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-primary'}`}>
-          {copied ? '✓ Copied' : 'Copy Link'}
-        </button>
-        <button onClick={handleToggleLock}
-          className={`px-4 py-2 text-xs uppercase tracking-widest font-bold border transition-colors whitespace-nowrap ${locked ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}`}>
-          {locked ? '🔒 Locked' : '🔓 Unlocked'}
-        </button>
-        {gallery.password_hash && (
-          <div className="px-4 py-2 text-xs uppercase tracking-widest font-bold bg-gray-50 border border-gray-200 text-neutral-gray">
-            Password: {gallery.password_hash}
+      <div className="p-4 bg-white border border-gray-100 space-y-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-0.5">Client Link</p>
+            <p className="text-sm text-neutral-gray truncate font-mono">{clientUrl}</p>
           </div>
-        )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={copyLink}
+            className={`flex-1 sm:flex-none px-4 py-2 text-xs uppercase tracking-widest font-bold transition-colors text-center ${copied ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-primary'}`}>
+            {copied ? '✓ Copied' : 'Copy Link'}
+          </button>
+          <button onClick={handleToggleLock}
+            className={`flex-1 sm:flex-none px-4 py-2 text-xs uppercase tracking-widest font-bold border transition-colors text-center ${locked ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}`}>
+            {locked ? '🔒 Locked' : '🔓 Unlocked'}
+          </button>
+          {gallery.password_hash && (
+            <div className="flex-1 sm:flex-none px-4 py-2 text-xs uppercase tracking-widest font-bold bg-gray-50 border border-gray-200 text-neutral-gray text-center">
+              Password: {gallery.password_hash}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -264,17 +268,27 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
               </div>
             )}
 
-            {uploadQueue.length > 0 && (
-              <div className="flex items-center gap-3 px-5 py-3 bg-blue-50 border border-blue-200">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                  {uploadQueue.filter(q => q.status === 'done').length} / {uploadQueue.length} uploaded
-                </p>
-                {uploadQueue.some(q => q.status === 'error') && (
-                  <p className="text-xs font-bold text-red-500 ml-1">· {uploadQueue.filter(q => q.status === 'error').length} failed</p>
-                )}
-              </div>
-            )}
+            {uploadQueue.length > 0 && (() => {
+              const done = uploadQueue.filter(q => q.status === 'done').length;
+              const errors = uploadQueue.filter(q => q.status === 'error').length;
+              const pct = Math.round((done / uploadQueue.length) * 100);
+              return (
+                <div className="px-5 py-4 bg-white border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-black">
+                      {done < uploadQueue.length ? 'Uploading…' : 'Upload complete'}
+                    </p>
+                    <p className="text-xs text-neutral-gray tabular-nums">{done} / {uploadQueue.length}</p>
+                  </div>
+                  <div className="h-1 bg-gray-100 overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
+                  </div>
+                  {errors > 0 && (
+                    <p className="text-xs text-red-500 mt-2">{errors} file{errors !== 1 ? 's' : ''} failed to upload</p>
+                  )}
+                </div>
+              );
+            })()}
 
             {photos.length === 0 && uploadQueue.length === 0 ? (
               <div className="bg-white border border-gray-100 py-16 text-center">
@@ -361,17 +375,27 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
               </div>
             )}
 
-            {deliveryQueue.length > 0 && (
-              <div className="flex items-center gap-3 px-5 py-3 bg-blue-50 border border-blue-200">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                  {deliveryQueue.filter(q => q.status === 'done').length} / {deliveryQueue.length} uploaded
-                </p>
-                {deliveryQueue.some(q => q.status === 'error') && (
-                  <p className="text-xs font-bold text-red-500 ml-1">· {deliveryQueue.filter(q => q.status === 'error').length} failed</p>
-                )}
-              </div>
-            )}
+            {deliveryQueue.length > 0 && (() => {
+              const done = deliveryQueue.filter(q => q.status === 'done').length;
+              const errors = deliveryQueue.filter(q => q.status === 'error').length;
+              const pct = Math.round((done / deliveryQueue.length) * 100);
+              return (
+                <div className="px-5 py-4 bg-white border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-black">
+                      {done < deliveryQueue.length ? 'Uploading…' : 'Upload complete'}
+                    </p>
+                    <p className="text-xs text-neutral-gray tabular-nums">{done} / {deliveryQueue.length}</p>
+                  </div>
+                  <div className="h-1 bg-gray-100 overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
+                  </div>
+                  {errors > 0 && (
+                    <p className="text-xs text-red-500 mt-2">{errors} file{errors !== 1 ? 's' : ''} failed to upload</p>
+                  )}
+                </div>
+              );
+            })()}
 
             {deliveryPhotos.length === 0 && deliveryQueue.length === 0 ? (
               <div className="bg-white border border-gray-100 py-16 text-center">
@@ -566,31 +590,28 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
 
 function UploadQueueGrid({ queue }) {
   return queue.map(item => (
-    <div key={item.id} className="relative aspect-square overflow-hidden bg-gray-100">
-      <img src={item.previewUrl} alt={item.name} className="w-full h-full object-cover" />
+    <div key={item.id} className="relative bg-gray-100 overflow-hidden break-inside-avoid mb-2">
+      <img src={item.previewUrl} alt={item.name} className="w-full h-auto block" />
       {item.status === 'queued' && (
-        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
-          <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-[9px] text-white/50 uppercase tracking-wider">Queued</p>
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="w-4 h-4 rounded-full border-2 border-white/40" />
         </div>
       )}
       {item.status === 'uploading' && (
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <div className="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         </div>
       )}
       {item.status === 'done' && (
-        <div className="absolute inset-0 bg-green-500/60 flex items-center justify-center">
-          <svg className="w-8 h-8 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+          <svg className="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
           </svg>
         </div>
       )}
       {item.status === 'error' && (
-        <div className="absolute inset-0 bg-red-500/70 flex flex-col items-center justify-center gap-1">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute inset-0 bg-red-500/80 flex flex-col items-center justify-center gap-1">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
           <p className="text-[9px] text-white uppercase tracking-wider">{item.errorMsg ? 'Limit reached' : 'Failed'}</p>
