@@ -1,6 +1,11 @@
+import { createServerSupabase } from '@/lib/supabase';
 import { resolveBankAccount } from '@/lib/paystack';
 
 export async function GET(req) {
+  const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const account_number = searchParams.get('account_number');
   const bank_code = searchParams.get('bank_code');
