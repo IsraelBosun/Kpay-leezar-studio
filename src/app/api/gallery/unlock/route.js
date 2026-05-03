@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { signGallerySession, cookieName } from '@/lib/gallery-session';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
   try {
@@ -19,7 +20,8 @@ export async function POST(req) {
       return Response.json({ error: 'Gallery is not locked' }, { status: 400 });
     }
 
-    if (password !== gallery.password_hash) {
+    const valid = await bcrypt.compare(password, gallery.password_hash);
+    if (!valid) {
       return Response.json({ error: 'Incorrect password' }, { status: 401 });
     }
 

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { toggleGalleryLock, toggleGalleryDownloads, deletePhoto, deleteDeliveryPhoto } from '../actions';
+import { toggleGalleryLock, toggleGalleryDownloads, deletePhoto, deleteDeliveryPhoto, updateGalleryPassword } from '../actions';
 import { FREE_STORAGE_LIMIT } from '@/lib/plan';
 
 export default function GalleryManager({ gallery, photos: initialPhotos, deliveryPhotos: initialDelivery, selections, heartCounts = {}, clientUrl, isProStudio, storageUsedBytes = 0 }) {
@@ -18,6 +18,10 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
   const [locked, setLocked] = useState(gallery.is_locked);
   const [downloadsEnabled, setDownloadsEnabled] = useState(gallery.downloads_enabled ?? false);
   const [togglingDownloads, setTogglingDownloads] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [hasPassword, setHasPassword] = useState(!!gallery.password_hash);
   const [activeTab, setActiveTab] = useState('photos');
   const [tabVisible, setTabVisible] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -228,12 +232,48 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
             className={`flex-1 sm:flex-none px-4 py-2 text-xs uppercase tracking-widest font-bold border transition-colors text-center ${locked ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-green-300 text-green-700 hover:bg-green-50'}`}>
             {locked ? '🔒 Locked' : '🔓 Unlocked'}
           </button>
-          {gallery.password_hash && (
-            <div className="flex-1 sm:flex-none px-4 py-2 text-xs uppercase tracking-widest font-bold bg-gray-50 border border-gray-200 text-neutral-gray text-center">
-              Password: {gallery.password_hash}
-            </div>
-          )}
+          <button onClick={() => setShowPasswordForm(p => !p)}
+            className="flex-1 sm:flex-none px-4 py-2 text-xs uppercase tracking-widest font-bold border border-gray-200 text-neutral-gray hover:border-black hover:text-black transition-colors text-center">
+            {hasPassword ? '🔑 Change Password' : '🔑 Set Password'}
+          </button>
         </div>
+
+        {showPasswordForm && (
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setSavingPassword(true);
+            const res = await updateGalleryPassword(gallery.id, newPassword.trim() || null);
+            setSavingPassword(false);
+            if (!res?.error) {
+              setHasPassword(!!newPassword.trim());
+              setNewPassword('');
+              setShowPasswordForm(false);
+            }
+          }} className="mt-3 flex gap-2">
+            <input
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder={hasPassword ? 'New password' : 'Set a password'}
+              className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-black"
+            />
+            <button type="submit" disabled={savingPassword}
+              className="px-4 py-2 bg-black text-white text-xs uppercase tracking-widest font-bold hover:bg-primary transition-colors disabled:opacity-50">
+              {savingPassword ? 'Saving…' : 'Save'}
+            </button>
+            {hasPassword && (
+              <button type="button" onClick={async () => {
+                setSavingPassword(true);
+                await updateGalleryPassword(gallery.id, null);
+                setSavingPassword(false);
+                setHasPassword(false);
+                setShowPasswordForm(false);
+              }} className="px-4 py-2 border border-red-200 text-red-600 text-xs uppercase tracking-widest font-bold hover:bg-red-50 transition-colors">
+                Remove
+              </button>
+            )}
+          </form>
+        )}
       </div>
 
       {/* Tabs */}

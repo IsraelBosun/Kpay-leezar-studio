@@ -4,6 +4,7 @@ import { createServerSupabase } from '@/lib/supabase';
 import { deleteFromR2 } from '@/lib/r2';
 import { redirect } from 'next/navigation';
 import { isPro, FREE_GALLERY_LIMIT } from '@/lib/plan';
+import bcrypt from 'bcryptjs';
 
 export async function createGallery(formData) {
   const supabase = await createServerSupabase();
@@ -27,7 +28,8 @@ export async function createGallery(formData) {
 
   const title = formData.get('title');
   const bookingId = formData.get('booking_id') || null;
-  const password = formData.get('password') || null;
+  const rawPassword = formData.get('password') || null;
+  const password_hash = rawPassword ? await bcrypt.hash(rawPassword, 10) : null;
 
   // Generate slug from title
   const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -41,7 +43,7 @@ export async function createGallery(formData) {
       booking_id: bookingId,
       title,
       slug,
-      password_hash: password,
+      password_hash,
       is_locked: true,
     })
     .select()
@@ -55,20 +57,52 @@ export async function toggleGalleryDownloads(galleryId, enabled) {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Not authenticated.' };
+  const { data: studio } = await supabase.from('studios').select('id').eq('owner_id', user.id).single();
+  if (!studio) return { error: 'Studio not found.' };
   const { error } = await supabase
     .from('galleries')
     .update({ downloads_enabled: enabled })
-    .eq('id', galleryId);
+    .eq('id', galleryId)
+    .eq('studio_id', studio.id);
   if (error) return { error: error.message };
   return { success: true };
 }
 
 export async function toggleGalleryLock(galleryId, locked) {
   const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated.' };
+  const { data: studio } = await supabase.from('studios').select('id').eq('owner_id', user.id).single();
+  if (!studio) return { error: 'Studio not found.' };
   const { error } = await supabase
     .from('galleries')
     .update({ is_locked: locked })
-    .eq('id', galleryId);
+    .eq('id', galleryId)
+    .eq('studio_id', studio.id);
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
+export async function updateGalleryPassword(galleryId, newPassword) {
+  const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated.' };
+
+  const { data: studio } = await supabase
+    .from('studios')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single();
+  if (!studio) return { error: 'Studio not found.' };
+
+  const password_hash = newPassword ? await bcrypt.hash(newPassword, 10) : null;
+
+  const { error } = await supabase
+    .from('galleries')
+    .update({ password_hash, is_locked: !!newPassword })
+    .eq('id', galleryId)
+    .eq('studio_id', studio.id);
+
   if (error) return { error: error.message };
   return { success: true };
 }
