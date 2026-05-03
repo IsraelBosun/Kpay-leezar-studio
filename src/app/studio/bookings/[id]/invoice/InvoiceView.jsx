@@ -1,7 +1,34 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function InvoiceView({ booking, studio, invoiceNumber, depositPaid, balancePaid }) {
   const accent = studio.accent_color || '#D30E15';
+  const [downloading, setDownloading] = useState(false);
+  const [downloadDone, setDownloadDone] = useState(false);
+
+  async function downloadInvoice() {
+    setDownloading(true);
+    setDownloadDone(false);
+    try {
+      const res = await fetch(`/api/invoice/${booking.id}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invoiceNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setDownloadDone(true);
+      setTimeout(() => setDownloadDone(false), 4000);
+    } catch {
+      // silently fail
+    } finally {
+      setDownloading(false);
+    }
+  }
   const total = Number(booking.deposit_amount) + Number(booking.balance_amount);
   const totalPaid = (depositPaid ? Number(booking.deposit_amount) : 0) + (balancePaid ? Number(booking.balance_amount) : 0);
   const totalDue = total - totalPaid;
@@ -37,16 +64,27 @@ export default function InvoiceView({ booking, studio, invoiceNumber, depositPai
           </svg>
           Back to Booking
         </a>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-widest text-white transition-colors"
-          style={{ backgroundColor: accent }}
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-          </svg>
-          Print / Save as PDF
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <button
+            onClick={downloadInvoice}
+            disabled={downloading}
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-widest text-white transition-colors disabled:opacity-60"
+            style={{ backgroundColor: accent }}
+          >
+            {downloading ? (
+              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            )}
+            {downloading ? 'Generating…' : 'Download Invoice'}
+          </button>
+          {downloadDone && <p className="text-[10px] text-green-600 font-medium">Download complete</p>}
+        </div>
       </div>
 
       {/* Invoice */}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
 
 function formatCoverDate(dateStr) {
   if (!dateStr) return null;
@@ -422,8 +421,10 @@ export default function GalleryPortal({
 
 function Lightbox({ photo, index, total, onClose, onNext, onPrev, extra }) {
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/60">
+    <div className="fixed inset-0 z-50 bg-black" onClick={onClose}>
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-10 bg-gradient-to-b from-black/70 to-transparent"
+        onClick={e => e.stopPropagation()}>
         <span className="text-white/40 text-xs tabular-nums">{index + 1} / {total}</span>
         <div className="flex items-center gap-2">
           {extra}
@@ -435,26 +436,38 @@ function Lightbox({ photo, index, total, onClose, onNext, onPrev, extra }) {
           </button>
         </div>
       </div>
-      <div className="flex-1 relative min-h-0">
-        {total > 1 && (
-          <button onClick={onPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-        )}
-        <div className="relative w-full h-full">
-          <Image key={photo.id} src={photo.thumbnail_url} alt={photo.file_name || ''} fill className="object-contain" sizes="100vw" unoptimized />
-        </div>
-        {total > 1 && (
-          <button onClick={onNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
-      </div>
-      <div className="flex-shrink-0 px-4 py-3 text-center bg-black/60">
+
+      {/* Image — absolute centering, safe on iOS Safari */}
+      <img
+        key={photo.id}
+        src={photo.thumbnail_url}
+        alt={photo.file_name || ''}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[82vh] max-w-[96vw] object-contain"
+        onClick={e => e.stopPropagation()}
+      />
+
+      {/* Prev */}
+      {total > 1 && (
+        <button onClick={e => { e.stopPropagation(); onPrev(); }}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Next */}
+      {total > 1 && (
+        <button onClick={e => { e.stopPropagation(); onNext(); }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
+
+      {/* Footer */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-3 text-center bg-gradient-to-t from-black/70 to-transparent pointer-events-none">
         <p className="text-white/30 text-xs truncate">{photo.file_name}</p>
       </div>
     </div>

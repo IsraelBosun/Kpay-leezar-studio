@@ -504,8 +504,8 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
         const current = picks[index];
         const imgSrc = current?.photos?.thumbnail_url;
         return (
-          <div className={`fixed inset-0 z-50 bg-black flex flex-col transition-opacity duration-200 ${selectionLightbox ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
+          <div className={`fixed inset-0 z-50 bg-black transition-opacity duration-200 ${selectionLightbox ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-10 bg-black/80">
               <div>
                 <p className="text-white/60 text-xs">{current?.selector_name}</p>
                 <p className="text-white/30 text-[10px] tabular-nums">{index + 1} / {picks.length}</p>
@@ -514,24 +514,20 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <div className="flex-1 relative flex items-center justify-center min-h-0">
-              {picks.length > 1 && (
-                <button onClick={() => setSelectionLightbox({ picks, index: (index - 1 + picks.length) % picks.length })}
-                  className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-              )}
-              <div className="relative w-full h-full">
-                {imgSrc && <Image key={current.id} src={imgSrc} alt="" fill className="object-contain" sizes="100vw" unoptimized />}
-              </div>
-              {picks.length > 1 && (
-                <button onClick={() => setSelectionLightbox({ picks, index: (index + 1) % picks.length })}
-                  className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-              )}
-            </div>
-            {current?.note && <div className="flex-shrink-0 px-4 py-3 text-center"><p className="text-white/40 text-xs">{current.note}</p></div>}
+            {imgSrc && <img key={current.id} src={imgSrc} alt="" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[82vh] max-w-[96vw] object-contain" />}
+            {picks.length > 1 && (
+              <button onClick={() => setSelectionLightbox({ picks, index: (index - 1 + picks.length) % picks.length })}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+            )}
+            {picks.length > 1 && (
+              <button onClick={() => setSelectionLightbox({ picks, index: (index + 1) % picks.length })}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            )}
+            {current?.note && <div className="absolute bottom-0 left-0 right-0 px-4 py-3 text-center bg-black/60"><p className="text-white/40 text-xs">{current.note}</p></div>}
           </div>
         );
       })()}
@@ -540,8 +536,8 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
       {(() => {
         const photo = currentPhoto || photos[0];
         return (
-          <div className={`fixed inset-0 z-50 bg-black flex flex-col transition-opacity duration-200 ${isOpen && currentPhoto ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
+          <div className={`fixed inset-0 z-50 bg-black transition-opacity duration-200 ${isOpen && currentPhoto ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-10 bg-black/80">
               <div>
                 <p className="text-white/60 text-xs truncate max-w-xs">{photo?.file_name}</p>
                 <p className="text-white/30 text-[10px] tabular-nums">{lightboxIndex != null ? lightboxIndex + 1 : 0} / {photos.length}</p>
@@ -556,21 +552,17 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
                 </button>
               </div>
             </div>
-            <div className="flex-1 relative flex items-center justify-center min-h-0">
-              {photos.length > 1 && (
-                <button onClick={goPrev} className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-              )}
-              <div className="relative w-full h-full">
-                {photo && <Image key={photo.id} src={photo.thumbnail_url} alt={photo.file_name || ''} fill className="object-contain" sizes="100vw" unoptimized />}
-              </div>
-              {photos.length > 1 && (
-                <button onClick={goNext} className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-              )}
-            </div>
+            {photo && <img key={photo.id} src={photo.thumbnail_url} alt={photo.file_name || ''} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[82vh] max-w-[96vw] object-contain" />}
+            {photos.length > 1 && (
+              <button onClick={goPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+            )}
+            {photos.length > 1 && (
+              <button onClick={goNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            )}
           </div>
         );
       })()}
@@ -579,8 +571,8 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
       {(() => {
         const photo = currentDelivery || deliveryPhotos[0];
         return (
-          <div className={`fixed inset-0 z-50 bg-black flex flex-col transition-opacity duration-200 ${isDeliveryOpen && currentDelivery ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 bg-black/80">
+          <div className={`fixed inset-0 z-50 bg-black transition-opacity duration-200 ${isDeliveryOpen && currentDelivery ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-10 bg-black/80">
               <div>
                 <p className="text-white/60 text-xs truncate max-w-xs">{photo?.file_name}</p>
                 <p className="text-white/30 text-[10px] tabular-nums">{deliveryLightboxIndex != null ? deliveryLightboxIndex + 1 : 0} / {deliveryPhotos.length}</p>
@@ -595,21 +587,17 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
                 </button>
               </div>
             </div>
-            <div className="flex-1 relative flex items-center justify-center min-h-0">
-              {deliveryPhotos.length > 1 && (
-                <button onClick={goDeliveryPrev} className="absolute left-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-              )}
-              <div className="relative w-full h-full">
-                {photo && <Image key={photo.id} src={photo.thumbnail_url} alt={photo.file_name || ''} fill className="object-contain" sizes="100vw" unoptimized />}
-              </div>
-              {deliveryPhotos.length > 1 && (
-                <button onClick={goDeliveryNext} className="absolute right-2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-              )}
-            </div>
+            {photo && <img key={photo.id} src={photo.thumbnail_url} alt={photo.file_name || ''} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[82vh] max-w-[96vw] object-contain" />}
+            {deliveryPhotos.length > 1 && (
+              <button onClick={goDeliveryPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+            )}
+            {deliveryPhotos.length > 1 && (
+              <button onClick={goDeliveryNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white transition-colors rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            )}
           </div>
         );
       })()}

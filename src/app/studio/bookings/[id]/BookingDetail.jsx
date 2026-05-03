@@ -21,6 +21,8 @@ export default function BookingDetail({ booking, payments, hasSubaccount, studio
   const [sendingInvoice, setSendingInvoice] = useState(false);
   const [invoiceSent, setInvoiceSent] = useState(false);
   const [invoiceError, setInvoiceError] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadDone, setDownloadDone] = useState(false);
 
   const hasAmounts = Number(booking.deposit_amount) + Number(booking.balance_amount) > 0;
 
@@ -36,6 +38,29 @@ export default function BookingDetail({ booking, payments, hasSubaccount, studio
       setInvoiceError('Network error. Please try again.');
     }
     setSendingInvoice(false);
+  }
+
+  async function downloadInvoice() {
+    setDownloading(true);
+    setDownloadDone(false);
+    try {
+      const res = await fetch(`/api/invoice/${booking.id}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `INV-${new Date(booking.created_at).getFullYear()}-${booking.id.slice(0, 6).toUpperCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setDownloadDone(true);
+      setTimeout(() => setDownloadDone(false), 4000);
+    } catch {
+      // silently fail — browser will show nothing downloaded
+    } finally {
+      setDownloading(false);
+    }
   }
 
   async function handleStatusChange(newStatus) {
@@ -167,17 +192,26 @@ export default function BookingDetail({ booking, payments, hasSubaccount, studio
       <div className="bg-white border border-gray-100 px-4 sm:px-6 py-4">
         <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-3">Invoice</p>
         <div className="flex flex-wrap gap-2">
-          <a
-            href={`/studio/bookings/${booking.id}/invoice`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-xs font-bold uppercase tracking-widest text-black hover:bg-gray-50 transition-colors"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Download PDF
-          </a>
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={downloadInvoice}
+              disabled={downloading}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-xs font-bold uppercase tracking-widest text-black hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {downloading ? (
+                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
+              {downloading ? 'Generating…' : 'Download PDF'}
+            </button>
+            {downloadDone && <p className="text-[10px] text-green-600 font-medium">Download complete</p>}
+          </div>
           <button
             onClick={sendInvoice}
             disabled={sendingInvoice || !hasAmounts}

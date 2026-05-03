@@ -27,6 +27,7 @@ const securityHeaders = [
 
 const nextConfig = {
   reactCompiler: true,
+  serverExternalPackages: ['@react-pdf/renderer'],
   images: {
     remotePatterns: [
       {

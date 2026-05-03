@@ -31,6 +31,8 @@ SaaS platform for Nigerian photography studios — public website, client galler
 - **Paystack subaccount model** — platform takes 0% cut; Paystack settles to photographer's bank T+1. Pass `bearer: "subaccount"` in initializePayment.
 - **Duplicate Paystack reference** — `/api/paystack/initialize` verifies with Paystack before reusing a reference; prevents 400 if payment already completed.
 - **Image storage** — always two versions: compressed thumbnail (800px, ~100KB) for display; original in R2, served only on download.
+- **PDF currency symbol** — `₦` (Naira sign U+20A6) is not in Helvetica's embedded glyph set; use `NGN ` as a text prefix instead or it renders as a box/blank.
+- **`@react-pdf/renderer`** — must be in `serverExternalPackages` in `next.config.mjs`; Next.js webpack cannot bundle it and will error if it tries.
 
 ---
 
