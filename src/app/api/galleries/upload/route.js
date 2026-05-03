@@ -43,12 +43,15 @@ export async function POST(req) {
       .single();
     if (!gallery) return Response.json({ error: 'Gallery not found' }, { status: 403 });
 
-    // Free plan: 2 GB storage cap
+    // Free plan: 2 GB storage cap — atomic check-and-increment prevents race condition
     if (!isPro(studio)) {
-      const currentBytes = Number(studio.storage_used_bytes ?? 0);
-      if (currentBytes + file.size > FREE_STORAGE_LIMIT) {
-        return Response.json({ error: 'Storage limit reached. Free plan includes 2 GB. Upgrade to Pro for unlimited storage.' }, { status: 403 });
-      }
+      const { data: allowed, error: rpcError } = await supabase.rpc('increment_storage_checked', {
+        p_studio_id: studio.id,
+        p_bytes: file.size,
+        p_limit: FREE_STORAGE_LIMIT,
+      });
+      if (rpcError) return Response.json({ error: 'Storage check failed.' }, { status: 500 });
+      if (!allowed) return Response.json({ error: 'Storage limit reached. Free plan includes 2 GB. Upgrade to Pro for unlimited storage.' }, { status: 403 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -81,9 +84,12 @@ export async function POST(req) {
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
 
-    await supabase.from('studios')
-      .update({ storage_used_bytes: Number(studio.storage_used_bytes ?? 0) + file.size })
-      .eq('id', studio.id);
+    // Pro plan: no limit to enforce, so a simple counter update is fine
+    if (isPro(studio)) {
+      await supabase.from('studios')
+        .update({ storage_used_bytes: Number(studio.storage_used_bytes ?? 0) + file.size })
+        .eq('id', studio.id);
+    }
 
     return Response.json({ photo });
   } catch (err) {
