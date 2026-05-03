@@ -1,14 +1,15 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { THEMES, resolveConfig } from '@/lib/themes';
 import { isPro } from '@/lib/plan';
+import { verifyGallerySession, cookieName } from '@/lib/gallery-session';
 import GalleryPortal from './GalleryPortal';
 import GalleryPasswordForm from './GalleryPasswordForm';
 
-export default async function ClientGalleryPage({ params, searchParams }) {
+export default async function ClientGalleryPage({ params }) {
   const { slug } = await params;
-  const { pw } = await searchParams;
 
   const supabase = await createServerSupabase();
 
@@ -53,17 +54,22 @@ export default async function ClientGalleryPage({ params, searchParams }) {
     );
   }
 
-  // Password gate
-  if (gallery.is_locked && gallery.password_hash && pw !== gallery.password_hash) {
-    return (
-      <GalleryPasswordForm
-        slug={slug}
-        studioName={studio?.name}
-        logoUrl={studio?.logo_url}
-        accentColor={accentColor}
-        studioTheme={studioTheme}
-      />
-    );
+  // Password gate — verify session cookie instead of ?pw= URL param
+  if (gallery.is_locked && gallery.password_hash) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(cookieName(gallery.id))?.value;
+    if (!token || !verifyGallerySession(gallery.id, token)) {
+      return (
+        <GalleryPasswordForm
+          slug={slug}
+          galleryId={gallery.id}
+          studioName={studio?.name}
+          logoUrl={studio?.logo_url}
+          accentColor={accentColor}
+          studioTheme={studioTheme}
+        />
+      );
+    }
   }
 
   const [{ data: photos }, { data: deliveryPhotos }, { data: allHearts }] = await Promise.all([

@@ -13,16 +13,25 @@ const transporter = nodemailer.createTransport({
 
 const FROM = `photostudio.ng <${process.env.GMAIL_USER}>`;
 
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 function baseTemplate({ accentColor = '#F0940A', studioName, preheader, body }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>${studioName}</title>
+  <title>${escapeHtml(studioName)}</title>
 </head>
 <body style="margin:0;padding:0;background:#f9f8f6;font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;">
-  <div style="display:none;max-height:0;overflow:hidden;color:#f9f8f6;">${preheader}</div>
+  <div style="display:none;max-height:0;overflow:hidden;color:#f9f8f6;">${escapeHtml(preheader)}</div>
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f8f6;padding:40px 20px;">
     <tr>
       <td align="center">
@@ -31,7 +40,7 @@ function baseTemplate({ accentColor = '#F0940A', studioName, preheader, body }) 
           <!-- Logo bar -->
           <tr>
             <td style="padding-bottom:32px;">
-              <span style="font-family:Georgia,serif;font-size:22px;letter-spacing:-0.5px;color:#1a1a1a;font-weight:bold;">${studioName}</span>
+              <span style="font-family:Georgia,serif;font-size:22px;letter-spacing:-0.5px;color:#1a1a1a;font-weight:bold;">${escapeHtml(studioName)}</span>
               <br/>
               <span style="font-size:8px;letter-spacing:4px;text-transform:uppercase;font-weight:700;color:${accentColor};">Photography</span>
             </td>
@@ -89,9 +98,9 @@ export async function sendBookingConfirmation({
     <tr>
       <td style="padding:40px 40px 0;">
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${accentColor};font-weight:700;margin:0 0 12px;">Booking Confirmed</p>
-        <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 8px;font-weight:normal;">Hi ${clientName},</h1>
+        <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 8px;font-weight:normal;">Hi ${escapeHtml(clientName)},</h1>
         <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 32px;">
-          Your session with <strong style="color:#1a1a1a;">${studioName}</strong> has been booked.
+          Your session with <strong style="color:#1a1a1a;">${escapeHtml(studioName)}</strong> has been booked.
           We're looking forward to working with you.
         </p>
       </td>
@@ -112,7 +121,7 @@ export async function sendBookingConfirmation({
           <tr>
             <td style="padding:16px 20px;border-bottom:1px solid #ece9e4;">
               <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 4px;">Service</p>
-              <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">${serviceName}</p>
+              <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">${escapeHtml(serviceName)}</p>
             </td>
           </tr>` : ''}
           ${depositAmount > 0 ? `
@@ -137,7 +146,7 @@ export async function sendBookingConfirmation({
     <tr>
       <td style="padding:0 40px 32px;">
         <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 8px;">Notes</p>
-        <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">${notes}</p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">${escapeHtml(notes)}</p>
       </td>
     </tr>` : ''}
 
@@ -156,9 +165,9 @@ export async function sendBookingConfirmation({
       <td style="padding:24px 40px 40px;background:#f9f8f6;border-top:1px solid #ece9e4;">
         <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 8px;">Questions?</p>
         <p style="font-size:13px;color:#555;margin:0;">
-          ${studioEmail ? `<a href="mailto:${studioEmail}" style="color:${accentColor};text-decoration:none;">${studioEmail}</a>` : ''}
+          ${studioEmail ? `<a href="mailto:${escapeHtml(studioEmail)}" style="color:${accentColor};text-decoration:none;">${escapeHtml(studioEmail)}</a>` : ''}
           ${studioEmail && studioPhone ? ' &nbsp;·&nbsp; ' : ''}
-          ${studioPhone ? `<a href="https://wa.me/${studioPhone.replace(/[^0-9]/g, '')}" style="color:${accentColor};text-decoration:none;">${studioPhone}</a>` : ''}
+          ${studioPhone ? `<a href="https://wa.me/${studioPhone.replace(/[^0-9]/g, '')}" style="color:${accentColor};text-decoration:none;">${escapeHtml(studioPhone)}</a>` : ''}
         </p>
       </td>
     </tr>
@@ -215,8 +224,8 @@ export async function sendInvoiceEmail({
     : null;
 
   const logoHtml = studioLogoUrl
-    ? `<img src="${studioLogoUrl}" alt="${studioName}" style="height:48px;width:auto;object-fit:contain;display:block;margin-bottom:8px;" />`
-    : `<p style="font-family:Georgia,serif;font-size:22px;color:#1a1a1a;font-weight:bold;margin:0 0 4px;">${studioName}</p>`;
+    ? `<img src="${escapeHtml(studioLogoUrl)}" alt="${escapeHtml(studioName)}" style="height:48px;width:auto;object-fit:contain;display:block;margin-bottom:8px;" />`
+    : `<p style="font-family:Georgia,serif;font-size:22px;color:#1a1a1a;font-weight:bold;margin:0 0 4px;">${escapeHtml(studioName)}</p>`;
 
   const statusBadge = (paid) => paid
     ? `<span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;padding:2px 8px;">✓ Paid</span>`
@@ -235,7 +244,7 @@ export async function sendInvoiceEmail({
             </td>
             <td style="text-align:right;vertical-align:top;">
               <p style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#aaa;margin:0 0 4px;">Invoice</p>
-              <p style="font-family:Georgia,serif;font-size:20px;color:#1a1a1a;margin:0 0 4px;">${invoiceNumber}</p>
+              <p style="font-family:Georgia,serif;font-size:20px;color:#1a1a1a;margin:0 0 4px;">${escapeHtml(invoiceNumber)}</p>
               <p style="font-size:12px;color:#888;margin:0;">${fmtDate(invoiceDate)}</p>
             </td>
           </tr>
@@ -250,13 +259,13 @@ export async function sendInvoiceEmail({
           <tr>
             <td style="padding:20px 24px;border-right:1px solid #ece9e4;width:50%;vertical-align:top;">
               <p style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#aaa;margin:0 0 10px;">Billed To</p>
-              <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${clientName}</p>
-              <p style="font-size:12px;color:#666;margin:0 0 2px;">${clientEmail}</p>
-              ${clientPhone ? `<p style="font-size:12px;color:#666;margin:0;">${clientPhone}</p>` : ''}
+              <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${escapeHtml(clientName)}</p>
+              <p style="font-size:12px;color:#666;margin:0 0 2px;">${escapeHtml(clientEmail)}</p>
+              ${clientPhone ? `<p style="font-size:12px;color:#666;margin:0;">${escapeHtml(clientPhone)}</p>` : ''}
             </td>
             <td style="padding:20px 24px;width:50%;vertical-align:top;">
               <p style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#aaa;margin:0 0 10px;">Session</p>
-              ${serviceName ? `<p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${serviceName}</p>` : ''}
+              ${serviceName ? `<p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 4px;">${escapeHtml(serviceName)}</p>` : ''}
               ${formattedSession ? `<p style="font-size:12px;color:#666;margin:0;">${formattedSession}</p>` : '<p style="font-size:12px;color:#aaa;margin:0;font-style:italic;">Date to be confirmed</p>'}
             </td>
           </tr>
@@ -317,14 +326,14 @@ export async function sendInvoiceEmail({
             ${(bankName || accountNumber) ? `
             <td style="width:50%;vertical-align:top;padding-right:16px;">
               <p style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#aaa;margin:0 0 10px;">Payment Details</p>
-              ${bankName ? `<p style="font-size:12px;color:#555;margin:0 0 4px;">Bank: <span style="color:#1a1a1a;font-weight:600;">${bankName}</span></p>` : ''}
-              ${accountName ? `<p style="font-size:12px;color:#555;margin:0 0 4px;">Account Name: <span style="color:#1a1a1a;font-weight:600;">${accountName}</span></p>` : ''}
-              ${accountNumber ? `<p style="font-size:12px;color:#555;margin:0;">Account Number: <span style="color:#1a1a1a;font-weight:700;letter-spacing:1px;">${accountNumber}</span></p>` : ''}
+              ${bankName ? `<p style="font-size:12px;color:#555;margin:0 0 4px;">Bank: <span style="color:#1a1a1a;font-weight:600;">${escapeHtml(bankName)}</span></p>` : ''}
+              ${accountName ? `<p style="font-size:12px;color:#555;margin:0 0 4px;">Account Name: <span style="color:#1a1a1a;font-weight:600;">${escapeHtml(accountName)}</span></p>` : ''}
+              ${accountNumber ? `<p style="font-size:12px;color:#555;margin:0;">Account Number: <span style="color:#1a1a1a;font-weight:700;letter-spacing:1px;">${escapeHtml(accountNumber)}</span></p>` : ''}
             </td>` : '<td></td>'}
             ${notes ? `
             <td style="width:50%;vertical-align:top;padding-left:16px;border-left:1px solid #ece9e4;">
               <p style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#aaa;margin:0 0 10px;">Notes</p>
-              <p style="font-size:12px;color:#666;line-height:1.6;margin:0;">${notes}</p>
+              <p style="font-size:12px;color:#666;line-height:1.6;margin:0;">${escapeHtml(notes)}</p>
             </td>` : '<td></td>'}
           </tr>
         </table>
@@ -338,8 +347,8 @@ export async function sendInvoiceEmail({
           <tr>
             <td>
               <p style="font-size:12px;color:#888;margin:0;">
-                Thank you for choosing <strong style="color:#1a1a1a;">${studioName}</strong>.
-                ${studioEmail || studioPhone ? `<br/>Questions? ${studioEmail ? `<a href="mailto:${studioEmail}" style="color:${accent};text-decoration:none;">${studioEmail}</a>` : ''}${studioEmail && studioPhone ? ' · ' : ''}${studioPhone ? `<a href="https://wa.me/${studioPhone.replace(/[^0-9]/g, '')}" style="color:${accent};text-decoration:none;">${studioPhone}</a>` : ''}` : ''}
+                Thank you for choosing <strong style="color:#1a1a1a;">${escapeHtml(studioName)}</strong>.
+                ${studioEmail || studioPhone ? `<br/>Questions? ${studioEmail ? `<a href="mailto:${escapeHtml(studioEmail)}" style="color:${accent};text-decoration:none;">${escapeHtml(studioEmail)}</a>` : ''}${studioEmail && studioPhone ? ' · ' : ''}${studioPhone ? `<a href="https://wa.me/${studioPhone.replace(/[^0-9]/g, '')}" style="color:${accent};text-decoration:none;">${escapeHtml(studioPhone)}</a>` : ''}` : ''}
               </p>
             </td>
             <td style="text-align:right;">
@@ -391,7 +400,7 @@ export async function sendBookingNotification({
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${accentColor};font-weight:700;margin:0 0 12px;">New Booking</p>
         <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 8px;font-weight:normal;">You have a new booking.</h1>
         <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 32px;">
-          <strong style="color:#1a1a1a;">${clientName}</strong> just submitted a booking request on your studio website.
+          <strong style="color:#1a1a1a;">${escapeHtml(clientName)}</strong> just submitted a booking request on your studio website.
         </p>
       </td>
     </tr>
@@ -401,14 +410,14 @@ export async function sendBookingNotification({
           <tr>
             <td style="padding:16px 20px;border-bottom:1px solid #ece9e4;">
               <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 4px;">Client</p>
-              <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">${clientName}</p>
+              <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">${escapeHtml(clientName)}</p>
             </td>
           </tr>
           <tr>
             <td style="padding:16px 20px;border-bottom:1px solid #ece9e4;">
               <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 4px;">Email</p>
               <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">
-                <a href="mailto:${clientEmail}" style="color:${accentColor};text-decoration:none;">${clientEmail}</a>
+                <a href="mailto:${escapeHtml(clientEmail)}" style="color:${accentColor};text-decoration:none;">${escapeHtml(clientEmail)}</a>
               </p>
             </td>
           </tr>
@@ -417,7 +426,7 @@ export async function sendBookingNotification({
             <td style="padding:16px 20px;border-bottom:1px solid #ece9e4;">
               <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 4px;">Phone</p>
               <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">
-                <a href="https://wa.me/${clientPhone.replace(/[^0-9]/g, '')}" style="color:${accentColor};text-decoration:none;">${clientPhone}</a>
+                <a href="https://wa.me/${clientPhone.replace(/[^0-9]/g, '')}" style="color:${accentColor};text-decoration:none;">${escapeHtml(clientPhone)}</a>
               </p>
             </td>
           </tr>` : ''}
@@ -431,14 +440,14 @@ export async function sendBookingNotification({
           <tr>
             <td style="padding:16px 20px;border-bottom:1px solid #ece9e4;">
               <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 4px;">Service</p>
-              <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">${serviceName}</p>
+              <p style="font-size:14px;color:#1a1a1a;font-weight:600;margin:0;">${escapeHtml(serviceName)}</p>
             </td>
           </tr>` : ''}
           ${notes ? `
           <tr>
             <td style="padding:16px 20px;">
               <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#aaa;font-weight:700;margin:0 0 4px;">Notes</p>
-              <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">${notes}</p>
+              <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">${escapeHtml(notes)}</p>
             </td>
           </tr>` : ''}
         </table>
@@ -472,9 +481,9 @@ export async function sendGalleryReady({ to, clientName, studioName, galleryUrl,
     <tr>
       <td style="padding:40px;">
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${accentColor};font-weight:700;margin:0 0 12px;">Gallery Ready</p>
-        <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 16px;font-weight:normal;">Hi ${clientName},</h1>
+        <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 16px;font-weight:normal;">Hi ${escapeHtml(clientName)},</h1>
         <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 32px;">
-          Your photos from <strong style="color:#1a1a1a;">${studioName}</strong> are ready.
+          Your photos from <strong style="color:#1a1a1a;">${escapeHtml(studioName)}</strong> are ready.
           Open your private gallery and select your favourites.
         </p>
         <a href="${galleryUrl}"
@@ -503,10 +512,10 @@ export async function sendPaymentReminder({ to, clientName, studioName, amountDu
     <tr>
       <td style="padding:40px;">
         <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${accentColor};font-weight:700;margin:0 0 12px;">Balance Due</p>
-        <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 16px;font-weight:normal;">Hi ${clientName},</h1>
+        <h1 style="font-family:Georgia,serif;font-size:28px;color:#1a1a1a;margin:0 0 16px;font-weight:normal;">Hi ${escapeHtml(clientName)},</h1>
         <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 8px;">
           Your balance of <strong style="color:#1a1a1a;">₦${Number(amountDue).toLocaleString()}</strong> is due
-          to unlock your full gallery from <strong style="color:#1a1a1a;">${studioName}</strong>.
+          to unlock your full gallery from <strong style="color:#1a1a1a;">${escapeHtml(studioName)}</strong>.
         </p>
         <p style="font-size:13px;color:#aaa;margin:0 0 32px;">Pay now to download your full-resolution photos.</p>
         <a href="${paymentUrl}"

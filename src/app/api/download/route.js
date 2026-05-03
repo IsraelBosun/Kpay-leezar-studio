@@ -1,4 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { verifyGallerySession, cookieName } from '@/lib/gallery-session';
+import { cookies } from 'next/headers';
 
 export async function GET(req) {
   try {
@@ -15,11 +17,19 @@ export async function GET(req) {
 
     const { data: gallery } = await supabaseAdmin
       .from('galleries')
-      .select('downloads_enabled')
+      .select('downloads_enabled, is_locked')
       .eq('id', photo.gallery_id)
       .single();
     if (!gallery?.downloads_enabled) {
       return new Response('Downloads not enabled for this gallery', { status: 403 });
+    }
+
+    if (gallery.is_locked) {
+      const cookieStore = await cookies();
+      const token = cookieStore.get(cookieName(photo.gallery_id))?.value;
+      if (!token || !verifyGallerySession(photo.gallery_id, token)) {
+        return new Response('Unauthorized', { status: 403 });
+      }
     }
 
     const fileRes = await fetch(photo.original_url);

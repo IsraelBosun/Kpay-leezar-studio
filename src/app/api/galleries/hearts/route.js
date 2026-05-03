@@ -1,4 +1,19 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { verifyGallerySession, cookieName } from '@/lib/gallery-session';
+import { cookies } from 'next/headers';
+
+async function hasGalleryAccess(galleryId) {
+  const { data: gallery } = await supabaseAdmin
+    .from('galleries')
+    .select('id, is_locked')
+    .eq('id', galleryId)
+    .single();
+  if (!gallery) return false;
+  if (!gallery.is_locked) return true;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(cookieName(galleryId))?.value;
+  return !!token && verifyGallerySession(galleryId, token);
+}
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -6,6 +21,10 @@ export async function GET(request) {
   const selector_name = searchParams.get('selector_name');
 
   if (!gallery_id) return Response.json({ error: 'gallery_id required' }, { status: 400 });
+
+  if (!await hasGalleryAccess(gallery_id)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 403 });
+  }
 
   const [{ data: allHearts }, { data: myHeartsData }] = await Promise.all([
     supabaseAdmin.from('photo_hearts').select('photo_id').eq('gallery_id', gallery_id),
@@ -26,6 +45,10 @@ export async function POST(request) {
     const { gallery_id, photo_id, selector_name } = await request.json();
     if (!gallery_id || !photo_id || !selector_name?.trim()) {
       return Response.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    if (!await hasGalleryAccess(gallery_id)) {
+      return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const { data: existing } = await supabaseAdmin

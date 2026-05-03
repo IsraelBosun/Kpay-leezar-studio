@@ -3,30 +3,47 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function GalleryPasswordForm({ slug, studioName, logoUrl, accentColor = '#F0940A', studioTheme }) {
+export default function GalleryPasswordForm({ slug, galleryId, studioName, logoUrl, accentColor = '#F0940A', studioTheme }) {
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const bg = studioTheme?.bg ?? '#0a0a0a';
-  const surface = studioTheme?.surface ?? '#111111';
   const text = studioTheme?.text ?? '#ffffff';
   const textMuted = studioTheme?.textMuted ?? 'rgba(255,255,255,0.45)';
-  const border = studioTheme?.border ?? 'rgba(255,255,255,0.08)';
   const inputBg = studioTheme?.surface ?? '#111111';
   const inputBorder = studioTheme?.inputBorder ?? 'rgba(255,255,255,0.2)';
   const inputText = studioTheme?.inputText ?? '#ffffff';
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!password.trim()) return;
-    router.push(`/gallery/${slug}?pw=${encodeURIComponent(password)}`);
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/gallery/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ galleryId, password }),
+      });
+      if (res.ok) {
+        router.push(`/gallery/${slug}`);
+        router.refresh();
+      } else {
+        setError('Incorrect password. Please try again.');
+        setLoading(false);
+      }
+    } catch {
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
+    }
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: bg }}>
       <div className="w-full max-w-sm space-y-8">
 
-        {/* Logo / studio name */}
         <div className="text-center">
           {logoUrl ? (
             <img src={logoUrl} alt={studioName} className="h-10 w-auto mx-auto mb-4 object-contain" />
@@ -51,11 +68,15 @@ export default function GalleryPasswordForm({ slug, studioName, logoUrl, accentC
               className="w-full border px-4 py-3 focus:outline-none font-light"
             />
           </div>
+          {error && (
+            <p className="text-xs text-red-400">{error}</p>
+          )}
           <button
             type="submit"
-            className="w-full py-3.5 text-xs uppercase tracking-widest font-bold text-white transition-opacity hover:opacity-80"
+            disabled={loading}
+            className="w-full py-3.5 text-xs uppercase tracking-widest font-bold text-white transition-opacity hover:opacity-80 disabled:opacity-50"
             style={{ backgroundColor: accentColor }}>
-            View Gallery
+            {loading ? 'Checking…' : 'View Gallery'}
           </button>
         </form>
       </div>
