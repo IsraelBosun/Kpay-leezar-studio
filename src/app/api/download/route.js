@@ -36,12 +36,12 @@ export async function GET(req) {
     if (!fileRes.ok) return new Response('File not found', { status: 404 });
 
     const contentType = fileRes.headers.get('content-type') || 'image/jpeg';
-    const filename = photo.file_name || 'photo.jpg';
+    const safeFilename = (photo.file_name || 'photo.jpg').replace(/[^a-zA-Z0-9._\-]/g, '_');
 
     return new Response(fileRes.body, {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="${safeFilename}"`,
         'Cache-Control': 'private, no-cache',
       },
     });

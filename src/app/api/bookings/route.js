@@ -36,6 +36,11 @@ export async function POST(req) {
       return Response.json({ error: 'Name, email and studio are required.' }, { status: 400 });
     }
 
+    if (client_name.length > 100) return Response.json({ error: 'Name too long.' }, { status: 400 });
+    if (client_email.length > 254) return Response.json({ error: 'Email too long.' }, { status: 400 });
+    if (client_phone && client_phone.length > 30) return Response.json({ error: 'Phone too long.' }, { status: 400 });
+    if (notes && notes.length > 2000) return Response.json({ error: 'Notes too long.' }, { status: 400 });
+
     const supabase = await createServerSupabase();
 
     const { data: studio } = await supabase

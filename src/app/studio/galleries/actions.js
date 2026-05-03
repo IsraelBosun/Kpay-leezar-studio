@@ -5,6 +5,7 @@ import { deleteFromR2 } from '@/lib/r2';
 import { redirect } from 'next/navigation';
 import { isPro, FREE_GALLERY_LIMIT } from '@/lib/plan';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 export async function createGallery(formData) {
   const supabase = await createServerSupabase();
@@ -31,23 +32,19 @@ export async function createGallery(formData) {
   const rawPassword = formData.get('password') || null;
   const password_hash = rawPassword ? await bcrypt.hash(rawPassword, 10) : null;
 
-  // Generate slug from title
   const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const suffix = Math.random().toString(36).slice(2, 6);
-  const slug = `${base}-${suffix}`;
 
-  const { data: gallery, error } = await supabase
-    .from('galleries')
-    .insert({
-      studio_id: studio.id,
-      booking_id: bookingId,
-      title,
-      slug,
-      password_hash,
-      is_locked: true,
-    })
-    .select()
-    .single();
+  let gallery, error;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const slug = `${base}-${randomBytes(4).toString('hex')}`;
+    ({ data: gallery, error } = await supabase
+      .from('galleries')
+      .insert({ studio_id: studio.id, booking_id: bookingId, title, slug, password_hash, is_locked: true })
+      .select()
+      .single());
+    if (!error) break;
+    if (!error.message.includes('unique') && !error.message.includes('duplicate')) break;
+  }
 
   if (error) return { error: error.message };
   redirect(`/studio/galleries/${gallery.id}`);

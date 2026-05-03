@@ -56,10 +56,12 @@ export async function proxy(req) {
     const isAuthRoute = url.pathname.startsWith('/auth');
     const isOnboarding = url.pathname.startsWith('/auth/onboarding');
 
-    // Admin routes — must be logged in AND be the admin email
+    // Admin routes — must be logged in, match admin email, and (if set) match admin user ID
     if (isAdminRoute) {
       if (!user) return NextResponse.redirect(new URL('/auth/login', req.url));
-      if (user.email !== process.env.ADMIN_EMAIL) return NextResponse.redirect(new URL('/studio/dashboard', req.url));
+      const emailMatch = user.email === process.env.ADMIN_EMAIL;
+      const idMatch = !process.env.ADMIN_USER_ID || user.id === process.env.ADMIN_USER_ID;
+      if (!emailMatch || !idMatch) return NextResponse.redirect(new URL('/studio/dashboard', req.url));
     }
 
     // Unauthenticated trying to access studio dashboard → login
