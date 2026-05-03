@@ -2,6 +2,13 @@ import { createServerSupabase } from '@/lib/supabase';
 import { uploadToR2, buildPhotoKey } from '@/lib/r2';
 import { randomUUID } from 'crypto';
 import { isPro, FREE_STORAGE_LIMIT } from '@/lib/plan';
+import { fileTypeFromBuffer } from 'file-type';
+
+const ALLOWED_MIME_TYPES = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -44,9 +51,12 @@ export async function POST(req) {
       }
     }
 
-    const ext = file.name.split('.').pop().toLowerCase();
-    const allowed = ['jpg', 'jpeg', 'png', 'webp'];
-    if (!allowed.includes(ext)) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    const detected = await fileTypeFromBuffer(buffer);
+    const mimeType = detected?.mime;
+    const ext = ALLOWED_MIME_TYPES[mimeType];
+    if (!ext) {
       return Response.json({ error: 'Only JPG, PNG and WebP files allowed' }, { status: 400 });
     }
 
@@ -54,8 +64,7 @@ export async function POST(req) {
     const fileName = `${fileId}.${ext}`;
     const key = buildPhotoKey(studio.id, galleryId, fileName);
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const url = await uploadToR2(key, buffer, file.type);
+    const url = await uploadToR2(key, buffer, mimeType);
 
     const { data: photo, error } = await supabase
       .from('photos')
