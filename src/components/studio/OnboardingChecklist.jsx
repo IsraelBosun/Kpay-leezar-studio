@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export default function OnboardingChecklist({ steps, studioUrl, studioSlug }) {
+export default function OnboardingChecklist({ steps, studioUrl, studioId }) {
   const [linkCopied, setLinkCopied] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setLinkCopied(!!localStorage.getItem(`link_copied_${studioSlug}`));
-    setDismissed(!!localStorage.getItem(`checklist_dismissed_${studioSlug}`));
-  }, [studioSlug]);
+    setLinkCopied(!!localStorage.getItem(`link_copied_${studioId}`));
+    setDismissed(!!localStorage.getItem(`checklist_dismissed_${studioId}`));
+  }, [studioId]);
 
   const allSteps = [
     ...steps,
@@ -35,12 +35,12 @@ export default function OnboardingChecklist({ steps, studioUrl, studioSlug }) {
     } catch {
       // fallback — still mark done
     }
-    localStorage.setItem(`link_copied_${studioSlug}`, '1');
+    localStorage.setItem(`link_copied_${studioId}`, '1');
     setLinkCopied(true);
   }
 
   function handleDismiss() {
-    localStorage.setItem(`checklist_dismissed_${studioSlug}`, '1');
+    localStorage.setItem(`checklist_dismissed_${studioId}`, '1');
     setDismissed(true);
   }
 

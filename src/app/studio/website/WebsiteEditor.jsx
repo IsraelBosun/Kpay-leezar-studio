@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { THEMES, resolveConfig } from '@/lib/themes';
-import { saveWebsiteConfig, savePhotoCategories, loadSamplePhotos, saveStudioContent, saveServices } from './actions';
+import { saveWebsiteConfig, savePhotoCategories, saveStudioContent, saveServices } from './actions';
 
 const CATEGORIES = ['Weddings', 'Portraits', 'Events', 'Commercial', 'Other'];
 
@@ -37,7 +37,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
   );
   const [savingCats, setSavingCats] = useState(false);
   const [catsSaved, setCatsSaved] = useState(false);
-  const [loadingSamples, setLoadingSamples] = useState(false);
   const [settingHero, setSettingHero] = useState(false);
   const [heroSet, setHeroSet] = useState(false);
 
@@ -117,19 +116,6 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
     const result = await savePhotoCategories(updates);
     setSavingCats(false);
     if (!result?.error) setCatsSaved(true);
-  }
-
-  async function handleLoadSamples() {
-    setLoadingSamples(true);
-    const result = await loadSamplePhotos();
-    setLoadingSamples(false);
-    if (result?.photos) {
-      setPhotos(prev => [...prev, ...result.photos]);
-      setCategories(prev => ({
-        ...prev,
-        ...Object.fromEntries(result.photos.map(p => [p.id, p.category || ''])),
-      }));
-    }
   }
 
   async function handleSetHero(photoId) {
@@ -303,36 +289,10 @@ export default function WebsiteEditor({ studio, portfolioPhotos: initial, websit
             )}
           </div>
 
-          {/* Sample photos shortcut */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleLoadSamples}
-              disabled={loadingSamples}
-              className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 text-[10px] uppercase tracking-widest font-bold text-zinc-400 hover:border-primary hover:text-primary transition-colors disabled:opacity-40">
-              {loadingSamples ? (
-                <>
-                  <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  Loading samples...
-                </>
-              ) : (
-                <>
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Use sample photos
-                </>
-              )}
-            </button>
-            <p className="text-[10px] text-neutral-gray">8 photos · 4 categories · mixed sizes</p>
-          </div>
-
           {/* Photos grid */}
           {photos.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-sm text-neutral-gray italic">No photos yet. Upload some or use the sample photos above.</p>
+              <p className="text-sm text-neutral-gray italic">No photos yet. Upload your first portfolio photo using the button above.</p>
             </div>
           ) : (
             <>

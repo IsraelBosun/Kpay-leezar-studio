@@ -5,7 +5,8 @@ import { useState } from 'react';
 const FEATURES = [
   'Unlimited bookings',
   'Paystack deposit & balance collection',
-  'Unlimited client galleries (20 photos each)',
+  'Invoices & payment history',
+  'Unlimited client galleries & photos',
   'Your studio URL at yourstudio.photostudio.ng',
   'Email notifications to clients',
 ];

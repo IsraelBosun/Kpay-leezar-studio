@@ -51,16 +51,18 @@ const AMBER = '#F0940A';
 
 const FREE_FEATURES = [
   'Studio website + subdomain',
-  '20 portfolio photos',
-  '1 client gallery (20 photos max)',
+  'Portfolio website (unlimited photos)',
+  'Up to 5 client galleries',
   'Photo selections (hearts)',
+  '2 GB gallery storage',
 ];
 
 const PRO_FEATURES = [
   'Everything in Free',
-  'Unlimited galleries + photos',
+  'Unlimited galleries & photos',
   'Online booking form',
-  'Paystack payment links',
+  'Paystack payment links (deposits + balances)',
+  'Invoices & payment history',
   'Password-protected galleries',
   'Gallery auto-unlock after payment',
   'Priority support',
@@ -98,12 +100,13 @@ const FEATURES = [
   {
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
-        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-        <polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="1" />
+        <path d="M9 12h6M9 16h4" />
       </svg>
     ),
-    title: 'Desktop uploader',
-    body: 'Drag your Lightroom export folder and upload hundreds of photos in the background.',
+    title: 'Invoices',
+    body: 'Send professional invoice links to clients. Track deposits, balances, and payment status in one place.',
   },
 ];
 
@@ -153,6 +156,10 @@ const FAQ_ITEMS = [
   {
     q: 'Do you take a percentage of my payments?',
     a: 'No. 100% of what your clients pay goes straight to your bank account via Paystack. We charge a flat monthly or yearly subscription — no commissions, no hidden fees.',
+  },
+  {
+    q: 'Can I send invoices to clients?',
+    a: 'Yes, on Pro. Each booking has a deposit and balance amount you set. You generate a Paystack payment link from your dashboard and share it with the client — they pay by card, bank transfer, or USSD. Your dashboard shows paid and outstanding amounts in real time, so you always know where every booking stands.',
   },
 ];
 
@@ -448,27 +455,6 @@ export default function HomePage() {
             </p>
           </FadeUp>
         </div>
-      </section>
-
-      {/* ── Early Access ──────────────────────────────────────────────────── */}
-      <section className="py-20 px-6 bg-white">
-        <FadeUp className="max-w-xl mx-auto text-center">
-          <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: AMBER }}>Early Access</p>
-          <h2 className="font-bold text-2xl md:text-3xl text-zinc-900 mb-8 leading-tight">
-            Join the studios already building with us
-          </h2>
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex -space-x-2">
-              {['A', 'B', 'C', 'D'].map((letter, i) => (
-                <div key={letter} className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold"
-                  style={{ backgroundColor: AMBER, opacity: 1 - i * 0.18 }}>
-                  {letter}
-                </div>
-              ))}
-            </div>
-            <p className="text-sm text-zinc-500">12 Lagos studios on the waitlist</p>
-          </div>
-        </FadeUp>
       </section>
 
       {/* ── Contact ───────────────────────────────────────────────────────── */}

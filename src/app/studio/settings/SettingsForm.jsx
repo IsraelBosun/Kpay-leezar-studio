@@ -203,7 +203,7 @@ export default function SettingsForm({ studio }) {
                   {[
                     'Unlimited bookings',
                     'Paystack deposit & balance collection',
-                    'Unlimited client galleries (20 photos each)',
+                    'Unlimited client galleries & photos',
                     'Studio website at slug.photostudio.ng',
                     'Email notifications',
                   ].map((f) => (

@@ -2,55 +2,6 @@
 
 import { createServerSupabase } from '@/lib/supabase';
 
-// Sample photos — different aspect ratios to mimic real photographer work
-const SAMPLE_PHOTOS = [
-  { seed: 'bride-veil',      w: 800,  h: 1100, category: 'Weddings' },    // portrait 8:11
-  { seed: 'wedding-dance',   w: 1200, h: 800,  category: 'Weddings' },    // landscape 3:2
-  { seed: 'woman-window',    w: 720,  h: 1080, category: 'Portraits' },   // portrait 2:3
-  { seed: 'man-studio',      w: 1000, h: 1000, category: 'Portraits' },   // square
-  { seed: 'event-crowd',     w: 1440, h: 810,  category: 'Events' },      // cinematic 16:9
-  { seed: 'rooftop-party',   w: 900,  h: 1200, category: 'Events' },      // portrait 3:4
-  { seed: 'product-shoot',   w: 1200, h: 900,  category: 'Commercial' },  // landscape 4:3
-  { seed: 'fashion-model',   w: 800,  h: 1280, category: 'Commercial' },  // tall 5:8
-];
-
-export async function loadSamplePhotos() {
-  const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Not authenticated.' };
-
-  const { data: studio } = await supabase
-    .from('studios')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single();
-  if (!studio) return { error: 'Studio not found.' };
-
-  const { data: last } = await supabase
-    .from('portfolio_photos')
-    .select('sort_order')
-    .eq('studio_id', studio.id)
-    .order('sort_order', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let sort_order = (last?.sort_order ?? -1) + 1;
-
-  const inserts = SAMPLE_PHOTOS.map(s => {
-    const src = `https://picsum.photos/seed/${s.seed}/${s.w}/${s.h}`;
-    const thumbnail_url = `https://picsum.photos/seed/${s.seed}/600/${Math.round(600 * s.h / s.w)}`;
-    return { studio_id: studio.id, src, thumbnail_url, category: s.category, sort_order: sort_order++ };
-  });
-
-  const { data: photos, error } = await supabase
-    .from('portfolio_photos')
-    .insert(inserts)
-    .select();
-
-  if (error) return { error: error.message };
-  return { photos };
-}
-
 export async function saveWebsiteConfig(config) {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();

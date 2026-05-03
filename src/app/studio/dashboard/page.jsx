@@ -47,7 +47,7 @@ export default async function DashboardPage({ searchParams }) {
 
   const checklistSteps = [
     { id: 'profile', done: !!studio.logo_url, label: 'Add your studio logo and profile photo', href: '/studio/website' },
-    { id: 'website', done: !!studio.website_config, label: 'Customize your website theme and banner', href: '/studio/website' },
+    { id: 'website', done: !!(studio.website_config?.hero_photo_id), label: 'Customize your website theme and banner', href: '/studio/website' },
     { id: 'photos', done: (portfolioCount ?? 0) > 0, label: 'Upload your first portfolio photos', href: '/studio/website' },
     { id: 'payment', done: !!studio.paystack_subaccount_code, label: 'Set up your payment account', href: '/studio/settings' },
   ];
@@ -164,7 +164,7 @@ export default async function DashboardPage({ searchParams }) {
       <OnboardingChecklist
         steps={checklistSteps}
         studioUrl={studioUrl}
-        studioSlug={studio.slug}
+        studioId={studio.id}
       />
 
       {/* Studio URL banner */}

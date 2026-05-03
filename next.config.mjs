@@ -14,7 +14,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://eu.posthog.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.r2.dev https://images.photostudio.ng",
+      "img-src 'self' data: blob: https://*.r2.dev https://images.photostudio.ng https://picsum.photos https://i.picsum.photos https://fastly.picsum.photos",
       "font-src 'self'",
       "connect-src 'self' https://*.supabase.co https://api.paystack.co https://eu.posthog.com",
       "frame-src https://js.paystack.co",
