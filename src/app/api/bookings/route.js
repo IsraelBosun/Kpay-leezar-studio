@@ -1,5 +1,6 @@
+import { supabaseAdmin } from '@/lib/supabase';
 import { createServerSupabase } from '@/lib/supabase';
-import { sendBookingConfirmation } from '@/lib/email';
+import { sendBookingConfirmation, sendBookingNotification } from '@/lib/email';
 
 export async function POST(req) {
   try {
@@ -30,7 +31,7 @@ export async function POST(req) {
       serviceName = service?.title ?? null;
     }
 
-    const { error } = await supabase.from('bookings').insert({
+    const { data: booking, error } = await supabaseAdmin.from('bookings').insert({
       studio_id: studio.id,
       client_name,
       client_email,
@@ -41,11 +42,13 @@ export async function POST(req) {
       status: 'pending',
       deposit_amount: 0,
       balance_amount: 0,
-    });
+    }).select('id').single();
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
 
-    // Send confirmation email — non-blocking
+    const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/studio/bookings/${booking.id}`;
+
+    // Send confirmation to client — non-blocking
     sendBookingConfirmation({
       to: client_email,
       clientName: client_name,
@@ -59,6 +62,22 @@ export async function POST(req) {
       notes,
       accentColor: studio.accent_color || '#F0940A',
     }).catch(() => {});
+
+    // Notify studio owner — non-blocking
+    if (studio.email) {
+      sendBookingNotification({
+        to: studio.email,
+        clientName: client_name,
+        clientEmail: client_email,
+        clientPhone: client_phone || null,
+        studioName: studio.name,
+        serviceName,
+        sessionDate: session_date,
+        notes,
+        bookingUrl,
+        accentColor: studio.accent_color || '#F0940A',
+      }).catch(() => {});
+    }
 
     return Response.json({ success: true });
   } catch (err) {

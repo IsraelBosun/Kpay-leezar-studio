@@ -4,10 +4,12 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { toggleGalleryLock, toggleGalleryDownloads, deletePhoto, deleteDeliveryPhoto } from '../actions';
+import { FREE_STORAGE_LIMIT } from '@/lib/plan';
 
-export default function GalleryManager({ gallery, photos: initialPhotos, deliveryPhotos: initialDelivery, selections, heartCounts = {}, clientUrl, isProStudio }) {
+export default function GalleryManager({ gallery, photos: initialPhotos, deliveryPhotos: initialDelivery, selections, heartCounts = {}, clientUrl, isProStudio, storageUsedBytes = 0 }) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [deliveryPhotos, setDeliveryPhotos] = useState(initialDelivery);
+  const [storageUsed, setStorageUsed] = useState(storageUsedBytes);
   const [uploadQueue, setUploadQueue] = useState([]);
   const [deliveryQueue, setDeliveryQueue] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -102,6 +104,7 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
         const data = await res.json();
         if (data.photo) {
           setPhotos(prev => [...prev, data.photo]);
+          setStorageUsed(prev => prev + (data.photo.file_size || 0));
           setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'done' } : q));
         } else {
           setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', errorMsg: data.error } : q));
@@ -135,6 +138,7 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
         const data = await res.json();
         if (data.photo) {
           setDeliveryPhotos(prev => [...prev, data.photo]);
+          setStorageUsed(prev => prev + (data.photo.file_size || 0));
           setDeliveryQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'done' } : q));
         } else {
           setDeliveryQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error', errorMsg: data.error } : q));
@@ -155,14 +159,22 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
 
   async function handleDelete(photoId) {
     if (!confirm('Delete this photo? This cannot be undone.')) return;
+    const photo = photos.find(p => p.id === photoId);
     const result = await deletePhoto(photoId);
-    if (!result?.error) setPhotos(prev => prev.filter(p => p.id !== photoId));
+    if (!result?.error) {
+      setPhotos(prev => prev.filter(p => p.id !== photoId));
+      if (photo?.file_size) setStorageUsed(prev => Math.max(0, prev - photo.file_size));
+    }
   }
 
   async function handleDeleteDelivery(photoId) {
     if (!confirm('Delete this delivery photo? This cannot be undone.')) return;
+    const photo = deliveryPhotos.find(p => p.id === photoId);
     const result = await deleteDeliveryPhoto(photoId);
-    if (!result?.error) setDeliveryPhotos(prev => prev.filter(p => p.id !== photoId));
+    if (!result?.error) {
+      setDeliveryPhotos(prev => prev.filter(p => p.id !== photoId));
+      if (photo?.file_size) setStorageUsed(prev => Math.max(0, prev - photo.file_size));
+    }
   }
 
   async function handleToggleLock() {
@@ -241,20 +253,9 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
         {/* ── Photos tab ── */}
         {activeTab === 'photos' && (
           <div className="space-y-4">
-            {!isProStudio && photos.length >= 18 && photos.length < 20 && (
-              <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-50 border border-amber-200">
-                <p className="text-xs font-bold text-amber-800">{20 - photos.length} photo{20 - photos.length !== 1 ? 's' : ''} remaining on your free plan.</p>
-                <a href="/studio/settings" className="text-[10px] uppercase tracking-widest font-bold text-amber-700 hover:underline whitespace-nowrap">Upgrade →</a>
-              </div>
-            )}
-            {!isProStudio && photos.length >= 20 && (
-              <div className="flex items-center justify-between gap-3 px-5 py-3 bg-red-50 border border-red-200">
-                <p className="text-xs font-bold text-red-700">Gallery full — free plan allows 20 photos. Upgrade to add more.</p>
-                <a href="/studio/settings" className="text-[10px] uppercase tracking-widest font-bold text-red-600 hover:underline whitespace-nowrap">Upgrade →</a>
-              </div>
-            )}
+            {!isProStudio && <StorageBar storageUsed={storageUsed} />}
 
-            {(!isProStudio && photos.length >= 20) ? null : (
+            {(!isProStudio && storageUsed >= FREE_STORAGE_LIMIT) ? null : (
               <div onDrop={handleDrop} onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }} onDragLeave={() => setIsDragging(false)}
                 className={`border-2 border-dashed transition-all duration-200 ${isDragging ? 'border-primary bg-red-50 scale-[1.01]' : 'border-gray-200 hover:border-gray-300'}`}>
                 <label className="flex flex-col items-center justify-center py-12 cursor-pointer">
@@ -347,21 +348,9 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
               </button>
             </div>
 
-            {/* Delivery upload limits */}
-            {!isProStudio && deliveryPhotos.length >= 18 && deliveryPhotos.length < 20 && (
-              <div className="flex items-center justify-between gap-3 px-5 py-3 bg-amber-50 border border-amber-200">
-                <p className="text-xs font-bold text-amber-800">{20 - deliveryPhotos.length} delivery photo{20 - deliveryPhotos.length !== 1 ? 's' : ''} remaining on your free plan.</p>
-                <a href="/studio/settings" className="text-[10px] uppercase tracking-widest font-bold text-amber-700 hover:underline whitespace-nowrap">Upgrade →</a>
-              </div>
-            )}
-            {!isProStudio && deliveryPhotos.length >= 20 && (
-              <div className="flex items-center justify-between gap-3 px-5 py-3 bg-red-50 border border-red-200">
-                <p className="text-xs font-bold text-red-700">Delivery limit reached — free plan allows 20 edited finals. Upgrade for unlimited.</p>
-                <a href="/studio/settings" className="text-[10px] uppercase tracking-widest font-bold text-red-600 hover:underline whitespace-nowrap">Upgrade →</a>
-              </div>
-            )}
+            {!isProStudio && <StorageBar storageUsed={storageUsed} />}
 
-            {(!isProStudio && deliveryPhotos.length >= 20) ? null : (
+            {(!isProStudio && storageUsed >= FREE_STORAGE_LIMIT) ? null : (
               <div onDrop={handleDeliveryDrop} onDragOver={(e) => { e.preventDefault(); setIsDeliveryDragging(true); }} onDragLeave={() => setIsDeliveryDragging(false)}
                 className={`border-2 border-dashed transition-all duration-200 ${isDeliveryDragging ? 'border-primary bg-red-50 scale-[1.01]' : 'border-gray-200 hover:border-gray-300'}`}>
                 <label className="flex flex-col items-center justify-center py-12 cursor-pointer">
@@ -584,6 +573,37 @@ export default function GalleryManager({ gallery, photos: initialPhotos, deliver
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+function formatBytes(bytes) {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
+function StorageBar({ storageUsed }) {
+  const pct = Math.min(100, (storageUsed / FREE_STORAGE_LIMIT) * 100);
+  const isFull = storageUsed >= FREE_STORAGE_LIMIT;
+  const isWarning = pct >= 70;
+
+  return (
+    <div className={`px-5 py-3 border space-y-2 ${isFull ? 'bg-red-50 border-red-200' : isWarning ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+      <div className="flex items-center justify-between gap-3">
+        <p className={`text-xs font-bold ${isFull ? 'text-red-700' : isWarning ? 'text-amber-800' : 'text-neutral-gray'}`}>
+          {isFull ? 'Storage full — upgrade to add more photos.' : `${formatBytes(storageUsed)} of 2 GB used`}
+        </p>
+        {(isFull || isWarning) && (
+          <a href="/studio/settings" className={`text-[10px] uppercase tracking-widest font-bold hover:underline whitespace-nowrap ${isFull ? 'text-red-600' : 'text-amber-700'}`}>Upgrade →</a>
+        )}
+      </div>
+      <div className="h-1 bg-white/60 overflow-hidden rounded-full">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${isFull ? 'bg-red-500' : isWarning ? 'bg-amber-400' : 'bg-primary'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }

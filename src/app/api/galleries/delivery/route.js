@@ -1,7 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { uploadToR2, buildPhotoKey } from '@/lib/r2';
 import { randomUUID } from 'crypto';
-import { isPro } from '@/lib/plan';
+import { isPro, FREE_STORAGE_LIMIT } from '@/lib/plan';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -14,7 +14,7 @@ export async function POST(req) {
 
     const { data: studio } = await supabase
       .from('studios')
-      .select('id, plan, created_at')
+      .select('id, plan, created_at, storage_used_bytes')
       .eq('owner_id', user.id)
       .single();
     if (!studio) return Response.json({ error: 'Studio not found' }, { status: 403 });
@@ -35,14 +35,11 @@ export async function POST(req) {
       .single();
     if (!gallery) return Response.json({ error: 'Gallery not found' }, { status: 403 });
 
+    // Free plan: 2 GB storage cap
     if (!isPro(studio)) {
-      const { count } = await supabase
-        .from('photos')
-        .select('*', { count: 'exact', head: true })
-        .eq('gallery_id', galleryId)
-        .eq('photo_type', 'delivery');
-      if ((count ?? 0) >= 20) {
-        return Response.json({ error: 'Free plan allows 20 delivery photos per gallery. Upgrade to Pro for unlimited.' }, { status: 403 });
+      const currentBytes = Number(studio.storage_used_bytes ?? 0);
+      if (currentBytes + file.size > FREE_STORAGE_LIMIT) {
+        return Response.json({ error: 'Storage limit reached. Free plan includes 2 GB. Upgrade to Pro for unlimited storage.' }, { status: 403 });
       }
     }
 
@@ -74,6 +71,10 @@ export async function POST(req) {
       .single();
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
+
+    await supabase.from('studios')
+      .update({ storage_used_bytes: Number(studio.storage_used_bytes ?? 0) + file.size })
+      .eq('id', studio.id);
 
     return Response.json({ photo });
   } catch (err) {

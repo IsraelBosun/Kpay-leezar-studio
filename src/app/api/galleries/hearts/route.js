@@ -39,9 +39,18 @@ export async function POST(request) {
     let hearted;
     if (existing) {
       await supabaseAdmin.from('photo_hearts').delete().eq('id', existing.id);
+      await supabaseAdmin.from('selections')
+        .delete()
+        .eq('gallery_id', gallery_id)
+        .eq('photo_id', photo_id)
+        .eq('selector_name', selector_name.trim());
       hearted = false;
     } else {
       await supabaseAdmin.from('photo_hearts').insert({ gallery_id, photo_id, selector_name: selector_name.trim() });
+      await supabaseAdmin.from('selections').upsert(
+        { gallery_id, photo_id, selector_name: selector_name.trim() },
+        { onConflict: 'gallery_id,photo_id,selector_name' }
+      );
       hearted = true;
     }
 

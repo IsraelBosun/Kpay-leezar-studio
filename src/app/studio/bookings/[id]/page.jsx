@@ -19,7 +19,7 @@ export default async function BookingDetailPage({ params }) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, paystack_subaccount_code')
+    .select('id, name, logo_url, email, phone, accent_color, paystack_subaccount_code, paystack_bank_name, paystack_account_number, paystack_account_name')
     .eq('owner_id', user.id)
     .single();
 
@@ -77,6 +77,7 @@ export default async function BookingDetailPage({ params }) {
         booking={booking}
         payments={payments ?? []}
         hasSubaccount={!!studio.paystack_subaccount_code}
+        studio={studio}
       />
     </div>
   );

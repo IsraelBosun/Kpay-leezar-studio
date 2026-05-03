@@ -11,7 +11,7 @@ export default async function GalleryDetailPage({ params }) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, slug, plan, created_at')
+    .select('id, slug, plan, created_at, storage_used_bytes')
     .eq('owner_id', user.id)
     .single();
 
@@ -67,6 +67,7 @@ export default async function GalleryDetailPage({ params }) {
         heartCounts={heartCounts}
         clientUrl={clientUrl}
         isProStudio={isProStudio}
+        storageUsedBytes={Number(studio.storage_used_bytes ?? 0)}
       />
     </div>
   );

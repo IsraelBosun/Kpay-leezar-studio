@@ -83,6 +83,11 @@ export async function POST(req) {
       } catch {
         // Verification failed — Paystack couldn't find it, treat as still pending and reuse reference
       }
+
+      // Return stored URL if we already have one — no need to re-initialize
+      if (existing.authorization_url) {
+        return Response.json({ authorization_url: existing.authorization_url, reference: existing.paystack_reference });
+      }
     }
 
     const reference = existing?.paystack_reference
@@ -110,8 +115,15 @@ export async function POST(req) {
         currency: 'NGN',
         type: payment_type,
         paystack_reference: reference,
+        authorization_url: paymentData.authorization_url,
         status: 'pending',
       });
+    } else {
+      // Existing record was missing the URL (created before this feature) — store it now
+      await supabaseAdmin
+        .from('payments')
+        .update({ authorization_url: paymentData.authorization_url })
+        .eq('id', existing.id);
     }
 
     return Response.json({ authorization_url: paymentData.authorization_url, reference });

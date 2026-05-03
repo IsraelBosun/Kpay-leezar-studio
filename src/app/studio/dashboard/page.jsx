@@ -188,10 +188,10 @@ export default async function DashboardPage({ searchParams }) {
             rel="noopener noreferrer"
             className="text-xs uppercase tracking-widest font-bold text-white border border-white/20 px-4 py-2 hover:bg-white hover:text-black transition-colors"
           >
-            Preview
+            View
           </a>
           <Link
-            href="/studio/settings"
+            href="/studio/website"
             className="text-xs uppercase tracking-widest font-bold text-white/40 hover:text-white transition-colors px-4 py-2"
           >
             Edit Site

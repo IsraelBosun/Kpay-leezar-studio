@@ -3,7 +3,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { deleteFromR2 } from '@/lib/r2';
 import { redirect } from 'next/navigation';
-import { isPro } from '@/lib/plan';
+import { isPro, FREE_GALLERY_LIMIT } from '@/lib/plan';
 
 export async function createGallery(formData) {
   const supabase = await createServerSupabase();
@@ -22,7 +22,7 @@ export async function createGallery(formData) {
       .from('galleries')
       .select('*', { count: 'exact', head: true })
       .eq('studio_id', studio.id);
-    if (count >= 1) return { error: 'Free plan allows 1 gallery. Upgrade to Pro to create more.' };
+    if (count >= FREE_GALLERY_LIMIT) return { error: `Free plan allows ${FREE_GALLERY_LIMIT} galleries. Upgrade to Pro to create more.` };
   }
 
   const title = formData.get('title');
@@ -81,7 +81,7 @@ export async function deletePhoto(photoId) {
   const supabase = await createServerSupabase();
   const { data: photo } = await supabase
     .from('photos')
-    .select('original_url, thumbnail_url, gallery_id, studio_id')
+    .select('original_url, thumbnail_url, gallery_id, studio_id, file_size')
     .eq('id', photoId)
     .single();
 
@@ -99,5 +99,19 @@ export async function deletePhoto(photoId) {
 
   const { error } = await supabase.from('photos').delete().eq('id', photoId);
   if (error) return { error: error.message };
+
+  // Decrement studio storage counter
+  if (photo.file_size && photo.studio_id) {
+    const { data: studio } = await supabase
+      .from('studios')
+      .select('storage_used_bytes')
+      .eq('id', photo.studio_id)
+      .single();
+    if (studio) {
+      const newBytes = Math.max(0, (Number(studio.storage_used_bytes) || 0) - photo.file_size);
+      await supabase.from('studios').update({ storage_used_bytes: newBytes }).eq('id', photo.studio_id);
+    }
+  }
+
   return { success: true };
 }

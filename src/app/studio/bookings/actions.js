@@ -3,6 +3,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { sendBookingConfirmation } from '@/lib/email';
+import { generateInvoicePdf } from '@/lib/invoice-pdf';
 import { isPro } from '@/lib/plan';
 
 export async function createBooking(formData) {
@@ -12,7 +13,7 @@ export async function createBooking(formData) {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, name, email, phone, accent_color, plan, created_at')
+    .select('id, name, email, phone, accent_color, plan, created_at, paystack_bank_name, paystack_account_number, paystack_account_name')
     .eq('owner_id', user.id)
     .single();
   if (!studio) return { error: 'Studio not found.' };
@@ -34,7 +35,7 @@ export async function createBooking(formData) {
     serviceName = service?.title ?? null;
   }
 
-  const { error } = await supabase.from('bookings').insert({
+  const { data: newBooking, error } = await supabase.from('bookings').insert({
     studio_id: studio.id,
     client_name: clientName,
     client_email: clientEmail,
@@ -45,24 +46,53 @@ export async function createBooking(formData) {
     deposit_amount: depositAmount,
     balance_amount: balanceAmount,
     status: 'pending',
-  });
+  }).select('id').single();
 
   if (error) return { error: error.message };
 
-  // Send confirmation email — non-blocking, don't fail the booking if email fails
-  sendBookingConfirmation({
-    to: clientEmail,
-    clientName,
-    studioName: studio.name,
-    studioEmail: studio.email,
-    studioPhone: studio.phone,
-    serviceName,
-    sessionDate,
-    depositAmount,
-    balanceAmount,
-    notes,
-    accentColor: studio.accent_color || '#F0940A',
-  }).catch(() => {});
+  const invoiceNumber = `INV-${new Date().getFullYear()}-${newBooking.id.slice(0, 6).toUpperCase()}`;
+
+  // Generate PDF invoice if amounts are set — non-blocking, falls back to plain email
+  const hasAmounts = depositAmount > 0 || balanceAmount > 0;
+  const pdfPromise = hasAmounts
+    ? generateInvoicePdf({
+        invoiceNumber,
+        invoiceDate: new Date().toISOString(),
+        studioName: studio.name,
+        accentColor: studio.accent_color || '#F0940A',
+        clientName,
+        clientEmail,
+        clientPhone: formData.get('client_phone') || null,
+        serviceName,
+        sessionDate,
+        depositAmount,
+        balanceAmount,
+        depositPaid: false,
+        balancePaid: false,
+        bankName: studio.paystack_bank_name,
+        accountName: studio.paystack_account_name,
+        accountNumber: studio.paystack_account_number,
+        notes,
+      }).catch(() => null)
+    : Promise.resolve(null);
+
+  pdfPromise.then((pdfAttachment) =>
+    sendBookingConfirmation({
+      to: clientEmail,
+      clientName,
+      studioName: studio.name,
+      studioEmail: studio.email,
+      studioPhone: studio.phone,
+      serviceName,
+      sessionDate,
+      depositAmount,
+      balanceAmount,
+      notes,
+      accentColor: studio.accent_color || '#F0940A',
+      pdfAttachment,
+      invoiceNumber: pdfAttachment ? invoiceNumber : undefined,
+    }).catch(() => {})
+  ).catch(() => {});
 
   redirect('/studio/bookings');
 }

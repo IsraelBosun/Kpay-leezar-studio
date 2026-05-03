@@ -1,7 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Badge from '@/components/ui/Badge';
-import { isPro } from '@/lib/plan';
+import { isPro, FREE_GALLERY_LIMIT, FREE_STORAGE_LIMIT } from '@/lib/plan';
 
 export default async function GalleriesPage() {
   const supabase = await createServerSupabase();
@@ -9,7 +9,7 @@ export default async function GalleriesPage() {
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('id, plan, created_at')
+    .select('id, plan, created_at, storage_used_bytes')
     .eq('owner_id', user.id)
     .single();
 
@@ -38,7 +38,10 @@ export default async function GalleriesPage() {
     }
   }
 
-  const atLimit = !isPro(studio) && (galleries?.length ?? 0) >= 1;
+  const atLimit = !isPro(studio) && (galleries?.length ?? 0) >= FREE_GALLERY_LIMIT;
+  const storageUsedBytes = Number(studio.storage_used_bytes ?? 0);
+  const storagePct = Math.min(100, (storageUsedBytes / FREE_STORAGE_LIMIT) * 100);
+  const storageGB = (storageUsedBytes / (1024 * 1024 * 1024)).toFixed(2);
 
   return (
     <div className="space-y-8">
@@ -50,7 +53,7 @@ export default async function GalleriesPage() {
         </div>
         {atLimit ? (
           <div className="bg-amber-50 border border-amber-200 px-5 py-3 text-xs uppercase tracking-widest font-bold text-amber-700 flex items-center gap-3">
-            Free plan: 1 gallery limit —
+            Free plan: {FREE_GALLERY_LIMIT} gallery limit —
             <Link href="/studio/settings" className="underline hover:no-underline">Upgrade</Link>
           </div>
         ) : (
@@ -62,6 +65,28 @@ export default async function GalleriesPage() {
           </Link>
         )}
       </div>
+
+      {/* Storage usage bar (free plan only) */}
+      {!isPro(studio) && (
+        <div className="bg-white border border-gray-100 px-5 py-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Storage Used</p>
+            <p className="text-xs text-neutral-gray tabular-nums">{storageGB} GB of 2 GB</p>
+          </div>
+          <div className="h-1.5 bg-gray-100 overflow-hidden rounded-full">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${storagePct >= 90 ? 'bg-red-500' : storagePct >= 70 ? 'bg-amber-400' : 'bg-primary'}`}
+              style={{ width: `${storagePct}%` }}
+            />
+          </div>
+          {storagePct >= 90 && (
+            <p className="text-[10px] text-red-600">
+              Storage almost full —{' '}
+              <Link href="/studio/settings" className="font-bold underline">Upgrade to Pro</Link> for unlimited storage.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Gallery grid */}
       {!galleries || galleries.length === 0 ? (

@@ -10,12 +10,33 @@ const STATUS_FLOW = [
   { key: 'completed', label: 'Completed', color: 'bg-blue-500' },
 ];
 
-export default function BookingDetail({ booking, payments, hasSubaccount }) {
+export default function BookingDetail({ booking, payments, hasSubaccount, studio }) {
   const depositPayment = payments.find(p => p.type === 'deposit' && p.status === 'paid');
   const balancePayment = payments.find(p => p.type === 'balance' && p.status === 'paid');
+  const depositPending = payments.find(p => p.type === 'deposit' && p.status === 'pending');
+  const balancePending = payments.find(p => p.type === 'balance' && p.status === 'pending');
 
   const [status, setStatus] = useState(booking.status);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const [invoiceSent, setInvoiceSent] = useState(false);
+  const [invoiceError, setInvoiceError] = useState(null);
+
+  const hasAmounts = Number(booking.deposit_amount) + Number(booking.balance_amount) > 0;
+
+  async function sendInvoice() {
+    setSendingInvoice(true);
+    setInvoiceError(null);
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/send-invoice`, { method: 'POST' });
+      const data = await res.json();
+      if (data.error) setInvoiceError(data.error);
+      else { setInvoiceSent(true); setTimeout(() => setInvoiceSent(false), 4000); }
+    } catch {
+      setInvoiceError('Network error. Please try again.');
+    }
+    setSendingInvoice(false);
+  }
 
   async function handleStatusChange(newStatus) {
     setStatusLoading(true);
@@ -125,6 +146,7 @@ export default function BookingDetail({ booking, payments, hasSubaccount }) {
         paymentType="deposit"
         clientName={booking.client_name}
         hasSubaccount={hasSubaccount}
+        initialLink={depositPending?.authorization_url || null}
       />
 
       {/* Balance */}
@@ -138,7 +160,46 @@ export default function BookingDetail({ booking, payments, hasSubaccount }) {
         clientName={booking.client_name}
         hasSubaccount={hasSubaccount}
         disabled={!booking.deposit_paid && !depositPayment}
+        initialLink={balancePending?.authorization_url || null}
       />
+
+      {/* Invoice */}
+      <div className="bg-white border border-gray-100 px-4 sm:px-6 py-4">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-3">Invoice</p>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`/studio/bookings/${booking.id}/invoice`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-xs font-bold uppercase tracking-widest text-black hover:bg-gray-50 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Download PDF
+          </a>
+          <button
+            onClick={sendInvoice}
+            disabled={sendingInvoice || !hasAmounts}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest hover:bg-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {invoiceSent ? '✓ Invoice Sent' : sendingInvoice ? 'Sending...' : 'Send Invoice to Client'}
+          </button>
+        </div>
+        {!hasAmounts && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 mt-3">
+            Edit this booking to add deposit or balance amounts before sending an invoice.
+          </p>
+        )}
+        {invoiceError && (
+          <p className="text-xs text-red-600 mt-2">{invoiceError}</p>
+        )}
+        {hasAmounts && (
+          <p className="text-[10px] text-neutral-gray mt-3">
+            Sends a detailed invoice to {booking.client_email} with payment breakdown and bank details.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -162,8 +223,8 @@ function StatusButton({ label, onClick, loading, variant }) {
   );
 }
 
-function PaymentRow({ label, amount, isPaid, paidAt, bookingId, paymentType, clientName, hasSubaccount, disabled }) {
-  const [link, setLink] = useState(null);
+function PaymentRow({ label, amount, isPaid, paidAt, bookingId, paymentType, clientName, hasSubaccount, disabled, initialLink }) {
+  const [link, setLink] = useState(initialLink || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -267,11 +328,6 @@ function PaymentRow({ label, amount, isPaid, paidAt, bookingId, paymentType, cli
                   </svg>
                   Share via WhatsApp
                 </a>
-                <button
-                  onClick={() => setLink(null)}
-                  className="px-4 py-2 text-xs text-neutral-gray hover:text-black transition-colors">
-                  Refresh link
-                </button>
               </div>
               <p className="text-[10px] text-neutral-gray">
                 Share this link with {clientName}. Once paid, this page updates automatically.
